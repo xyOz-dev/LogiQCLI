@@ -3,18 +3,21 @@ using System.Linq;
 using LogiQCLI.Core.Models.Configuration;
 using LogiQCLI.Core.Models.Modes;
 using LogiQCLI.Core.Models.Modes.Interfaces;
+using LogiQCLI.Tools.Core.Interfaces;
 
 namespace LogiQCLI.Core.Services
 {
     public class ModeManager : IModeManager
     {
         private readonly ConfigurationService _configurationService;
+        private readonly IToolRegistry _toolRegistry;
         private ModeSettings _modeSettings;
         private Mode _currentMode;
 
-        public ModeManager(ConfigurationService configurationService)
+        public ModeManager(ConfigurationService configurationService, IToolRegistry toolRegistry)
         {
             _configurationService = configurationService ?? throw new ArgumentNullException(nameof(configurationService));
+            _toolRegistry = toolRegistry ?? throw new ArgumentNullException(nameof(toolRegistry));
             InitializeModeSettings();
             
             var mode = GetMode(_modeSettings.ActiveModeId);
@@ -32,6 +35,7 @@ namespace LogiQCLI.Core.Services
 
         public Mode GetCurrentMode()
         {
+            _currentMode.AllowedTools = ResolveToolsForMode(_currentMode);
             return _currentMode;
         }
 
@@ -43,6 +47,8 @@ namespace LogiQCLI.Core.Services
             var mode = GetMode(modeId);
             if (mode == null)
                 throw new InvalidOperationException($"Mode with ID '{modeId}' does not exist.");
+            
+            mode.AllowedTools = ResolveToolsForMode(mode);
 
             _currentMode = mode;
             _modeSettings.ActiveModeId = modeId;
@@ -55,12 +61,22 @@ namespace LogiQCLI.Core.Services
             var allModes = new List<Mode>();
             allModes.AddRange(_modeSettings.DefaultModes);
             allModes.AddRange(_modeSettings.CustomModes);
+            
+            foreach (var mode in allModes)
+            {
+                mode.AllowedTools = ResolveToolsForMode(mode);
+            }
             return allModes;
         }
 
         public Mode? GetMode(string modeId)
         {
-            return GetAvailableModes().FirstOrDefault(m => m.Id == modeId);
+            var mode = GetAvailableModes().FirstOrDefault(m => m.Id == modeId);
+            if (mode != null)
+            {
+                mode.AllowedTools = ResolveToolsForMode(mode);
+            }
+            return mode;
         }
 
         public bool AddCustomMode(Mode mode)
@@ -74,8 +90,9 @@ namespace LogiQCLI.Core.Services
             if (GetMode(mode.Id) != null)
                 throw new InvalidOperationException($"Mode with ID '{mode.Id}' already exists.");
 
+            mode.AllowedTools = ResolveToolsForMode(mode);
             if (mode.AllowedTools == null || !mode.AllowedTools.Any())
-                throw new ArgumentException("Mode must have at least one allowed tool.", nameof(mode));
+                throw new ArgumentException("Mode must have at least one allowed tool after resolving categories and tags.", nameof(mode));
 
             mode.IsBuiltIn = false;
             _modeSettings.CustomModes.Add(mode);
@@ -184,6 +201,63 @@ namespace LogiQCLI.Core.Services
             var settings = _configurationService.LoadSettings() ?? new ApplicationSettings();
             settings.ModeSettings = _modeSettings;
             _configurationService.SaveSettings(settings);
+        }
+
+        private List<string> ResolveToolsForMode(Mode mode)
+        {
+            if (mode == null) return new List<string>();
+
+            var resolvedTools = new HashSet<string>(mode.AllowedTools, StringComparer.OrdinalIgnoreCase);
+
+            if (mode.AllowedCategories.Any())
+            {
+                foreach (var category in mode.AllowedCategories)
+                {
+                    var toolsInCategory = _toolRegistry.GetToolsByCategory(category);
+                    foreach (var tool in toolsInCategory)
+                    {
+                        resolvedTools.Add(tool.Name);
+                    }
+                }
+            }
+
+            if (mode.AllowedTags.Any())
+            {
+                foreach (var tag in mode.AllowedTags)
+                {
+                    var toolsWithTag = _toolRegistry.GetToolsByTag(tag);
+                    foreach (var tool in toolsWithTag)
+                    {
+                        resolvedTools.Add(tool.Name);
+                    }
+                }
+            }
+            
+            if (mode.ExcludedCategories.Any())
+            {
+                foreach (var category in mode.ExcludedCategories)
+                {
+                    var toolsInCategory = _toolRegistry.GetToolsByCategory(category);
+                    foreach (var tool in toolsInCategory)
+                    {
+                        resolvedTools.Remove(tool.Name);
+                    }
+                }
+            }
+
+            if (mode.ExcludedTags.Any())
+            {
+                foreach (var tag in mode.ExcludedTags)
+                {
+                    var toolsWithTag = _toolRegistry.GetToolsByTag(tag);
+                    foreach (var tool in toolsWithTag)
+                    {
+                        resolvedTools.Remove(tool.Name);
+                    }
+                }
+            }
+
+            return resolvedTools.ToList();
         }
     }
 }

@@ -57,7 +57,7 @@ public class Program
             InitializeServices(settings);
             InitializeToolSystem();
 
-            var modeManager = new ModeManager(configService);
+            var modeManager = new ModeManager(configService, _toolRegistry);
             var openRouter = _serviceContainer.GetService<OpenRouterClient>();
             var toolHandler = CreateToolHandler(modeManager, settings);
 
