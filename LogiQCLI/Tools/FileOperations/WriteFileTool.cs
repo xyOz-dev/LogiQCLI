@@ -1,0 +1,78 @@
+using System;
+using System.IO;
+using System.Text.Json;
+using System.Text.Json.Serialization;
+using System.Threading.Tasks;
+
+using LogiQCLI.Tools.Core.Interfaces;
+using LogiQCLI.Tools.Core.Objects;
+using LogiQCLI.Tools.FileOperations.Arguments;
+
+namespace LogiQCLI.Tools.FileOperations
+{
+    [ToolMetadata("FileOperations", Tags = new[] { "write" })]
+    public class WriteFileTool : ITool
+    {
+        public override RegisteredTool GetToolInfo()
+        {
+            return new RegisteredTool
+            {
+                Name = "write_file",
+                Description = "Writes content to a file, completely replacing any existing content. " +
+                              "Use this tool for creating new files or when a complete file rewrite is needed. " +
+                              "Automatically creates any missing directories in the path. " +
+                              "For partial file modifications, consider using apply_diff or search_and_replace instead.",
+                Parameters = new Parameters
+                {
+                    Type = "object",
+                    Properties = new
+                    {
+                        path = new
+                        {
+                            type = "string",
+                            description = "File path relative to workspace root. " +
+                                         "Directories will be created if they don't exist. " +
+                                         "Examples: 'src/new-file.ts', 'config/settings.json'"
+                        },
+                        content = new
+                        {
+                            type = "string",
+                            description = "Complete file content to write. " +
+                                         "Existing content will be entirely replaced. " +
+                                         "Use empty string to create an empty file."
+                        }
+                    },
+                    Required = new[] { "path", "content" }
+                }
+            };
+        }
+
+        public override async Task<string> Execute(string args)
+        {
+            try
+            {
+                var arguments = JsonSerializer.Deserialize<WriteFileArguments>(args);
+                if (arguments == null || string.IsNullOrEmpty(arguments.Path))
+                {
+                    return "Error: Invalid arguments. Path is required.";
+                }
+
+                var fullPath = Path.GetFullPath(arguments.Path.Replace('/', Path.DirectorySeparatorChar)
+                    .Replace('\\', Path.DirectorySeparatorChar));
+                    
+                var directory = Path.GetDirectoryName(fullPath);
+                if (!string.IsNullOrEmpty(directory))
+                {
+                    Directory.CreateDirectory(directory);
+                }
+
+                await File.WriteAllTextAsync(fullPath, arguments.Content ?? string.Empty);
+                return $"Successfully wrote {arguments.Content?.Length ?? 0} characters to {fullPath}";
+            }
+            catch (Exception ex)
+            {
+                return $"Error writing file: {ex.Message}";
+            }
+        }
+    }
+}
