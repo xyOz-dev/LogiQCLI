@@ -1,4 +1,6 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 using LogiQCLI.Infrastructure.ApiClients.OpenRouter.Models;
 using LogiQCLI.Infrastructure.ApiClients.OpenRouter.Objects;
 using LogiQCLI.Core.Models.Modes.Interfaces;
@@ -100,30 +102,65 @@ namespace LogiQCLI.Presentation.Console.Session
         private string AppendEnvironmentDetails(string basePrompt)
         {
             var workspace = System.IO.Directory.GetCurrentDirectory();
-
-            var allFiles = System.IO.Directory.GetFiles(
-                workspace,
-                "*",
-                System.IO.SearchOption.AllDirectories);
-
-            var excludedPatterns = new[]
+            var sb = new StringBuilder();
+            
+            // Start with the base prompt
+            sb.AppendLine(basePrompt);
+            sb.AppendLine();
+            
+            // Add environment details
+            sb.AppendLine("== Current Working Directory ==");
+            sb.AppendLine(workspace);
+            sb.AppendLine();
+            
+            try
             {
-                $"{System.IO.Path.DirectorySeparatorChar}bin{System.IO.Path.DirectorySeparatorChar}",
-                $"{System.IO.Path.DirectorySeparatorChar}obj{System.IO.Path.DirectorySeparatorChar}"
-            };
+                var allFiles = System.IO.Directory.GetFiles(
+                    workspace,
+                    "*",
+                    System.IO.SearchOption.AllDirectories);
 
-            var files = allFiles
-                .Where(f => !excludedPatterns.Any(p => f.Contains(p)));
-
-            var fileList = string.Join(
-                "\n",
-                files.Select(f =>
+                var excludedPatterns = new[]
                 {
-                    var relative = System.IO.Path.GetRelativePath(workspace, f);
-                    return relative;
-                }));
+                    $"{System.IO.Path.DirectorySeparatorChar}bin{System.IO.Path.DirectorySeparatorChar}",
+                    $"{System.IO.Path.DirectorySeparatorChar}obj{System.IO.Path.DirectorySeparatorChar}",
+                    $"{System.IO.Path.DirectorySeparatorChar}.git{System.IO.Path.DirectorySeparatorChar}",
+                    $"{System.IO.Path.DirectorySeparatorChar}.vs{System.IO.Path.DirectorySeparatorChar}",
+                    $"{System.IO.Path.DirectorySeparatorChar}node_modules{System.IO.Path.DirectorySeparatorChar}"
+                };
 
-            return $@"";
+                var filteredFiles = allFiles
+                    .Where(f => !excludedPatterns.Any(p => f.Contains(p)))
+                    .Select(f => System.IO.Path.GetRelativePath(workspace, f))
+                    .OrderBy(f => f)
+                    .ToList();
+
+                sb.AppendLine("== Project File Structure ==");
+                
+                if (filteredFiles.Count > 0)
+                {
+                    foreach (var file in filteredFiles.Take(100)) // Limit to prevent extremely long prompts
+                    {
+                        sb.AppendLine($"  {file}");
+                    }
+                    
+                    if (filteredFiles.Count > 100)
+                    {
+                        sb.AppendLine($"  ... and {filteredFiles.Count - 100} more files");
+                    }
+                }
+                else
+                {
+                    sb.AppendLine("  (No files found)");
+                }
+            }
+            catch (System.Exception ex)
+            {
+                sb.AppendLine("== Project File Structure ==");
+                sb.AppendLine($"  (Error reading directory: {ex.Message})");
+            }
+
+            return sb.ToString();
         }
 
         private string GetDefaultSystemPrompt()
