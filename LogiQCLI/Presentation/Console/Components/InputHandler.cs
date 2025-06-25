@@ -25,7 +25,6 @@ namespace LogiQCLI.Presentation.Console.Components
                     ctx.UpdateTarget(CreateInputPanel(""));
                     while(true)
                     {
-                        // Check if there are multiple keys available (indicates pasting)
                         if (System.Console.KeyAvailable)
                         {
                             var currentTime = DateTime.Now;
@@ -42,37 +41,30 @@ namespace LogiQCLI.Presentation.Console.Components
 
                         var key = System.Console.ReadKey(true);
                         
-                        // Check for various submit combinations that work across platforms
                         bool shouldSubmit = false;
                         
                         if (key.Key == ConsoleKey.Enter)
                         {
-                            // If we're pasting, don't treat Enter as submit - just add newline
                             if (isPasting)
                             {
                                 inputBuilder.AppendLine();
                             }
-                            // Ctrl+Enter to submit (works on all platforms)
                             else if (key.Modifiers == ConsoleModifiers.Control)
                             {
                                 shouldSubmit = true;
                             }
-                            // Shift+Enter to submit (Windows/Linux style)
                             else if (key.Modifiers == ConsoleModifiers.Shift)
                             {
                                 shouldSubmit = true;
                             }
-                            // Command+Enter on macOS (detected as Alt modifier in some terminals)
                             else if (key.Modifiers == ConsoleModifiers.Alt)
                             {
                                 shouldSubmit = true;
                             }
-                            // Double Enter: if the last characters are already newlines, submit
                             else if (inputBuilder.Length > 0 && inputBuilder.ToString().EndsWith(Environment.NewLine))
                             {
                                 shouldSubmit = true;
                             }
-                            // Plain Enter adds new line
                             else
                             {
                                 inputBuilder.AppendLine();
@@ -80,19 +72,16 @@ namespace LogiQCLI.Presentation.Console.Components
                         }
                         else if (key.Key == ConsoleKey.Tab && !isPasting)
                         {
-                            // Tab to submit (good alternative for macOS) - but not during paste
                             shouldSubmit = true;
                         }
                         else if (key.Key == ConsoleKey.Escape && !isPasting)
                         {
-                            // ESC to submit as well (another alternative) - but not during paste
                             shouldSubmit = true;
                         }
                         else if (key.Key == ConsoleKey.Backspace)
                         {
                             if (inputBuilder.Length > 0)
                             {
-                                // Handle backspace for newlines properly
                                 var str = inputBuilder.ToString();
                                 if (str.EndsWith(Environment.NewLine))
                                 {
@@ -106,7 +95,6 @@ namespace LogiQCLI.Presentation.Console.Components
                         }
                         else if (key.Key == ConsoleKey.Tab && isPasting)
                         {
-                            // If pasting, treat tab as regular character
                             inputBuilder.Append('\t');
                         }
                         else if (!char.IsControl(key.KeyChar))
