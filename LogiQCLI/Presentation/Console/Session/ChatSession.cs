@@ -173,35 +173,35 @@ namespace LogiQCLI.Presentation.Console.Session
             {
                 sb.AppendLine("== Development Environment ==");
                 
-                // .NET information
+    
                 var dotnetVersion = GetDotNetVersion();
                 if (!string.IsNullOrEmpty(dotnetVersion))
                 {
                     sb.AppendLine($".NET Version: {dotnetVersion}");
                 }
                 
-                // Git information
+    
                 var gitInfo = GetGitInformation();
                 if (!string.IsNullOrEmpty(gitInfo))
                 {
                     sb.AppendLine($"Git: {gitInfo}");
                 }
                 
-                // Node.js information
+    
                 var nodeInfo = GetNodeInformation();
                 if (!string.IsNullOrEmpty(nodeInfo))
                 {
                     sb.AppendLine($"Node.js: {nodeInfo}");
                 }
                 
-                // Python information
+    
                 var pythonInfo = GetPythonInformation();
                 if (!string.IsNullOrEmpty(pythonInfo))
                 {
                     sb.AppendLine($"Python: {pythonInfo}");
                 }
                 
-                // Package managers
+    
                 var packageManagers = GetPackageManagerInfo();
                 if (!string.IsNullOrEmpty(packageManagers))
                 {
@@ -230,7 +230,7 @@ namespace LogiQCLI.Presentation.Console.Session
                 sb.AppendLine($"Available Space: {driveInfo.AvailableFreeSpace / 1024 / 1024 / 1024} GB");
                 sb.AppendLine($"Total Space: {driveInfo.TotalSize / 1024 / 1024 / 1024} GB");
                 
-                // Project type detection
+    
                 var projectType = DetectProjectType(workspace);
                 if (!string.IsNullOrEmpty(projectType))
                 {
@@ -446,7 +446,7 @@ namespace LogiQCLI.Presentation.Console.Session
                 var value = System.Environment.GetEnvironmentVariable(varName);
                 if (!string.IsNullOrEmpty(value))
                 {
-                    // Truncate PATH for readability
+    
                     if (varName == "PATH" && value.Length > 200)
                     {
                         value = value.Substring(0, 200) + "...";

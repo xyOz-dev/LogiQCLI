@@ -128,7 +128,7 @@ namespace LogiQCLI.Tests.FileOperations
             var originalContent = "Original content";
             var newContent = "New content that replaces original";
             
-            // Create initial file
+
             await File.WriteAllTextAsync(testPath, originalContent);
             
             var args = new WriteFileArguments
@@ -180,7 +180,7 @@ namespace LogiQCLI.Tests.FileOperations
 
         private async Task TestLargeContent(WriteFileTool tool, TestFileSystem testFileSystem)
         {
-            var testContent = new string('A', 2048); // 2KB content
+            var testContent = new string('A', 2048);
             var testPath = Path.Combine(testFileSystem.TempDirectory, "large_write_test.txt");
             
             var args = new WriteFileArguments

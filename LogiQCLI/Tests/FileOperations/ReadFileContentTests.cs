@@ -79,7 +79,7 @@ namespace LogiQCLI.Tests.FileOperations
 
         private async Task TestLargeFileRead(ReadFileTool tool, TestFileSystem testFileSystem)
         {
-            // Create a file with ~1KB of content
+
             var testContent = new string('A', 1024);
             var testFile = testFileSystem.CreateTempFile(testContent, "large_test.txt");
             
@@ -148,7 +148,7 @@ namespace LogiQCLI.Tests.FileOperations
             var testFile = Path.Combine(subdirPath, "path_test.txt");
             File.WriteAllText(testFile, testContent);
             
-            // Test with forward slashes (should work on all platforms)
+
             var relativePath = testFile.Replace(Directory.GetCurrentDirectory() + Path.DirectorySeparatorChar, "")
                                        .Replace(Path.DirectorySeparatorChar, '/');
             

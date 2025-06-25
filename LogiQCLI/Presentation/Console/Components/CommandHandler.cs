@@ -55,7 +55,12 @@ namespace LogiQCLI.Presentation.Console.Components
                 { "/settings", HandleSettingsCommand },
                 { "/mode", HandleModeCommand },
                 { "/test", HandleTestCommand },
-                { "/test-tools", HandleTestToolsCommand }
+                { "/test-tools", HandleTestToolsCommand },
+                { "/backups", HandleBackupsCommand },
+                { "/restore", HandleRestoreCommand },
+                { "/backup-diff", HandleBackupDiffCommand },
+                { "/backup-cleanup", HandleBackupCleanupCommand },
+                { "/backup-status", HandleBackupStatusCommand }
             };
         }
 
@@ -1338,6 +1343,191 @@ namespace LogiQCLI.Presentation.Console.Components
             }
 
             return Task.CompletedTask;
+        }
+
+        private async Task HandleBackupsCommand(string args)
+        {
+            try
+            {
+
+
+                var parts = args?.Split(' ', StringSplitOptions.RemoveEmptyEntries) ?? Array.Empty<string>();
+                
+                string action;
+                string? filePath = null;
+                string? backupId = null;
+                int? limit = null;
+                int? retentionDays = null;
+                
+                if (parts.Length == 0)
+                {
+
+                    action = "list";
+                }
+                else if (parts.Length == 1 && !IsValidAction(parts[0]))
+                {
+
+                    action = "list";
+                    filePath = parts[0];
+                }
+                else
+                {
+
+                    action = parts[0].ToLower();
+                    
+                    if (action == "list" && parts.Length > 1)
+                    {
+                        filePath = parts[1];
+                        if (parts.Length > 2 && int.TryParse(parts[2], out var limitValue))
+                        {
+                            limit = limitValue;
+                        }
+                    }
+                    else if (action == "restore" && parts.Length > 1)
+                    {
+                        backupId = parts[1];
+                        if (parts.Length > 2)
+                        {
+                            filePath = parts[2];
+                        }
+                    }
+                    else if (action == "diff" && parts.Length > 1)
+                    {
+                        backupId = parts[1];
+                        if (parts.Length > 2)
+                        {
+                            filePath = parts[2];
+                        }
+                    }
+                    else if (action == "cleanup")
+                    {
+                        if (parts.Length > 1 && int.TryParse(parts[1], out var retentionValue))
+                        {
+                            retentionDays = retentionValue;
+                        }
+                    }
+                    else if (!IsValidAction(action))
+                    {
+                        AnsiConsole.MarkupLine("[red]Invalid action. Use: list, restore, diff, cleanup, or status[/]");
+                        AnsiConsole.MarkupLine("[yellow]Examples:[/]");
+                        AnsiConsole.MarkupLine("  /backups                     - List all backups");
+                        AnsiConsole.MarkupLine("  /backups Program.cs          - List backups for Program.cs");
+                        AnsiConsole.MarkupLine("  /backups list Program.cs     - List backups for Program.cs");
+                        AnsiConsole.MarkupLine("  /backups status              - Show backup system status");
+                        AnsiConsole.MarkupLine("  /backups restore <backup-id> - Restore a backup");
+                        AnsiConsole.MarkupLine("  /backups diff <backup-id>    - Show backup differences");
+                        AnsiConsole.MarkupLine("  /backups cleanup [days]      - Cleanup old backups");
+                        return;
+                    }
+                }
+                
+                var commandArgs = new { action, filePath, backupId, limit, retentionDays };
+                var json = System.Text.Json.JsonSerializer.Serialize(commandArgs);
+                
+                var backupTool = new LogiQCLI.Tools.Core.BackupCommandsTool();
+                var result = await backupTool.Execute(json);
+                AnsiConsole.WriteLine(result);
+            }
+            catch (Exception ex)
+            {
+                AnsiConsole.MarkupLine($"[red]Error executing backup command: {ex.Message}[/]");
+            }
+        }
+        
+        private bool IsValidAction(string action)
+        {
+            var validActions = new[] { "list", "restore", "diff", "cleanup", "status" };
+            return validActions.Contains(action.ToLower());
+        }
+
+        private async Task HandleRestoreCommand(string args)
+        {
+            if (string.IsNullOrWhiteSpace(args))
+            {
+                AnsiConsole.MarkupLine("[yellow]Usage: /restore <backup-id> [target-path][/]");
+                return;
+            }
+
+            try
+            {
+                var parts = args.Trim().Split(' ', 2);
+                var backupId = parts[0];
+                var targetPath = parts.Length > 1 ? parts[1] : (string?)null;
+
+                var commandArgs = new { action = "restore", backupId, filePath = targetPath };
+                var json = System.Text.Json.JsonSerializer.Serialize(commandArgs);
+                var backupTool = new LogiQCLI.Tools.Core.BackupCommandsTool();
+                var result = await backupTool.Execute(json);
+                AnsiConsole.WriteLine(result);
+            }
+            catch (Exception ex)
+            {
+                AnsiConsole.MarkupLine($"[red]Error restoring backup: {ex.Message}[/]");
+            }
+        }
+
+        private async Task HandleBackupDiffCommand(string args)
+        {
+            if (string.IsNullOrWhiteSpace(args))
+            {
+                AnsiConsole.MarkupLine("[yellow]Usage: /backup-diff <backup-id> [compare-file-path][/]");
+                return;
+            }
+
+            try
+            {
+                var parts = args.Trim().Split(' ', 2);
+                var backupId = parts[0];
+                var comparePath = parts.Length > 1 ? parts[1] : (string?)null;
+
+                var commandArgs = new { action = "diff", backupId, filePath = comparePath };
+                var json = System.Text.Json.JsonSerializer.Serialize(commandArgs);
+                var backupTool = new LogiQCLI.Tools.Core.BackupCommandsTool();
+                var result = await backupTool.Execute(json);
+                AnsiConsole.WriteLine(result);
+            }
+            catch (Exception ex)
+            {
+                AnsiConsole.MarkupLine($"[red]Error showing backup diff: {ex.Message}[/]");
+            }
+        }
+
+        private async Task HandleBackupCleanupCommand(string args)
+        {
+            try
+            {
+                int? retentionDays = null;
+                if (!string.IsNullOrWhiteSpace(args) && int.TryParse(args.Trim(), out var days))
+                {
+                    retentionDays = days;
+                }
+
+                var commandArgs = new { action = "cleanup", retentionDays = (object?)retentionDays };
+                var json = System.Text.Json.JsonSerializer.Serialize(commandArgs);
+                var backupTool = new LogiQCLI.Tools.Core.BackupCommandsTool();
+                var result = await backupTool.Execute(json);
+                AnsiConsole.WriteLine(result);
+            }
+            catch (Exception ex)
+            {
+                AnsiConsole.MarkupLine($"[red]Error cleaning up backups: {ex.Message}[/]");
+            }
+        }
+
+        private async Task HandleBackupStatusCommand(string args)
+        {
+            try
+            {
+                var commandArgs = new { action = "status" };
+                var json = System.Text.Json.JsonSerializer.Serialize(commandArgs);
+                var backupTool = new LogiQCLI.Tools.Core.BackupCommandsTool();
+                var result = await backupTool.Execute(json);
+                AnsiConsole.WriteLine(result);
+            }
+            catch (Exception ex)
+            {
+                AnsiConsole.MarkupLine($"[red]Error showing backup status: {ex.Message}[/]");
+            }
         }
 
     }

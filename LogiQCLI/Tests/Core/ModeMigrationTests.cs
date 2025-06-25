@@ -40,7 +40,7 @@ namespace LogiQCLI.Tests.Core
 
         private void TestBuiltInModesExist()
         {
-            // Test that all expected built-in modes exist
+
             var expectedModes = new[] { "default", "researcher", "analyst", "architect", "github_manager", "tester" };
             var builtInModes = BuiltInModes.GetBuiltInModes();
             
@@ -66,7 +66,7 @@ namespace LogiQCLI.Tests.Core
 
         private void TestBuiltInModesHaveCorrectProperties()
         {
-            // Test that built-in modes have the expected properties
+
             var modes = BuiltInModes.GetBuiltInModes();
             
             foreach (var mode in modes)
@@ -91,7 +91,7 @@ namespace LogiQCLI.Tests.Core
                     throw new Exception($"Mode {mode.Id} has empty system prompt");
                 }
                 
-                // Verify mode has some form of tool filtering configured
+
                 bool hasFiltering = mode.AllowedTools.Any() || 
                                    mode.AllowedCategories.Any() || 
                                    mode.AllowedTags.Any() ||
@@ -107,7 +107,7 @@ namespace LogiQCLI.Tests.Core
 
         private void TestModeComparisonLogic()
         {
-            // Test that mode comparison works correctly for migration detection
+
             var originalMode = new Mode
             {
                 Id = "test_mode",
@@ -140,7 +140,7 @@ namespace LogiQCLI.Tests.Core
             {
                 Id = "test_mode",
                 Name = "Test Mode",
-                Description = "Modified description", // Different
+                Description = "Modified description",
                 IsBuiltIn = true,
                 SystemPrompt = "Original prompt",
                 AllowedTools = new List<string> { "tool1" },
@@ -150,7 +150,7 @@ namespace LogiQCLI.Tests.Core
                 ExcludedTags = new List<string>()
             };
             
-            // Test comparison logic (this simulates what ModeManager.ShouldUpdateBuiltInMode would do)
+
             if (ShouldUpdateMode(originalMode, identicalMode))
             {
                 throw new Exception("Identical modes should not require update");
@@ -164,7 +164,7 @@ namespace LogiQCLI.Tests.Core
 
         private void TestModeFilteringLogic()
         {
-            // Test that mode filtering works as expected
+
             var testTools = new List<ToolTypeInfo>
             {
                 new ToolTypeInfo { Name = "read_file", Category = "FileOperations", Tags = new List<string> { "essential", "safe" } },
@@ -176,7 +176,7 @@ namespace LogiQCLI.Tests.Core
             
             var builtInModes = BuiltInModes.GetBuiltInModes();
             
-            // Test default mode (should allow essential tools)
+
             var defaultMode = builtInModes.First(m => m.Id == "default");
             var allowedForDefault = FilterToolsForMode(defaultMode, testTools);
             if (!allowedForDefault.Any(t => t.Name == "read_file"))
@@ -184,7 +184,7 @@ namespace LogiQCLI.Tests.Core
                 throw new Exception("Default mode should allow read_file");
             }
             
-            // Test GitHub manager mode (should allow GitHub tools but exclude destructive)
+
             var githubManagerMode = builtInModes.First(m => m.Id == "github_manager");
             var allowedForGitHub = FilterToolsForMode(githubManagerMode, testTools);
             if (!allowedForGitHub.Any(t => t.Name == "get_issue"))
@@ -196,7 +196,7 @@ namespace LogiQCLI.Tests.Core
                 throw new Exception("GitHub Manager mode should exclude destructive tools");
             }
             
-            // Test analyst mode (should exclude GitHub category)
+
             var analystMode = builtInModes.First(m => m.Id == "analyst");
             var allowedForAnalyst = FilterToolsForMode(analystMode, testTools);
             if (allowedForAnalyst.Any(t => t.Category == "GitHub"))
@@ -207,7 +207,7 @@ namespace LogiQCLI.Tests.Core
 
         private bool ShouldUpdateMode(Mode existing, Mode current)
         {
-            // Simple comparison logic similar to what ModeManager would use
+
             return existing.Name != current.Name ||
                    existing.Description != current.Description ||
                    existing.SystemPrompt != current.SystemPrompt ||
@@ -220,10 +220,10 @@ namespace LogiQCLI.Tests.Core
 
         private List<ToolTypeInfo> FilterToolsForMode(Mode mode, List<ToolTypeInfo> tools)
         {
-            // Simple filtering logic similar to what mode filtering would do
+
             var filtered = tools.ToList();
             
-            // Apply allowed filters
+
             if (mode.AllowedTools.Any())
             {
                 filtered = filtered.Where(t => mode.AllowedTools.Contains(t.Name)).ToList();
@@ -237,7 +237,7 @@ namespace LogiQCLI.Tests.Core
                 filtered = filtered.Where(t => t.Tags.Any(tag => mode.AllowedTags.Contains(tag))).ToList();
             }
             
-            // Apply excluded filters
+
             if (mode.ExcludedCategories.Any())
             {
                 filtered = filtered.Where(t => !mode.ExcludedCategories.Contains(t.Category)).ToList();

@@ -158,24 +158,24 @@ namespace LogiQCLI.Core.Services
             _modeSettings = settings.ModeSettings;
             bool needsSave = false;
 
-            // Initialize default modes if missing
+
             if (_modeSettings.DefaultModes == null)
             {
                 _modeSettings.DefaultModes = new List<Mode>();
                 needsSave = true;
             }
 
-            // Initialize custom modes if missing
+
             if (_modeSettings.CustomModes == null)
             {
                 _modeSettings.CustomModes = new List<Mode>();
                 needsSave = true;
             }
 
-            // Migrate built-in modes (add new ones, update existing ones)
+
             needsSave = MigrateBuiltInModes() || needsSave;
 
-            // Clean up invalid custom modes
+
             var validCustomModes = _modeSettings.CustomModes
                 .Where(m => IsValidMode(m))
                 .ToList();
@@ -185,8 +185,7 @@ namespace LogiQCLI.Core.Services
                 _modeSettings.CustomModes = validCustomModes;
                 needsSave = true;
             }
-
-            // Ensure active mode is valid
+            
             if (string.IsNullOrWhiteSpace(_modeSettings.ActiveModeId) || 
                 !GetAvailableModes().Any(m => m.Id == _modeSettings.ActiveModeId))
             {
@@ -209,7 +208,7 @@ namespace LogiQCLI.Core.Services
             var updatedModes = new List<string>();
             var removedModes = new List<string>();
 
-            // Add new built-in modes
+
             foreach (var newMode in currentBuiltInModes)
             {
                 var existingMode = _modeSettings.DefaultModes.FirstOrDefault(m => 
@@ -217,17 +216,17 @@ namespace LogiQCLI.Core.Services
 
                 if (existingMode == null)
                 {
-                    // New mode - add it
+
                     _modeSettings.DefaultModes.Add(newMode);
                     addedModes.Add(newMode.Id);
                     hasChanges = true;
                 }
                 else
                 {
-                    // Existing mode - check if it needs updating
+
                     if (ShouldUpdateBuiltInMode(existingMode, newMode))
                     {
-                        // Update the existing mode with new definition
+
                         UpdateBuiltInMode(existingMode, newMode);
                         updatedModes.Add(existingMode.Id);
                         hasChanges = true;
@@ -235,7 +234,7 @@ namespace LogiQCLI.Core.Services
                 }
             }
 
-            // Remove built-in modes that no longer exist (in case modes are removed from code)
+
             var currentModeIds = currentBuiltInModes.Select(m => m.Id).ToHashSet(StringComparer.OrdinalIgnoreCase);
             var modesToRemove = _modeSettings.DefaultModes
                 .Where(m => m.IsBuiltIn && !currentModeIds.Contains(m.Id))
@@ -247,8 +246,7 @@ namespace LogiQCLI.Core.Services
                 removedModes.Add(modeToRemove.Id);
                 hasChanges = true;
             }
-
-            // Log migration information if there are changes
+            
             if (hasChanges)
             {
                 LogMigrationInfo(addedModes, updatedModes, removedModes);
@@ -277,11 +275,11 @@ namespace LogiQCLI.Core.Services
 
         private bool ShouldUpdateBuiltInMode(Mode existingMode, Mode newMode)
         {
-            // Only update built-in modes to preserve any user customizations to custom modes
+
             if (!existingMode.IsBuiltIn)
                 return false;
 
-            // Check if the mode definition has changed
+
             return existingMode.Name != newMode.Name ||
                    existingMode.Description != newMode.Description ||
                    existingMode.SystemPrompt != newMode.SystemPrompt ||

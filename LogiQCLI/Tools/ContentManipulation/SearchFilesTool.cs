@@ -88,7 +88,7 @@ namespace LogiQCLI.Tools.ContentManipulation
                 var caseSensitive = arguments.CaseSensitive ?? true;
                 var maxResults = arguments.MaxResults ?? 50;
 
-                // Validate regex pattern if using regex
+
                 if (useRegex)
                 {
                     try

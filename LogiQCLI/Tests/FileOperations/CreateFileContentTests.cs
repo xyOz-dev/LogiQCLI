@@ -104,7 +104,7 @@ namespace LogiQCLI.Tests.FileOperations
             var args = new CreateFileArguments
             {
                 Path = testPath
-                // Content is null by default
+    
             };
             
             var json = JsonSerializer.Serialize(args);
@@ -127,7 +127,6 @@ namespace LogiQCLI.Tests.FileOperations
             var testPath = Path.Combine(testFileSystem.TempDirectory, "existing_test.txt");
             var originalContent = "Original content";
             
-            // Create initial file
             await File.WriteAllTextAsync(testPath, originalContent);
             
             var args = new CreateFileArguments
@@ -145,7 +144,7 @@ namespace LogiQCLI.Tests.FileOperations
                 throw new Exception("Should reject creating over existing file without overwrite flag");
             }
             
-            // Original content should be preserved
+
             var actualContent = await File.ReadAllTextAsync(testPath);
             if (actualContent != originalContent)
             {
@@ -159,7 +158,6 @@ namespace LogiQCLI.Tests.FileOperations
             var originalContent = "Original content";
             var newContent = "New content that replaces original";
             
-            // Create initial file
             await File.WriteAllTextAsync(testPath, originalContent);
             
             var args = new CreateFileArguments

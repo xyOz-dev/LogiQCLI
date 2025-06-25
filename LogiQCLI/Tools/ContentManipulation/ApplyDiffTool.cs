@@ -9,6 +9,7 @@ using System.Text.RegularExpressions;
 using LogiQCLI.Tools.Core.Objects;
 using LogiQCLI.Tools.ContentManipulation.Objects;
 using LogiQCLI.Tools.Core.Interfaces;
+using LogiQCLI.Tools.Core;
 
 namespace LogiQCLI.Tools.ContentManipulation
 {
@@ -306,13 +307,25 @@ namespace LogiQCLI.Tools.ContentManipulation
         {
             try
             {
-                var backupPath = $"{filePath}.backup_{DateTime.Now:yyyyMMdd_HHmmss}";
-                File.WriteAllText(backupPath, content);
-                return backupPath;
+
+                var backupManager = new LogiqBackupManager();
+                var backupId = backupManager.CreateBackupAsync(filePath, content, "ApplyDiffTool", "pre-modification", 
+                    "Backup before applying diff").GetAwaiter().GetResult();
+                return backupId;
             }
             catch
             {
-                return null;
+
+                try
+                {
+                    var backupPath = $"{filePath}.backup_{DateTime.Now:yyyyMMdd_HHmmss}";
+                    File.WriteAllText(backupPath, content);
+                    return backupPath;
+                }
+                catch
+                {
+                    return null;
+                }
             }
         }
 
