@@ -29,9 +29,7 @@ namespace LogiQCLI.Tools.GitHub
             return new RegisteredTool
             {
                 Name = "create_github_issue",
-                Description = "Creates a new GitHub issue with title, body, labels, and assignees. " +
-                              "Requires GitHub authentication token to be configured. " +
-                              "Use this tool to create bug reports, feature requests, or other tracked work items.",
+                Description = "Create GitHub issues with title, body, labels, and assignees. Requires GitHub authentication token.",
                 Parameters = new Parameters
                 {
                     Type = "object",
@@ -40,41 +38,33 @@ namespace LogiQCLI.Tools.GitHub
                         owner = new
                         {
                             type = "string",
-                            description = "Repository owner (username or organization name). " +
-                                         "Required unless default owner is configured."
+                            description = "Repository owner (username or organization). Required unless default configured."
                         },
                         repo = new
                         {
                             type = "string",
-                            description = "Repository name. " +
-                                         "Required unless default repo is configured."
+                            description = "Repository name. Required unless default configured."
                         },
                         title = new
                         {
                             type = "string",
-                            description = "Issue title. Must be descriptive and concise. " +
-                                         "Example: 'Fix authentication bug in login flow'"
+                            description = "Issue title. Must be descriptive and concise."
                         },
                         body = new
                         {
                             type = "string",
-                            description = "Issue description body. Supports GitHub markdown. " +
-                                         "Include steps to reproduce, expected behavior, actual behavior."
+                            description = "Issue description body. Supports GitHub markdown. Include reproduction steps, expected vs actual behavior."
                         },
                         labels = new
                         {
                             type = "array",
-                            description = "Array of label names to apply to the issue. " +
-                                         "Labels must exist in the repository. " +
-                                         "Example: ['bug', 'priority-high', 'frontend']",
+                            description = "Array of label names. Labels must exist in repository. Example: ['bug', 'priority-high']",
                             items = new { type = "string" }
                         },
                         assignees = new
                         {
                             type = "array",
-                            description = "Array of GitHub usernames to assign to the issue. " +
-                                         "Users must have access to the repository. " +
-                                         "Example: ['john-doe', 'jane-smith']",
+                            description = "Array of GitHub usernames to assign. Users must have repository access.",
                             items = new { type = "string" }
                         }
                     },

@@ -29,8 +29,7 @@ namespace LogiQCLI.Tools.GitHub
             return new RegisteredTool
             {
                 Name = "get_github_pull_request_diff",
-                Description = "Gets the complete diff content of a GitHub pull request showing all code changes. " +
-                              "Use this tool to analyze what code changes are being made in a pull request.",
+                Description = "Get complete diff content of GitHub pull requests showing all code changes. Large diffs are truncated based on maxLines parameter. Requires GitHub authentication token.",
                 Parameters = new Parameters
                 {
                     Type = "object",
@@ -39,27 +38,22 @@ namespace LogiQCLI.Tools.GitHub
                         owner = new
                         {
                             type = "string",
-                            description = "Repository owner (username or organization name). " +
-                                         "Required unless default owner is configured."
+                            description = "Repository owner (username or organization). Required unless default configured."
                         },
                         repo = new
                         {
                             type = "string",
-                            description = "Repository name. " +
-                                         "Required unless default repo is configured."
+                            description = "Repository name. Required unless default configured."
                         },
                         pullRequestNumber = new
                         {
                             type = "integer",
-                            description = "Pull request number to get diff for. " +
-                                         "Must be an existing pull request number in the repository. " +
-                                         "Example: 42"
+                            description = "Pull request number to get diff for. Must be existing PR."
                         },
                         maxLines = new
                         {
                             type = "integer",
-                            description = "Maximum number of diff lines to return. " +
-                                         "Large diffs will be truncated. Default: 1000, Maximum: 5000"
+                            description = "Maximum diff lines to return. Large diffs truncated. Default: 1000, Maximum: 5000"
                         }
                     },
                     Required = new[] { "pullRequestNumber" }

@@ -29,9 +29,7 @@ namespace LogiQCLI.Tools.GitHub
             return new RegisteredTool
             {
                 Name = "create_github_pull_request",
-                Description = "Creates a new GitHub pull request with title, body, source and target branches. " +
-                              "Requires GitHub authentication token to be configured. " +
-                              "Use this tool to propose code changes for review and merging.",
+                Description = "Create GitHub pull requests with title, body, source and target branches. Supports draft mode. Requires GitHub authentication token.",
                 Parameters = new Parameters
                 {
                     Type = "object",
@@ -40,44 +38,37 @@ namespace LogiQCLI.Tools.GitHub
                         owner = new
                         {
                             type = "string",
-                            description = "Repository owner (username or organization name). " +
-                                         "Required unless default owner is configured."
+                            description = "Repository owner (username or organization). Required unless default configured."
                         },
                         repo = new
                         {
                             type = "string",
-                            description = "Repository name. " +
-                                         "Required unless default repo is configured."
+                            description = "Repository name. Required unless default configured."
                         },
                         title = new
                         {
                             type = "string",
-                            description = "Pull request title. Must be descriptive and concise. " +
-                                         "Example: 'Add user authentication feature'"
+                            description = "Pull request title. Must be descriptive and concise."
                         },
                         body = new
                         {
                             type = "string",
-                            description = "Pull request description body. Supports GitHub markdown. " +
-                                         "Include what changes were made, why, and any review notes."
+                            description = "PR description body. Supports GitHub markdown. Include changes made, why, and review notes."
                         },
                         head = new
                         {
                             type = "string",
-                            description = "Source branch name (where changes are coming from). " +
-                                         "Example: 'feature/user-auth' or 'fix/login-bug'"
+                            description = "Source branch name (where changes come from). Example: 'feature/user-auth'"
                         },
                         baseRef = new
                         {
                             type = "string",
-                            description = "Target branch name (where changes will be merged). " +
-                                         "Typically 'main', 'master', or 'develop'. Default: 'main'"
+                            description = "Target branch name (where changes merge to). Typically 'main' or 'develop'. Default: 'main'"
                         },
                         draft = new
                         {
                             type = "boolean",
-                            description = "Create as draft pull request. " +
-                                         "Draft PRs cannot be merged until marked ready. Default: false"
+                            description = "Create as draft PR. Draft PRs cannot be merged until marked ready. Default: false"
                         }
                     },
                     Required = new[] { "title", "head" }

@@ -30,9 +30,7 @@ namespace LogiQCLI.Tools.GitHub
             return new RegisteredTool
             {
                 Name = "merge_github_pull_request",
-                Description = "Merges a GitHub pull request using specified merge strategy. " +
-                              "Requires GitHub authentication token to be configured and appropriate permissions. " +
-                              "Use this tool to merge approved pull requests into the target branch.",
+                Description = "Merge GitHub pull requests using specified strategy (merge/squash/rebase). Requires authentication token and appropriate permissions.",
                 Parameters = new Parameters
                 {
                     Type = "object",
@@ -41,50 +39,37 @@ namespace LogiQCLI.Tools.GitHub
                         owner = new
                         {
                             type = "string",
-                            description = "Repository owner (username or organization name). " +
-                                         "Required unless default owner is configured."
+                            description = "Repository owner (username or organization). Required unless default configured."
                         },
                         repo = new
                         {
                             type = "string",
-                            description = "Repository name. " +
-                                         "Required unless default repo is configured."
+                            description = "Repository name. Required unless default configured."
                         },
                         pullRequestNumber = new
                         {
                             type = "integer",
-                            description = "Pull request number to merge. " +
-                                         "Must be an existing, open pull request number. " +
-                                         "Example: 42"
+                            description = "Pull request number to merge. Must be existing, open PR."
                         },
                         commitTitle = new
                         {
                             type = "string",
-                            description = "Title for the merge commit. " +
-                                         "If not provided, GitHub will generate a default title. " +
-                                         "Example: 'Merge pull request #42 from feature/new-login'"
+                            description = "Title for merge commit. If not provided, GitHub generates default."
                         },
                         commitMessage = new
                         {
                             type = "string",
-                            description = "Additional message for the merge commit. " +
-                                         "Optional. Can include details about the changes merged."
+                            description = "Additional message for merge commit. Optional."
                         },
                         mergeMethod = new
                         {
                             type = "string",
-                            description = "Merge strategy to use. Options: 'merge', 'squash', 'rebase'. " +
-                                         "Default: 'merge'. " +
-                                         "'merge' creates a merge commit, " +
-                                         "'squash' squashes all commits into one, " +
-                                         "'rebase' rebases commits onto target branch."
+                            description = "Merge strategy. Options: 'merge' (merge commit), 'squash' (squash all), 'rebase' (rebase commits). Default: 'merge'"
                         },
                         sha = new
                         {
                             type = "string",
-                            description = "SHA that pull request head must match for merge to succeed. " +
-                                         "Optional security check to ensure PR hasn't changed since review. " +
-                                         "If provided, must be the current head SHA of the PR."
+                            description = "SHA that PR head must match. Optional security check to ensure PR unchanged since review."
                         }
                     },
                     Required = new[] { "pullRequestNumber" }

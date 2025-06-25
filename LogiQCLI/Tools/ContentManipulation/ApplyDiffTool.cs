@@ -22,10 +22,7 @@ namespace LogiQCLI.Tools.ContentManipulation
             return new RegisteredTool
             {
                 Name = "apply_diff",
-                Description = "Applies precise, targeted modifications to files by finding and replacing specific content blocks. " +
-                              "Use this tool for surgical edits when you know the exact content to change, such as updating function implementations, " +
-                              "modifying configuration values, or replacing code blocks. Preserves file formatting and line endings. " +
-                              "Maximum file size: 10MB. For simple find/replace operations, consider search_and_replace.",
+                Description = "Apply precise content replacements by finding exact text matches. Use for surgical edits when you know the exact content to change. Max file size: 10MB.",
                 Parameters = new Parameters
                 {
                     Type = "object",
@@ -34,42 +31,32 @@ namespace LogiQCLI.Tools.ContentManipulation
                         path = new
                         {
                             type = "string",
-                            description = "File path relative to workspace root. " +
-                                         "File must exist and be under 10MB. " +
-                                         "Example: 'src/components/Header.tsx'"
+                            description = "File path relative to workspace. File must exist and be under 10MB."
                         },
                         original = new
                         {
                             type = "string",
-                            description = "Exact content to search for, including whitespace and line breaks. " +
-                                         "Must match precisely unless useRegex is true. " +
-                                         "For multi-line content, include all line breaks."
+                            description = "Exact content to find and replace. Must match precisely including whitespace unless useRegex=true."
                         },
                         replacement = new
                         {
                             type = "string",
-                            description = "New content to replace the original with. " +
-                                         "Can be empty string to delete content. " +
-                                         "Preserves surrounding context and indentation."
+                            description = "New content to replace original with. Empty string deletes the content."
                         },
                         maxReplacements = new
                         {
                             type = "number",
-                            description = "Maximum replacements to perform. " +
-                                         "Default: 1 (first occurrence only). " +
-                                         "Use -1 to replace all occurrences."
+                            description = "Max replacements to perform. Default: 1 (first match only). Use -1 for all occurrences."
                         },
                         useRegex = new
                         {
                             type = "boolean",
-                            description = "Interpret 'original' as a regular expression pattern. " +
-                                         "Default: false. Supports multiline mode when true."
+                            description = "Treat 'original' as regex pattern. Default: false. Enables multiline mode."
                         },
                         preview = new
                         {
                             type = "boolean",
-                            description = "Show changes without applying them. " +
-                                         "Default: false. Useful for verifying replacements."
+                            description = "Show changes without applying. Default: false."
                         }
                     },
                     Required = new[] { "path", "original", "replacement" }

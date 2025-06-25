@@ -18,11 +18,7 @@ namespace LogiQCLI.Tools.FileOperations
             return new RegisteredTool
             {
                 Name = "delete_file",
-                Description = "Permanently deletes files or directories from the filesystem. " +
-                              "Use this tool to remove unnecessary files, clean up temporary files, " +
-                              "or delete outdated content. This operation is irreversible. " +
-                              "Has built-in protection for critical files like .git, package.json, etc. " +
-                              "Returns file size information for deleted files.",
+                Description = "Permanently delete files or directories. IRREVERSIBLE operation. Has built-in protection for critical files (.git, package.json, etc).",
                 Parameters = new Parameters
                 {
                     Type = "object",
@@ -31,23 +27,17 @@ namespace LogiQCLI.Tools.FileOperations
                         path = new
                         {
                             type = "string",
-                            description = "File or directory path relative to workspace root. " +
-                                         "Path must exist or operation will fail. " +
-                                         "Examples: 'temp/cache.tmp', 'old-backup/', 'src/deprecated.js'"
+                            description = "File or directory path relative to workspace. Must exist."
                         },
                         recursive = new
                         {
                             type = "boolean",
-                            description = "For directories: delete all contents including subdirectories. " +
-                                         "Default: false (only deletes empty directories). " +
-                                         "Must be true to delete non-empty directories."
+                            description = "For directories: delete all contents including subdirectories. Default: false (empty dirs only)."
                         },
                         force = new
                         {
                             type = "boolean",
-                            description = "Bypass protection for critical files (.git, package.json, etc). " +
-                                         "Default: false (prevents accidental deletion of important files). " +
-                                         "Use with extreme caution."
+                            description = "Bypass protection for critical files. Default: false. Use with extreme caution."
                         }
                     },
                     Required = new[] { "path" }

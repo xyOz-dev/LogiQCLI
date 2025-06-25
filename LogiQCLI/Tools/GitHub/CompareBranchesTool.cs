@@ -30,8 +30,7 @@ namespace LogiQCLI.Tools.GitHub
             return new RegisteredTool
             {
                 Name = "compare_github_branches",
-                Description = "Compares two branches or commits in a GitHub repository to see differences. " +
-                              "Use this tool to analyze changes between branches before creating pull requests or merging.",
+                Description = "Compare two branches or commits to see differences, file changes, and commit history. Shows additions, deletions, and changed files. Requires GitHub authentication token.",
                 Parameters = new Parameters
                 {
                     Type = "object",
@@ -40,28 +39,22 @@ namespace LogiQCLI.Tools.GitHub
                         owner = new
                         {
                             type = "string",
-                            description = "Repository owner (username or organization name). " +
-                                         "Required unless default owner is configured."
+                            description = "Repository owner (username or organization). Required unless default configured."
                         },
                         repo = new
                         {
                             type = "string",
-                            description = "Repository name. " +
-                                         "Required unless default repo is configured."
+                            description = "Repository name. Required unless default configured."
                         },
                         baseRef = new
                         {
                             type = "string",
-                            description = "Base branch, tag, or commit SHA for comparison. " +
-                                         "This is the 'old' state to compare against. " +
-                                         "Example: 'main', 'v1.0.0', or a specific SHA"
+                            description = "Base branch/tag/commit SHA (old state). Example: 'main', 'v1.0.0'"
                         },
                         headRef = new
                         {
                             type = "string",
-                            description = "Head branch, tag, or commit SHA for comparison. " +
-                                         "This is the 'new' state with changes. " +
-                                         "Example: 'feature/new-feature', 'v1.1.0', or a specific SHA"
+                            description = "Head branch/tag/commit SHA (new state with changes). Example: 'feature/new-feature', 'v1.1.0'"
                         }
                     },
                     Required = new[] { "baseRef", "headRef" }

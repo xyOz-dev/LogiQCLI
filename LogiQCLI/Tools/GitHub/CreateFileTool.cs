@@ -30,9 +30,7 @@ namespace LogiQCLI.Tools.GitHub
             return new RegisteredTool
             {
                 Name = "create_github_file",
-                Description = "Creates a new file in a GitHub repository with a commit message. " +
-                              "Requires GitHub authentication token with write access. " +
-                              "Use this tool to add new files directly to a repository.",
+                Description = "Create new files in GitHub repositories with commit message. Requires GitHub authentication token with write access.",
                 Parameters = new Parameters
                 {
                     Type = "object",
@@ -41,50 +39,42 @@ namespace LogiQCLI.Tools.GitHub
                         owner = new
                         {
                             type = "string",
-                            description = "Repository owner (username or organization name). " +
-                                         "Required unless default owner is configured."
+                            description = "Repository owner (username or organization). Required unless default configured."
                         },
                         repo = new
                         {
                             type = "string",
-                            description = "Repository name. " +
-                                         "Required unless default repo is configured."
+                            description = "Repository name. Required unless default configured."
                         },
                         path = new
                         {
                             type = "string",
-                            description = "File path within the repository where the file will be created. " +
-                                         "Example: 'src/main.js', 'docs/README.md', 'config/settings.json'"
+                            description = "File path within repository where file will be created. Example: 'src/main.js', 'docs/README.md'"
                         },
                         content = new
                         {
                             type = "string",
-                            description = "File content to create. " +
-                                         "Supports any text content including code, documentation, configuration, etc."
+                            description = "File content to create. Supports any text content including code, documentation, configuration."
                         },
                         message = new
                         {
                             type = "string",
-                            description = "Commit message describing the file creation. " +
-                                         "Example: 'Add new configuration file', 'Create user authentication module'"
+                            description = "Commit message describing file creation. Example: 'Add new configuration file'"
                         },
                         branch = new
                         {
                             type = "string",
-                            description = "Branch name to create the file on. " +
-                                         "Default: repository's default branch (usually 'main' or 'master')"
+                            description = "Branch name to create file on. Default: repository's default branch."
                         },
                         authorName = new
                         {
                             type = "string",
-                            description = "Author name for the commit. " +
-                                         "If not provided, uses the authenticated user's name."
+                            description = "Author name for commit. If not provided, uses authenticated user's name."
                         },
                         authorEmail = new
                         {
                             type = "string",
-                            description = "Author email for the commit. " +
-                                         "If not provided, uses the authenticated user's email."
+                            description = "Author email for commit. If not provided, uses authenticated user's email."
                         }
                     },
                     Required = new[] { "path", "content", "message" }

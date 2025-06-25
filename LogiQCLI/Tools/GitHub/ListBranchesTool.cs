@@ -30,8 +30,7 @@ namespace LogiQCLI.Tools.GitHub
             return new RegisteredTool
             {
                 Name = "list_github_branches",
-                Description = "Lists all branches from a GitHub repository. " +
-                              "Use this tool to view available branches before creating pull requests or switching contexts.",
+                Description = "List all branches from GitHub repository. Shows branch protection status. Requires GitHub authentication token.",
                 Parameters = new Parameters
                 {
                     Type = "object",
@@ -40,20 +39,17 @@ namespace LogiQCLI.Tools.GitHub
                         owner = new
                         {
                             type = "string",
-                            description = "Repository owner (username or organization name). " +
-                                         "Required unless default owner is configured."
+                            description = "Repository owner (username or organization). Required unless default configured."
                         },
                         repo = new
                         {
                             type = "string",
-                            description = "Repository name. " +
-                                         "Required unless default repo is configured."
+                            description = "Repository name. Required unless default configured."
                         },
                         limit = new
                         {
                             type = "integer",
-                            description = "Maximum number of branches to return. " +
-                                         "Default: 50, Maximum: 100"
+                            description = "Maximum branches to return. Default: 50, Maximum: 100"
                         }
                     },
                     Required = new string[] { }

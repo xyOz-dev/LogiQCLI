@@ -30,9 +30,7 @@ namespace LogiQCLI.Tools.GitHub
             return new RegisteredTool
             {
                 Name = "get_github_issue",
-                Description = "Gets detailed information about a specific GitHub issue including title, body, " +
-                              "labels, assignees, comments, and metadata. " +
-                              "Use this tool to analyze issue details before taking action.",
+                Description = "Get detailed information about specific GitHub issues including title, body, labels, assignees, and metadata. Requires GitHub authentication token.",
                 Parameters = new Parameters
                 {
                     Type = "object",
@@ -41,21 +39,17 @@ namespace LogiQCLI.Tools.GitHub
                         owner = new
                         {
                             type = "string",
-                            description = "Repository owner (username or organization name). " +
-                                         "Required unless default owner is configured."
+                            description = "Repository owner (username or organization). Required unless default configured."
                         },
                         repo = new
                         {
                             type = "string",
-                            description = "Repository name. " +
-                                         "Required unless default repo is configured."
+                            description = "Repository name. Required unless default configured."
                         },
                         issueNumber = new
                         {
                             type = "integer",
-                            description = "Issue number to retrieve. " +
-                                         "Must be an existing issue number in the repository. " +
-                                         "Example: 42"
+                            description = "Issue number to retrieve. Must be existing issue."
                         }
                     },
                     Required = new[] { "issueNumber" }

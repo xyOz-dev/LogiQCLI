@@ -19,10 +19,7 @@ namespace LogiQCLI.Tools.SystemOperations
             return new RegisteredTool
             {
                 Name = "list_files",
-                Description = "Lists files and directories at a specified location to explore project structure. " +
-                              "Use this tool to discover available files, check if files exist, " +
-                              "understand directory organization, or find files matching patterns. " +
-                              "Returns paths relative to the workspace root for easy use with other tools.",
+                Description = "List files and directories to explore project structure. Returns paths relative to workspace root for easy use with other tools.",
                 Parameters = new Parameters
                 {
                     Type = "object",
@@ -31,19 +28,15 @@ namespace LogiQCLI.Tools.SystemOperations
                         path = new
                         {
                             type = "string",
-                            description = "Directory path relative to workspace root. " +
-                                         "Use '.' for current workspace directory. " +
-                                         "Examples: '.', 'src', 'src/components', '../external-dir'"
+                            description = "Directory path relative to workspace. Default: '.' (workspace root)."
                         },
                         recursive = new
                         {
                             type = "boolean",
-                            description = "Include all subdirectories and their contents. " +
-                                         "Default: false (only immediate children). " +
-                                         "Set true to see full directory tree structure."
+                            description = "Include all subdirectories and their contents. Default: false."
                         }
                     },
-                    Required = new[] { "path" }
+                    Required = Array.Empty<string>()
                 }
             };
         }

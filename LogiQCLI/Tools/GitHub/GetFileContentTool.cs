@@ -30,8 +30,7 @@ namespace LogiQCLI.Tools.GitHub
             return new RegisteredTool
             {
                 Name = "get_github_file_content",
-                Description = "Gets the content of a specific file from a GitHub repository. " +
-                              "Use this tool to examine source code, configuration files, or documentation.",
+                Description = "Get file content from GitHub repositories. Supports any branch/tag/commit reference. Displays files up to 1MB. Requires GitHub authentication token.",
                 Parameters = new Parameters
                 {
                     Type = "object",
@@ -40,27 +39,22 @@ namespace LogiQCLI.Tools.GitHub
                         owner = new
                         {
                             type = "string",
-                            description = "Repository owner (username or organization name). " +
-                                         "Required unless default owner is configured."
+                            description = "Repository owner (username or organization). Required unless default configured."
                         },
                         repo = new
                         {
                             type = "string",
-                            description = "Repository name. " +
-                                         "Required unless default repo is configured."
+                            description = "Repository name. Required unless default configured."
                         },
                         path = new
                         {
                             type = "string",
-                            description = "File path within the repository. " +
-                                         "Example: 'src/main.js', 'README.md', 'package.json'"
+                            description = "File path within repository. Example: 'src/main.js', 'README.md'"
                         },
                         reference = new
                         {
                             type = "string",
-                            description = "Branch, tag, or commit SHA to get file from. " +
-                                         "Default: repository's default branch. " +
-                                         "Example: 'main', 'v1.0.0', or a specific SHA"
+                            description = "Branch, tag, or commit SHA. Default: repository's default branch. Example: 'main', 'v1.0.0'"
                         }
                     },
                     Required = new[] { "path" }

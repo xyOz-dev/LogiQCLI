@@ -18,11 +18,7 @@ namespace LogiQCLI.Tools.FileOperations
             return new RegisteredTool
             {
                 Name = "read_file",
-                Description = "Reads the entire contents of a text file and returns it as a string. " +
-                              "Use this tool when you need to examine file contents before making changes, " +
-                              "understand existing code structure, or verify file existence. " +
-                              "Automatically handles path separators across platforms. " +
-                              "For large files, consider using read_file_by_line_count for partial reads.",
+                Description = "Read complete contents of a text file. Use for examining code, config files, or any text content before modifications.",
                 Parameters = new Parameters
                 {
                     Type = "object",
@@ -31,9 +27,7 @@ namespace LogiQCLI.Tools.FileOperations
                         path = new
                         {
                             type = "string",
-                            description = "File path (relative to workspace or absolute). " +
-                                         "Supports both forward slashes and backslashes. " +
-                                         "Examples: 'src/app.ts', './config.json', 'C:/projects/file.txt'"
+                            description = "File path relative to workspace or absolute. Examples: 'src/app.ts', './config.json'"
                         }
                     },
                     Required = new[] { "path" }

@@ -30,8 +30,7 @@ namespace LogiQCLI.Tools.GitHub
             return new RegisteredTool
             {
                 Name = "list_github_issue_comments",
-                Description = "Lists all comments from a specific GitHub issue. " +
-                              "Use this tool to read discussion threads and understand issue context before adding comments.",
+                Description = "List all comments from specific GitHub issues. Shows discussion threads and comment history. Requires GitHub authentication token.",
                 Parameters = new Parameters
                 {
                     Type = "object",
@@ -40,27 +39,22 @@ namespace LogiQCLI.Tools.GitHub
                         owner = new
                         {
                             type = "string",
-                            description = "Repository owner (username or organization name). " +
-                                         "Required unless default owner is configured."
+                            description = "Repository owner (username or organization). Required unless default configured."
                         },
                         repo = new
                         {
                             type = "string",
-                            description = "Repository name. " +
-                                         "Required unless default repo is configured."
+                            description = "Repository name. Required unless default configured."
                         },
                         issueNumber = new
                         {
                             type = "integer",
-                            description = "Issue number to get comments from. " +
-                                         "Must be an existing issue number in the repository. " +
-                                         "Example: 42"
+                            description = "Issue number to get comments from. Must be existing issue."
                         },
                         limit = new
                         {
                             type = "integer",
-                            description = "Maximum number of comments to return. " +
-                                         "Default: 20, Maximum: 100"
+                            description = "Maximum comments to return. Default: 20, Maximum: 100"
                         }
                     },
                     Required = new[] { "issueNumber" }

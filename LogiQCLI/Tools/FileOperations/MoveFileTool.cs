@@ -18,11 +18,7 @@ namespace LogiQCLI.Tools.FileOperations
             return new RegisteredTool
             {
                 Name = "move_file",
-                Description = "Moves or renames files and directories to new locations. " +
-                              "Use this tool for reorganizing project structure, renaming files, " +
-                              "moving files between folders, or relocating entire directories. " +
-                              "Intelligently handles destination paths - if destination is a directory, " +
-                              "moves the source into it; if it's a filename, renames to that name.",
+                Description = "Move or rename files and directories. Intelligently handles destinations: directory moves source into it, filename renames to that name.",
                 Parameters = new Parameters
                 {
                     Type = "object",
@@ -31,30 +27,22 @@ namespace LogiQCLI.Tools.FileOperations
                         source = new
                         {
                             type = "string",
-                            description = "Source file or directory path relative to workspace. " +
-                                         "Must exist or operation will fail. " +
-                                         "Examples: 'old-name.txt', 'src/utils/', 'temp/draft.md'"
+                            description = "Source file or directory path relative to workspace. Must exist."
                         },
                         destination = new
                         {
                             type = "string",
-                            description = "Destination path (new name or target directory). " +
-                                         "For renaming: 'new-name.txt'. " +
-                                         "For moving: 'target-folder/' or 'target-folder/new-name.txt'"
+                            description = "Destination path. For renaming: 'new-name.txt'. For moving: 'target-folder/' or 'target-folder/new-name.txt'"
                         },
                         overwrite = new
                         {
                             type = "boolean",
-                            description = "Replace existing files at destination. " +
-                                         "Default: false (fails if destination exists). " +
-                                         "For directories, merges into existing directory when true."
+                            description = "Replace existing files at destination. Default: false. For directories, merges when true."
                         },
                         createDirectory = new
                         {
                             type = "boolean",
-                            description = "Create missing parent directories in destination path. " +
-                                         "Default: true (auto-creates directory structure). " +
-                                         "Set false to ensure destination directory already exists."
+                            description = "Create missing parent directories. Default: true."
                         }
                     },
                     Required = new[] { "source", "destination" }

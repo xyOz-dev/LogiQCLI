@@ -29,8 +29,7 @@ namespace LogiQCLI.Tools.GitHub
             return new RegisteredTool
             {
                 Name = "get_github_commit_diff",
-                Description = "Gets the complete diff content of a specific GitHub commit showing all code changes. " +
-                              "Use this tool to analyze what changes were made in a particular commit.",
+                Description = "Get complete diff content of specific GitHub commits showing all code changes. Large diffs are truncated based on maxLines parameter. Requires GitHub authentication token.",
                 Parameters = new Parameters
                 {
                     Type = "object",
@@ -39,27 +38,22 @@ namespace LogiQCLI.Tools.GitHub
                         owner = new
                         {
                             type = "string",
-                            description = "Repository owner (username or organization name). " +
-                                         "Required unless default owner is configured."
+                            description = "Repository owner (username or organization). Required unless default configured."
                         },
                         repo = new
                         {
                             type = "string",
-                            description = "Repository name. " +
-                                         "Required unless default repo is configured."
+                            description = "Repository name. Required unless default configured."
                         },
                         sha = new
                         {
                             type = "string",
-                            description = "Commit SHA to get diff for. " +
-                                         "Must be a valid commit SHA in the repository. " +
-                                         "Example: 'a1b2c3d4e5f6789012345678901234567890abcd'"
+                            description = "Commit SHA to get diff for. Must be valid commit SHA."
                         },
                         maxLines = new
                         {
                             type = "integer",
-                            description = "Maximum number of diff lines to return. " +
-                                         "Large diffs will be truncated. Default: 1000, Maximum: 5000"
+                            description = "Maximum diff lines to return. Large diffs truncated. Default: 1000, Maximum: 5000"
                         }
                     },
                     Required = new[] { "sha" }

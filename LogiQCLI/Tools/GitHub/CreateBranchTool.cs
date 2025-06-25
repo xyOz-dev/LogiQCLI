@@ -30,9 +30,7 @@ namespace LogiQCLI.Tools.GitHub
             return new RegisteredTool
             {
                 Name = "create_github_branch",
-                Description = "Creates a new GitHub branch from an existing branch or commit. " +
-                              "Requires GitHub authentication token to be configured. " +
-                              "Use this tool to create feature branches, hotfix branches, or release branches.",
+                Description = "Create new GitHub branches from existing branches or specific commits. Requires GitHub authentication token with write access.",
                 Parameters = new Parameters
                 {
                     Type = "object",
@@ -41,35 +39,27 @@ namespace LogiQCLI.Tools.GitHub
                         owner = new
                         {
                             type = "string",
-                            description = "Repository owner (username or organization name). " +
-                                         "Required unless default owner is configured."
+                            description = "Repository owner (username or organization). Required unless default configured."
                         },
                         repo = new
                         {
                             type = "string",
-                            description = "Repository name. " +
-                                         "Required unless default repo is configured."
+                            description = "Repository name. Required unless default configured."
                         },
                         branchName = new
                         {
                             type = "string",
-                            description = "Name for the new branch. " +
-                                         "Must be valid Git branch name (no spaces, special chars). " +
-                                         "Example: 'feature/new-login', 'hotfix/security-patch'"
+                            description = "Name for new branch. Must be valid Git branch name. Example: 'feature/new-login', 'hotfix/security-patch'"
                         },
                         fromBranch = new
                         {
                             type = "string",
-                            description = "Source branch name to create the new branch from. " +
-                                         "Default: repository's default branch (usually 'main' or 'master'). " +
-                                         "Example: 'main', 'develop', 'release/v1.0'"
+                            description = "Source branch name. Default: repository's default branch. Example: 'main', 'develop'"
                         },
                         fromSha = new
                         {
                             type = "string",
-                            description = "Specific commit SHA to create the branch from. " +
-                                         "If provided, this takes precedence over fromBranch. " +
-                                         "Must be a valid 40-character SHA hash."
+                            description = "Specific commit SHA to branch from. Takes precedence over fromBranch. Must be 40-character SHA."
                         }
                     },
                     Required = new[] { "branchName" }

@@ -18,10 +18,7 @@ namespace LogiQCLI.Tools.FileOperations
             return new RegisteredTool
             {
                 Name = "create_file",
-                Description = "Creates a new file with optional initial content, ensuring it doesn't accidentally overwrite existing files. " +
-                              "Use this tool when you need to create new source files, configuration files, or documentation. " +
-                              "Automatically creates any missing directories in the path. " +
-                              "For modifying existing files, use write_file, apply_diff, or append_file instead.",
+                Description = "Create new file with optional content. Fails if file already exists to prevent accidental overwrites.",
                 Parameters = new Parameters
                 {
                     Type = "object",
@@ -30,23 +27,17 @@ namespace LogiQCLI.Tools.FileOperations
                         path = new
                         {
                             type = "string",
-                            description = "File path relative to workspace root. " +
-                                         "Directories will be created if needed. " +
-                                         "Examples: 'src/new-component.tsx', 'docs/README.md'"
+                            description = "File path relative to workspace. Auto-creates parent directories."
                         },
                         content = new
                         {
                             type = "string",
-                            description = "Initial file content. " +
-                                         "Default: empty string (creates empty file). " +
-                                         "Supports any text content including code, JSON, markdown."
+                            description = "Initial file content. Default: empty string."
                         },
                         overwrite = new
                         {
                             type = "boolean",
-                            description = "Allow overwriting existing files. " +
-                                         "Default: false (fails if file exists). " +
-                                         "Set true only when intentionally replacing files."
+                            description = "Allow overwriting existing files. Default: false for safety."
                         }
                     },
                     Required = new[] { "path" }

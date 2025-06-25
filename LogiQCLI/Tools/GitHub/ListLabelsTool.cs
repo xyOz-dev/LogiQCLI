@@ -30,8 +30,7 @@ namespace LogiQCLI.Tools.GitHub
             return new RegisteredTool
             {
                 Name = "list_github_labels",
-                Description = "Lists all available labels from a GitHub repository. " +
-                              "Use this tool to see what labels are available before creating or updating issues and pull requests.",
+                Description = "List all available labels from GitHub repository. Shows label names, colors, and descriptions for use with issues and pull requests. Requires GitHub authentication token.",
                 Parameters = new Parameters
                 {
                     Type = "object",
@@ -40,14 +39,12 @@ namespace LogiQCLI.Tools.GitHub
                         owner = new
                         {
                             type = "string",
-                            description = "Repository owner (username or organization name). " +
-                                         "Required unless default owner is configured."
+                            description = "Repository owner (username or organization). Required unless default configured."
                         },
                         repo = new
                         {
                             type = "string",
-                            description = "Repository name. " +
-                                         "Required unless default repo is configured."
+                            description = "Repository name. Required unless default configured."
                         }
                     },
                     Required = new string[] { }

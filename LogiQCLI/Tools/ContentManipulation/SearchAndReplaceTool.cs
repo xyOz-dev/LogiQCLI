@@ -18,11 +18,7 @@ namespace LogiQCLI.Tools.ContentManipulation
             return new RegisteredTool
             {
                 Name = "search_and_replace",
-                Description = "Performs global find-and-replace operations throughout an entire file. " +
-                              "Use this tool for simple text substitutions, updating variable names, " +
-                              "changing URLs/paths, or pattern-based replacements across a file. " +
-                              "Unlike apply_diff, this replaces ALL occurrences and is ideal for repetitive changes. " +
-                              "Automatically creates .bak backup files by default.",
+                Description = "Global find-replace operations across entire files. Replaces ALL occurrences. Supports regex patterns and creates automatic backups.",
                 Parameters = new Parameters
                 {
                     Type = "object",
@@ -31,47 +27,37 @@ namespace LogiQCLI.Tools.ContentManipulation
                         path = new
                         {
                             type = "string",
-                            description = "File path relative to workspace root. " +
-                                         "File must exist. " +
-                                         "Example: 'src/config.js', 'README.md'"
+                            description = "File path relative to workspace. File must exist."
                         },
                         search = new
                         {
                             type = "string",
-                            description = "Text or regex pattern to find. " +
-                                         "Plain text example: 'oldVariable'. " +
-                                         "Regex example: '\\bversion\\s*=\\s*[\"\\']([^\"\\']+)[\"\\']'"
+                            description = "Text or regex pattern to find. Example: 'oldVariable' or '\\bversion\\s*=\\s*[\"\\']([^\"\\']+)[\"\\']'"
                         },
                         replace = new
                         {
                             type = "string",
-                            description = "Replacement text. " +
-                                         "Can use regex capture groups like $1 when useRegex=true. " +
-                                         "Use empty string to delete all occurrences."
+                            description = "Replacement text. Use regex capture groups like $1 when useRegex=true. Empty string deletes matches."
                         },
                         useRegex = new
                         {
                             type = "boolean",
-                            description = "Treat search pattern as regular expression. " +
-                                         "Default: false. Enables capture groups and pattern matching."
+                            description = "Treat search as regex pattern. Default: false. Enables capture groups and pattern matching."
                         },
                         caseSensitive = new
                         {
                             type = "boolean",
-                            description = "Match case exactly when searching. " +
-                                         "Default: true. Set false for case-insensitive replacements."
+                            description = "Match case exactly. Default: true."
                         },
                         multiline = new
                         {
                             type = "boolean",
-                            description = "In regex mode: ^ and $ match line boundaries. " +
-                                         "Default: true. Only applies when useRegex=true."
+                            description = "In regex mode: ^ and $ match line boundaries. Default: true. Only applies when useRegex=true."
                         },
                         backup = new
                         {
                             type = "boolean",
-                            description = "Create .bak backup before modifying file. " +
-                                         "Default: true. Backup created only if changes are made."
+                            description = "Create .bak backup before modifying. Default: true."
                         }
                     },
                     Required = new[] { "path", "search", "replace" }

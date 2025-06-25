@@ -29,9 +29,7 @@ namespace LogiQCLI.Tools.GitHub
             return new RegisteredTool
             {
                 Name = "get_github_repository_info",
-                Description = "Gets detailed information about a GitHub repository including metadata, " +
-                              "statistics, and configuration. Use this tool to understand repository " +
-                              "structure, activity, and settings before performing other operations.",
+                Description = "Get detailed repository information including metadata, statistics, configuration, and permissions. Requires GitHub authentication token.",
                 Parameters = new Parameters
                 {
                     Type = "object",
@@ -40,14 +38,12 @@ namespace LogiQCLI.Tools.GitHub
                         owner = new
                         {
                             type = "string",
-                            description = "Repository owner (username or organization name). " +
-                                         "Required unless default owner is configured."
+                            description = "Repository owner (username or organization). Required unless default configured."
                         },
                         repo = new
                         {
                             type = "string",
-                            description = "Repository name. " +
-                                         "Required unless default repo is configured."
+                            description = "Repository name. Required unless default configured."
                         }
                     },
                     Required = new string[] { }

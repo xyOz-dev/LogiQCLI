@@ -28,9 +28,7 @@ namespace LogiQCLI.Tools.GitHub
             return new RegisteredTool
             {
                 Name = "comment_on_github_pull_request",
-                Description = "Adds a comment to an existing GitHub pull request. " +
-                              "Requires GitHub authentication token to be configured. " +
-                              "Use this tool to provide feedback, ask questions, or respond to pull requests.",
+                Description = "Add comments to existing GitHub pull requests. Supports markdown formatting. Requires GitHub authentication token.",
                 Parameters = new Parameters
                 {
                     Type = "object",
@@ -39,28 +37,22 @@ namespace LogiQCLI.Tools.GitHub
                         owner = new
                         {
                             type = "string",
-                            description = "Repository owner (username or organization name). " +
-                                         "Required unless default owner is configured."
+                            description = "Repository owner (username or organization). Required unless default configured."
                         },
                         repo = new
                         {
                             type = "string",
-                            description = "Repository name. " +
-                                         "Required unless default repo is configured."
+                            description = "Repository name. Required unless default configured."
                         },
                         pullRequestNumber = new
                         {
                             type = "integer",
-                            description = "Pull request number to comment on. " +
-                                         "Must be an existing pull request number in the repository. " +
-                                         "Example: 42"
+                            description = "Pull request number to comment on. Must be existing PR."
                         },
                         comment = new
                         {
                             type = "string",
-                            description = "Comment text to add to the pull request. " +
-                                         "Supports GitHub markdown formatting. " +
-                                         "Include relevant feedback, questions, or responses."
+                            description = "Comment text to add. Supports GitHub markdown formatting."
                         }
                     },
                     Required = new[] { "pullRequestNumber", "comment" }

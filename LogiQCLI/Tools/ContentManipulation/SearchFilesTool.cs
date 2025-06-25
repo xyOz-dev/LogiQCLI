@@ -22,10 +22,7 @@ namespace LogiQCLI.Tools.ContentManipulation
             return new RegisteredTool
             {
                 Name = "search_files",
-                Description = "Search for text patterns across multiple files using regex or plain text. " +
-                              "Returns matching lines with context and file locations. " +
-                              "Useful for finding code patterns, TODO comments, or specific implementations. " +
-                              "Supports filtering by file patterns and case sensitivity.",
+                Description = "Search for text patterns across multiple files with regex support. Returns matching lines with file locations and line numbers.",
                 Parameters = new Parameters
                 {
                     Type = "object",
@@ -34,40 +31,32 @@ namespace LogiQCLI.Tools.ContentManipulation
                         pattern = new
                         {
                             type = "string",
-                            description = "Search pattern (plain text or regex). " +
-                                         "Examples: 'TODO:', 'class\\s+\\w+Manager', 'import.*OpenRouter'"
+                            description = "Search pattern (plain text or regex). Examples: 'TODO:', 'class\\s+\\w+Manager'"
                         },
                         path = new
                         {
                             type = "string",
-                            description = "Directory to search in, relative to workspace. " +
-                                         "Default: '.' (current directory). " +
-                                         "Examples: 'src', 'OpenRouter', '../external'"
+                            description = "Directory to search relative to workspace. Default: '.' (workspace root)."
                         },
                         file_pattern = new
                         {
                             type = "string",
-                            description = "File name pattern to filter (supports wildcards). " +
-                                         "Default: '*' (all files). " +
-                                         "Examples: '*.cs', '*.json', 'Test*.cs'"
+                            description = "File name pattern filter (wildcards supported). Default: '*'. Examples: '*.cs', 'Test*.cs'"
                         },
                         use_regex = new
                         {
                             type = "boolean",
-                            description = "Treat pattern as regex. " +
-                                         "Default: false (plain text search)."
+                            description = "Treat pattern as regex. Default: false."
                         },
                         case_sensitive = new
                         {
                             type = "boolean",
-                            description = "Case-sensitive search. " +
-                                         "Default: true."
+                            description = "Case-sensitive search. Default: true."
                         },
                         max_results = new
                         {
                             type = "integer",
-                            description = "Maximum number of results to return. " +
-                                         "Default: 50. Use -1 for unlimited."
+                            description = "Maximum results to return. Default: 50. Use -1 for unlimited."
                         }
                     },
                     Required = new[] { "pattern" }

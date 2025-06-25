@@ -31,9 +31,7 @@ namespace LogiQCLI.Tools.GitHub
             return new RegisteredTool
             {
                 Name = "list_github_pull_requests",
-                Description = "Lists GitHub pull requests from a repository with optional filtering. " +
-                              "Can filter by state, head branch, base branch, and sort order. " +
-                              "Use this tool to view active PRs, review workflow, or analyze merge activity.",
+                Description = "List repository pull requests with filtering by state, branches, and sorting options. Requires GitHub authentication token.",
                 Parameters = new Parameters
                 {
                     Type = "object",
@@ -42,50 +40,42 @@ namespace LogiQCLI.Tools.GitHub
                         owner = new
                         {
                             type = "string",
-                            description = "Repository owner (username or organization name). " +
-                                         "Required unless default owner is configured."
+                            description = "Repository owner (username or organization). Required unless default configured."
                         },
                         repo = new
                         {
                             type = "string",
-                            description = "Repository name. " +
-                                         "Required unless default repo is configured."
+                            description = "Repository name. Required unless default configured."
                         },
                         state = new
                         {
                             type = "string",
-                            description = "Pull request state filter. Options: 'open', 'closed', 'all'. " +
-                                         "Default: 'open'"
+                            description = "PR state filter. Options: 'open', 'closed', 'all'. Default: 'open'"
                         },
                         head = new
                         {
                             type = "string",
-                            description = "Filter by head branch name. " +
-                                         "Example: 'feature/new-feature' or 'user:branch-name'"
+                            description = "Filter by head branch name. Example: 'feature/new-feature'"
                         },
                         baseRef = new
                         {
                             type = "string",
-                            description = "Filter by base branch name. " +
-                                         "Example: 'main', 'master', 'develop'"
+                            description = "Filter by base branch name. Example: 'main', 'develop'"
                         },
                         sort = new
                         {
                             type = "string",
-                            description = "Sort order. Options: 'created', 'updated', 'popularity', 'long-running'. " +
-                                         "Default: 'created'"
+                            description = "Sort order. Options: 'created', 'updated', 'popularity', 'long-running'. Default: 'created'"
                         },
                         direction = new
                         {
                             type = "string",
-                            description = "Sort direction. Options: 'asc', 'desc'. " +
-                                         "Default: 'desc'"
+                            description = "Sort direction. Options: 'asc', 'desc'. Default: 'desc'"
                         },
                         limit = new
                         {
                             type = "integer",
-                            description = "Maximum number of pull requests to return. " +
-                                         "Default: 30, Maximum: 100"
+                            description = "Maximum PRs to return. Default: 30, Maximum: 100"
                         }
                     },
                     Required = new string[] { }

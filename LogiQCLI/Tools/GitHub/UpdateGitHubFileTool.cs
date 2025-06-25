@@ -30,9 +30,7 @@ namespace LogiQCLI.Tools.GitHub
             return new RegisteredTool
             {
                 Name = "update_github_file",
-                Description = "Updates an existing file in a GitHub repository with a commit message. " +
-                              "Requires GitHub authentication token with write access. " +
-                              "Use this tool to modify existing files directly in a repository.",
+                Description = "Update existing files in GitHub repositories with commit message. Requires file SHA for conflict prevention. Requires GitHub authentication token with write access.",
                 Parameters = new Parameters
                 {
                     Type = "object",
@@ -41,58 +39,47 @@ namespace LogiQCLI.Tools.GitHub
                         owner = new
                         {
                             type = "string",
-                            description = "Repository owner (username or organization name). " +
-                                         "Required unless default owner is configured."
+                            description = "Repository owner (username or organization). Required unless default configured."
                         },
                         repo = new
                         {
                             type = "string",
-                            description = "Repository name. " +
-                                         "Required unless default repo is configured."
+                            description = "Repository name. Required unless default configured."
                         },
                         path = new
                         {
                             type = "string",
-                            description = "File path within the repository to update. " +
-                                         "Must be an existing file. " +
-                                         "Example: 'src/main.js', 'docs/README.md', 'config/settings.json'"
+                            description = "File path within repository. Must be existing file. Example: 'src/main.js', 'docs/README.md'"
                         },
                         content = new
                         {
                             type = "string",
-                            description = "New file content to replace existing content completely. " +
-                                         "Supports any text content including code, documentation, configuration, etc."
+                            description = "New file content to replace existing content completely."
                         },
                         message = new
                         {
                             type = "string",
-                            description = "Commit message describing the file update. " +
-                                         "Example: 'Update configuration settings', 'Fix authentication bug'"
+                            description = "Commit message describing the update. Example: 'Update configuration settings'"
                         },
                         sha = new
                         {
                             type = "string",
-                            description = "SHA of the file being updated. " +
-                                         "Get this from get_github_file_content tool. " +
-                                         "Required to prevent conflicts."
+                            description = "SHA of file being updated. Get from get_github_file_content tool. Required to prevent conflicts."
                         },
                         branch = new
                         {
                             type = "string",
-                            description = "Branch name to update the file on. " +
-                                         "Default: repository's default branch (usually 'main' or 'master')"
+                            description = "Branch name to update file on. Default: repository's default branch."
                         },
                         authorName = new
                         {
                             type = "string",
-                            description = "Author name for the commit. " +
-                                         "If not provided, uses the authenticated user's name."
+                            description = "Author name for commit. If not provided, uses authenticated user's name."
                         },
                         authorEmail = new
                         {
                             type = "string",
-                            description = "Author email for the commit. " +
-                                         "If not provided, uses the authenticated user's email."
+                            description = "Author email for commit. If not provided, uses authenticated user's email."
                         }
                     },
                     Required = new[] { "path", "content", "message", "sha" }

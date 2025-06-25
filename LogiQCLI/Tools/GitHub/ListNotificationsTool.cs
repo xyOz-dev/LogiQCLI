@@ -31,8 +31,7 @@ namespace LogiQCLI.Tools.GitHub
             return new RegisteredTool
             {
                 Name = "list_github_notifications",
-                Description = "Lists GitHub notifications with optional filtering by repository, participation, and read status. " +
-                              "Requires GitHub authentication token. Use this tool to monitor activity and updates requiring attention.",
+                Description = "List GitHub notifications with filtering by repository, participation, and read status. Requires GitHub authentication token.",
                 Parameters = new Parameters
                 {
                     Type = "object",
@@ -41,44 +40,37 @@ namespace LogiQCLI.Tools.GitHub
                         owner = new
                         {
                             type = "string",
-                            description = "Repository owner to filter notifications for specific repository. " +
-                                         "Leave empty to get notifications from all repositories."
+                            description = "Repository owner to filter notifications. Leave empty for all repositories."
                         },
                         repo = new
                         {
                             type = "string",
-                            description = "Repository name to filter notifications for specific repository. " +
-                                         "Requires owner to be specified as well."
+                            description = "Repository name to filter notifications. Requires owner to be specified."
                         },
                         all = new
                         {
                             type = "boolean",
-                            description = "Include read notifications. " +
-                                         "Default: false (only unread notifications)"
+                            description = "Include read notifications. Default: false (only unread)"
                         },
                         participating = new
                         {
                             type = "boolean",
-                            description = "Only show notifications in which user is directly participating. " +
-                                         "Default: false (show all notifications)"
+                            description = "Only notifications where user is directly participating. Default: false"
                         },
                         since = new
                         {
                             type = "string",
-                            description = "ISO 8601 date string to filter notifications since. " +
-                                         "Example: '2023-01-01T00:00:00Z'"
+                            description = "ISO 8601 date string for notifications since. Example: '2023-01-01T00:00:00Z'"
                         },
                         before = new
                         {
                             type = "string",
-                            description = "ISO 8601 date string to filter notifications before. " +
-                                         "Example: '2023-12-31T23:59:59Z'"
+                            description = "ISO 8601 date string for notifications before. Example: '2023-12-31T23:59:59Z'"
                         },
                         limit = new
                         {
                             type = "integer",
-                            description = "Maximum number of notifications to return. " +
-                                         "Default: 30, Maximum: 100"
+                            description = "Maximum notifications to return. Default: 30, Maximum: 100"
                         }
                     },
                     Required = new string[] { }

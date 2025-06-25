@@ -30,8 +30,7 @@ namespace LogiQCLI.Tools.GitHub
             return new RegisteredTool
             {
                 Name = "get_github_pull_request_reviews",
-                Description = "Gets all reviews for a GitHub pull request including reviewer comments and approval status. " +
-                              "Use this tool to understand the review status and feedback before merging or commenting.",
+                Description = "Get all reviews for GitHub pull requests including reviewer comments, approval status, and change requests. Requires GitHub authentication token.",
                 Parameters = new Parameters
                 {
                     Type = "object",
@@ -40,21 +39,17 @@ namespace LogiQCLI.Tools.GitHub
                         owner = new
                         {
                             type = "string",
-                            description = "Repository owner (username or organization name). " +
-                                         "Required unless default owner is configured."
+                            description = "Repository owner (username or organization). Required unless default configured."
                         },
                         repo = new
                         {
                             type = "string",
-                            description = "Repository name. " +
-                                         "Required unless default repo is configured."
+                            description = "Repository name. Required unless default configured."
                         },
                         pullRequestNumber = new
                         {
                             type = "integer",
-                            description = "Pull request number to get reviews for. " +
-                                         "Must be an existing pull request number in the repository. " +
-                                         "Example: 42"
+                            description = "Pull request number to get reviews for. Must be existing PR."
                         }
                     },
                     Required = new[] { "pullRequestNumber" }

@@ -29,9 +29,7 @@ namespace LogiQCLI.Tools.GitHub
             return new RegisteredTool
             {
                 Name = "comment_on_github_issue",
-                Description = "Adds a comment to an existing GitHub issue. " +
-                              "Requires GitHub authentication token to be configured. " +
-                              "Use this tool to provide updates, ask questions, or respond to issues.",
+                Description = "Add comments to existing GitHub issues. Supports markdown formatting. Requires GitHub authentication token.",
                 Parameters = new Parameters
                 {
                     Type = "object",
@@ -40,28 +38,22 @@ namespace LogiQCLI.Tools.GitHub
                         owner = new
                         {
                             type = "string",
-                            description = "Repository owner (username or organization name). " +
-                                         "Required unless default owner is configured."
+                            description = "Repository owner (username or organization). Required unless default configured."
                         },
                         repo = new
                         {
                             type = "string",
-                            description = "Repository name. " +
-                                         "Required unless default repo is configured."
+                            description = "Repository name. Required unless default configured."
                         },
                         issueNumber = new
                         {
                             type = "integer",
-                            description = "Issue number to comment on. " +
-                                         "Must be an existing issue number in the repository. " +
-                                         "Example: 42"
+                            description = "Issue number to comment on. Must be existing issue."
                         },
                         comment = new
                         {
                             type = "string",
-                            description = "Comment text to add to the issue. " +
-                                         "Supports GitHub markdown formatting. " +
-                                         "Include relevant information, updates, or responses."
+                            description = "Comment text to add. Supports GitHub markdown formatting."
                         }
                     },
                     Required = new[] { "issueNumber", "comment" }

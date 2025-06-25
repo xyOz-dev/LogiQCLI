@@ -30,8 +30,7 @@ namespace LogiQCLI.Tools.GitHub
             return new RegisteredTool
             {
                 Name = "search_github_code",
-                Description = "Searches for code patterns within GitHub repositories using GitHub's code search API. " +
-                              "Use this tool to find specific functions, classes, patterns, or text across codebases.",
+                Description = "Search for code patterns across GitHub repositories using GitHub's code search API. Supports language filters and complex patterns. Requires GitHub authentication token.",
                 Parameters = new Parameters
                 {
                     Type = "object",
@@ -40,27 +39,22 @@ namespace LogiQCLI.Tools.GitHub
                         query = new
                         {
                             type = "string",
-                            description = "Search query using GitHub's code search syntax. " +
-                                         "Supports language filters, file extensions, and complex patterns. " +
-                                         "Example: 'function myFunction', 'class:User language:python', 'TODO extension:js'"
+                            description = "Search query using GitHub's syntax. Example: 'function myFunction', 'class:User language:python', 'TODO extension:js'"
                         },
                         owner = new
                         {
                             type = "string",
-                            description = "Repository owner to restrict search to. " +
-                                         "Leave empty to search across all accessible repositories."
+                            description = "Repository owner to restrict search. Leave empty for all accessible repositories."
                         },
                         repo = new
                         {
                             type = "string",
-                            description = "Repository name to restrict search to. " +
-                                         "Requires owner to be specified as well."
+                            description = "Repository name to restrict search. Requires owner to be specified."
                         },
                         limit = new
                         {
                             type = "integer",
-                            description = "Maximum number of search results to return. " +
-                                         "Default: 10, Maximum: 50"
+                            description = "Maximum search results to return. Default: 10, Maximum: 50"
                         }
                     },
                     Required = new[] { "query" }

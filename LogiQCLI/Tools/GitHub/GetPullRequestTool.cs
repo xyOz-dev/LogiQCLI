@@ -28,9 +28,7 @@ namespace LogiQCLI.Tools.GitHub
             return new RegisteredTool
             {
                 Name = "get_github_pull_request",
-                Description = "Gets detailed information about a specific GitHub pull request including title, body, " +
-                              "branches, reviewers, merge status, and metadata. " +
-                              "Use this tool to analyze pull request details before taking action.",
+                Description = "Get detailed information about specific GitHub pull requests including title, body, branches, reviewers, merge status, and statistics. Requires GitHub authentication token.",
                 Parameters = new Parameters
                 {
                     Type = "object",
@@ -39,21 +37,17 @@ namespace LogiQCLI.Tools.GitHub
                         owner = new
                         {
                             type = "string",
-                            description = "Repository owner (username or organization name). " +
-                                         "Required unless default owner is configured."
+                            description = "Repository owner (username or organization). Required unless default configured."
                         },
                         repo = new
                         {
                             type = "string",
-                            description = "Repository name. " +
-                                         "Required unless default repo is configured."
+                            description = "Repository name. Required unless default configured."
                         },
                         pullRequestNumber = new
                         {
                             type = "integer",
-                            description = "Pull request number to retrieve. " +
-                                         "Must be an existing pull request number in the repository. " +
-                                         "Example: 42"
+                            description = "Pull request number to retrieve. Must be existing PR."
                         }
                     },
                     Required = new[] { "pullRequestNumber" }

@@ -31,8 +31,7 @@ namespace LogiQCLI.Tools.GitHub
             return new RegisteredTool
             {
                 Name = "list_github_commits",
-                Description = "Lists GitHub commits from a repository with optional filtering by branch, author, or date range. " +
-                              "Use this tool to view commit history, track changes, or analyze repository activity.",
+                Description = "List repository commits with filtering by branch, author, file path, or date range. Requires GitHub authentication token.",
                 Parameters = new Parameters
                 {
                     Type = "object",
@@ -41,52 +40,42 @@ namespace LogiQCLI.Tools.GitHub
                         owner = new
                         {
                             type = "string",
-                            description = "Repository owner (username or organization name). " +
-                                         "Required unless default owner is configured."
+                            description = "Repository owner (username or organization). Required unless default configured."
                         },
                         repo = new
                         {
                             type = "string",
-                            description = "Repository name. " +
-                                         "Required unless default repo is configured."
+                            description = "Repository name. Required unless default configured."
                         },
                         sha = new
                         {
                             type = "string",
-                            description = "SHA or branch name to list commits for. " +
-                                         "Default: repository's default branch. " +
-                                         "Example: 'main', 'feature/new-feature', or a specific SHA"
+                            description = "SHA or branch name for commits. Default: repository's default branch. Example: 'main', 'feature/new-feature'"
                         },
                         path = new
                         {
                             type = "string",
-                            description = "Filter commits by file path. " +
-                                         "Only commits that touch this path will be returned. " +
-                                         "Example: 'src/main.js' or 'docs/'"
+                            description = "Filter commits by file path. Only commits touching this path. Example: 'src/main.js'"
                         },
                         author = new
                         {
                             type = "string",
-                            description = "Filter commits by author username or email. " +
-                                         "Example: 'john-doe' or 'john@example.com'"
+                            description = "Filter by author username or email. Example: 'john-doe' or 'john@example.com'"
                         },
                         since = new
                         {
                             type = "string",
-                            description = "ISO 8601 date string to filter commits since. " +
-                                         "Example: '2023-01-01T00:00:00Z'"
+                            description = "ISO 8601 date string for commits since. Example: '2023-01-01T00:00:00Z'"
                         },
                         until = new
                         {
                             type = "string",
-                            description = "ISO 8601 date string to filter commits until. " +
-                                         "Example: '2023-12-31T23:59:59Z'"
+                            description = "ISO 8601 date string for commits until. Example: '2023-12-31T23:59:59Z'"
                         },
                         limit = new
                         {
                             type = "integer",
-                            description = "Maximum number of commits to return. " +
-                                         "Default: 30, Maximum: 100"
+                            description = "Maximum commits to return. Default: 30, Maximum: 100"
                         }
                     },
                     Required = new string[] { }

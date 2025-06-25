@@ -32,10 +32,7 @@ public class ExecuteCommandTool : ITool, IDisposable
         return new RegisteredTool
         {
             Name = "execute_command",
-            Description = "Executes system commands in a shell environment with support for persistent terminal sessions. " +
-                          "Use this tool for running CLI commands, scripts, build processes, or interactive programs. " +
-                          "Supports both one-off commands and persistent sessions for maintaining state between commands. " +
-                          "Automatically detects the platform (Windows/Unix) and uses the appropriate shell.",
+            Description = "Execute system commands with persistent session support. Auto-detects platform shell. Use sessions to maintain state between commands.",
             Parameters = new Parameters
             {
                 Type = "object",
@@ -44,41 +41,32 @@ public class ExecuteCommandTool : ITool, IDisposable
                     command = new
                     {
                         type = "string",
-                        description = "Shell command to execute. " +
-                                     "Examples: 'npm install', 'git status', 'python script.py'. " +
-                                     "Required unless kill_session is true."
+                        description = "Shell command to execute. Examples: 'npm install', 'git status'. Required unless kill_session=true."
                     },
                     cwd = new
                     {
                         type = "string",
-                        description = "Working directory for command execution. " +
-                                     "Path relative to workspace or absolute. " +
-                                     "Default: current workspace directory."
+                        description = "Working directory for execution. Relative to workspace or absolute path. Default: workspace root."
                     },
                     timeout = new
                     {
                         type = "integer",
-                        description = "Maximum execution time in seconds before terminating. " +
-                                     "Default: 60. Use higher values for long-running processes."
+                        description = "Max execution time in seconds. Default: 60."
                     },
                     session_id = new
                     {
                         type = "string",
-                        description = "Reuse an existing terminal session to maintain state/environment. " +
-                                     "Useful for: activated virtual environments, changed directories, " +
-                                     "or commands that depend on previous command results."
+                        description = "Reuse existing session to maintain state/environment (activated venvs, changed directories, etc)."
                     },
                     keep_alive = new
                     {
                         type = "boolean",
-                        description = "Keep terminal session active after command for future reuse. " +
-                                     "Default: false. Set true for interactive workflows."
+                        description = "Keep session active after command for future reuse. Default: false."
                     },
                     kill_session = new
                     {
                         type = "boolean",
-                        description = "Terminate the specified session to free resources. " +
-                                     "Default: false. Requires session_id when true."
+                        description = "Terminate specified session to free resources. Default: false. Requires session_id."
                     }
                 },
                 Required = Array.Empty<string>()

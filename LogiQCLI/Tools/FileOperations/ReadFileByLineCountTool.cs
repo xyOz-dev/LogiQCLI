@@ -19,10 +19,7 @@ namespace LogiQCLI.Tools.FileOperations
             return new RegisteredTool
             {
                 Name = "read_file_by_line_count",
-                Description = "Reads only the first N lines from a file, useful for previewing large files. " +
-                              "Use this tool when you need to examine file headers, check file format, " +
-                              "preview log files, or read configuration files without loading entire content. " +
-                              "More efficient than read_file for large files when you only need the beginning.",
+                Description = "Read only the first N lines from files. More efficient than read_file for large files when you only need the beginning portion.",
                 Parameters = new Parameters
                 {
                     Type = "object",
@@ -31,16 +28,12 @@ namespace LogiQCLI.Tools.FileOperations
                         path = new
                         {
                             type = "string",
-                            description = "File path relative to workspace or absolute. " +
-                                         "File must exist and be readable. " +
-                                         "Examples: 'logs/app.log', 'data/large-dataset.csv'"
+                            description = "File path relative to workspace or absolute. File must exist and be readable."
                         },
                         lineCount = new
                         {
                             type = "integer",
-                            description = "Number of lines to read from the beginning. " +
-                                         "Must be positive integer. " +
-                                         "Example: 100 to read first 100 lines"
+                            description = "Number of lines to read from beginning. Must be positive integer."
                         }
                     },
                     Required = new[] { "path", "lineCount" }

@@ -28,8 +28,7 @@ namespace LogiQCLI.Tools.GitHub
             return new RegisteredTool
             {
                 Name = "mark_github_notification_as_read",
-                Description = "Marks a specific GitHub notification as read using its notification ID. " +
-                              "Requires GitHub authentication token. Use this tool to manage individual notifications.",
+                Description = "Mark specific GitHub notification as read using notification ID. Get ID from list_github_notifications tool. Requires GitHub authentication token.",
                 Parameters = new Parameters
                 {
                     Type = "object",
@@ -38,9 +37,7 @@ namespace LogiQCLI.Tools.GitHub
                         notificationId = new
                         {
                             type = "string",
-                            description = "The notification ID to mark as read. " +
-                                         "Get this ID from the list_github_notifications tool. " +
-                                         "Example: '12345678'"
+                            description = "Notification ID to mark as read. Get from list_github_notifications tool."
                         }
                     },
                     Required = new[] { "notificationId" }

@@ -18,10 +18,7 @@ namespace LogiQCLI.Tools.FileOperations
             return new RegisteredTool
             {
                 Name = "write_file",
-                Description = "Writes content to a file, completely replacing any existing content. " +
-                              "Use this tool for creating new files or when a complete file rewrite is needed. " +
-                              "Automatically creates any missing directories in the path. " +
-                              "For partial file modifications, consider using apply_diff or search_and_replace instead.",
+                Description = "Create new file or completely replace existing file content. Overwrites any existing content.",
                 Parameters = new Parameters
                 {
                     Type = "object",
@@ -30,16 +27,12 @@ namespace LogiQCLI.Tools.FileOperations
                         path = new
                         {
                             type = "string",
-                            description = "File path relative to workspace root. " +
-                                         "Directories will be created if they don't exist. " +
-                                         "Examples: 'src/new-file.ts', 'config/settings.json'"
+                            description = "File path relative to workspace. Auto-creates parent directories if needed."
                         },
                         content = new
                         {
                             type = "string",
-                            description = "Complete file content to write. " +
-                                         "Existing content will be entirely replaced. " +
-                                         "Use empty string to create an empty file."
+                            description = "Complete file content to write. Use empty string for blank file."
                         }
                     },
                     Required = new[] { "path", "content" }

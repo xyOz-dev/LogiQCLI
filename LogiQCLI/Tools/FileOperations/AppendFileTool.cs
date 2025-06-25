@@ -18,10 +18,7 @@ namespace LogiQCLI.Tools.FileOperations
             return new RegisteredTool
             {
                 Name = "append_file",
-                Description = "Adds content to the end of an existing file without overwriting existing content. " +
-                              "Use this tool for adding log entries, appending to configuration files, " +
-                              "extending documentation, or accumulating data over time. " +
-                              "Creates the file if it doesn't exist. Intelligently handles newlines to maintain proper formatting.",
+                Description = "Add content to end of existing file without overwriting. Creates file if it doesn't exist. Automatically handles newlines for proper formatting.",
                 Parameters = new Parameters
                 {
                     Type = "object",
@@ -30,23 +27,17 @@ namespace LogiQCLI.Tools.FileOperations
                         path = new
                         {
                             type = "string",
-                            description = "File path relative to workspace root. " +
-                                         "File will be created if it doesn't exist. " +
-                                         "Examples: 'logs/app.log', 'data/results.csv'"
+                            description = "File path relative to workspace. Creates file if it doesn't exist."
                         },
                         content = new
                         {
                             type = "string",
-                            description = "Content to add at the end of the file. " +
-                                         "Existing content is preserved. " +
-                                         "Include your own newlines as needed in multi-line content."
+                            description = "Content to add at file end. Existing content is preserved."
                         },
                         newline = new
                         {
                             type = "boolean",
-                            description = "Add newline before appending to separate from existing content. " +
-                                         "Default: true (adds newline if file is not empty). " +
-                                         "Set false to continue on the same line."
+                            description = "Add newline before appending to separate from existing content. Default: true."
                         }
                     },
                     Required = new[] { "path", "content" }

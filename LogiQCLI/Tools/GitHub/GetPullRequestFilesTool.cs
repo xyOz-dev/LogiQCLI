@@ -30,8 +30,7 @@ namespace LogiQCLI.Tools.GitHub
             return new RegisteredTool
             {
                 Name = "get_github_pull_request_files",
-                Description = "Gets a list of all files changed in a GitHub pull request with change statistics. " +
-                              "Use this tool to see what files were modified, added, or deleted without the full diff content.",
+                Description = "Get list of all files changed in GitHub pull requests with change statistics. Shows modified, added, or deleted files without full diff content. Requires GitHub authentication token.",
                 Parameters = new Parameters
                 {
                     Type = "object",
@@ -40,21 +39,17 @@ namespace LogiQCLI.Tools.GitHub
                         owner = new
                         {
                             type = "string",
-                            description = "Repository owner (username or organization name). " +
-                                         "Required unless default owner is configured."
+                            description = "Repository owner (username or organization). Required unless default configured."
                         },
                         repo = new
                         {
                             type = "string",
-                            description = "Repository name. " +
-                                         "Required unless default repo is configured."
+                            description = "Repository name. Required unless default configured."
                         },
                         pullRequestNumber = new
                         {
                             type = "integer",
-                            description = "Pull request number to get files for. " +
-                                         "Must be an existing pull request number in the repository. " +
-                                         "Example: 42"
+                            description = "Pull request number to get files for. Must be existing PR."
                         }
                     },
                     Required = new[] { "pullRequestNumber" }

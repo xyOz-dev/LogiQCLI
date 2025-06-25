@@ -31,9 +31,7 @@ namespace LogiQCLI.Tools.GitHub
             return new RegisteredTool
             {
                 Name = "update_github_pull_request",
-                Description = "Updates an existing GitHub pull request's title, body, or state. " +
-                              "Requires GitHub authentication token to be configured. " +
-                              "Use this tool to modify pull request details or close pull requests.",
+                Description = "Update GitHub pull request title, body, or state. Requires GitHub authentication token with write access.",
                 Parameters = new Parameters
                 {
                     Type = "object",
@@ -42,39 +40,32 @@ namespace LogiQCLI.Tools.GitHub
                         owner = new
                         {
                             type = "string",
-                            description = "Repository owner (username or organization name). " +
-                                         "Required unless default owner is configured."
+                            description = "Repository owner (username or organization). Required unless default configured."
                         },
                         repo = new
                         {
                             type = "string",
-                            description = "Repository name. " +
-                                         "Required unless default repo is configured."
+                            description = "Repository name. Required unless default configured."
                         },
                         pullRequestNumber = new
                         {
                             type = "integer",
-                            description = "Pull request number to update. " +
-                                         "Must be an existing pull request number in the repository. " +
-                                         "Example: 42"
+                            description = "Pull request number to update. Must be existing PR."
                         },
                         title = new
                         {
                             type = "string",
-                            description = "New title for the pull request. " +
-                                         "Leave empty to keep current title unchanged."
+                            description = "New PR title. Leave empty to keep current title."
                         },
                         body = new
                         {
                             type = "string",
-                            description = "New body content for the pull request. Supports GitHub markdown. " +
-                                         "Leave empty to keep current body unchanged."
+                            description = "New PR body. Supports GitHub markdown. Leave empty to keep current body."
                         },
                         state = new
                         {
                             type = "string",
-                            description = "New state for the pull request. Options: 'open', 'closed'. " +
-                                         "Leave empty to keep current state unchanged."
+                            description = "New PR state. Options: 'open', 'closed'. Leave empty to keep current state."
                         }
                     },
                     Required = new[] { "pullRequestNumber" }

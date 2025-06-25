@@ -30,9 +30,7 @@ namespace LogiQCLI.Tools.GitHub
             return new RegisteredTool
             {
                 Name = "list_github_issues",
-                Description = "Lists GitHub issues from a repository with optional filtering. " +
-                              "Can filter by state, labels, assignee, and milestone. " +
-                              "Use this tool to view current issues, track work items, or analyze repository activity.",
+                Description = "List repository issues with filtering by state, labels, assignee, and dates. Requires GitHub authentication token.",
                 Parameters = new Parameters
                 {
                     Type = "object",
@@ -41,46 +39,38 @@ namespace LogiQCLI.Tools.GitHub
                         owner = new
                         {
                             type = "string",
-                            description = "Repository owner (username or organization name). " +
-                                         "Required unless default owner is configured."
+                            description = "Repository owner (username or organization). Required unless default configured."
                         },
                         repo = new
                         {
                             type = "string",
-                            description = "Repository name. " +
-                                         "Required unless default repo is configured."
+                            description = "Repository name. Required unless default configured."
                         },
                         state = new
                         {
                             type = "string",
-                            description = "Issue state filter. Options: 'open', 'closed', 'all'. " +
-                                         "Default: 'open'"
+                            description = "Issue state filter. Options: 'open', 'closed', 'all'. Default: 'open'"
                         },
                         labels = new
                         {
                             type = "array",
                             items = new { type = "string" },
-                            description = "Array of label names to filter by. " +
-                                         "Only issues with ALL specified labels will be returned. " +
-                                         "Example: ['bug', 'priority-high']"
+                            description = "Array of label names. Only issues with ALL specified labels returned. Example: ['bug', 'priority-high']"
                         },
                         assignee = new
                         {
                             type = "string",
-                            description = "GitHub username to filter issues by assignee. " +
-                                         "Use 'none' for unassigned issues or '*' for any assigned."
+                            description = "GitHub username filter. Use 'none' for unassigned, '*' for any assigned."
                         },
                         since = new
                         {
                             type = "string",
-                            description = "ISO 8601 date string to filter issues updated since. " +
-                                         "Example: '2023-01-01T00:00:00Z'"
+                            description = "ISO 8601 date string for issues updated since. Example: '2023-01-01T00:00:00Z'"
                         },
                         limit = new
                         {
                             type = "integer",
-                            description = "Maximum number of issues to return. " +
-                                         "Default: 30, Maximum: 100"
+                            description = "Maximum issues to return. Default: 30, Maximum: 100"
                         }
                     },
                     Required = new string[] { }

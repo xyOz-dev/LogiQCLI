@@ -31,9 +31,7 @@ namespace LogiQCLI.Tools.GitHub
             return new RegisteredTool
             {
                 Name = "update_github_issue",
-                Description = "Updates an existing GitHub issue's title, body, labels, assignees, or state. " +
-                              "Requires GitHub authentication token to be configured. " +
-                              "Use this tool to modify issue details, close issues, or update tracking information.",
+                Description = "Update GitHub issue title, body, labels, assignees, or state. Labels and assignees are replaced entirely. Requires GitHub authentication token.",
                 Parameters = new Parameters
                 {
                     Type = "object",
@@ -42,54 +40,43 @@ namespace LogiQCLI.Tools.GitHub
                         owner = new
                         {
                             type = "string",
-                            description = "Repository owner (username or organization name). " +
-                                         "Required unless default owner is configured."
+                            description = "Repository owner (username or organization). Required unless default configured."
                         },
                         repo = new
                         {
                             type = "string",
-                            description = "Repository name. " +
-                                         "Required unless default repo is configured."
+                            description = "Repository name. Required unless default configured."
                         },
                         issueNumber = new
                         {
                             type = "integer",
-                            description = "Issue number to update. " +
-                                         "Must be an existing issue number in the repository. " +
-                                         "Example: 42"
+                            description = "Issue number to update. Must be existing issue."
                         },
                         title = new
                         {
                             type = "string",
-                            description = "New title for the issue. " +
-                                         "Leave empty to keep current title unchanged."
+                            description = "New issue title. Leave empty to keep current title."
                         },
                         body = new
                         {
                             type = "string",
-                            description = "New body content for the issue. Supports GitHub markdown. " +
-                                         "Leave empty to keep current body unchanged."
+                            description = "New issue body. Supports GitHub markdown. Leave empty to keep current body."
                         },
                         state = new
                         {
                             type = "string",
-                            description = "New state for the issue. Options: 'open', 'closed'. " +
-                                         "Leave empty to keep current state unchanged."
+                            description = "New issue state. Options: 'open', 'closed'. Leave empty to keep current state."
                         },
                         labels = new
                         {
                             type = "array",
-                            description = "Array of label names to replace current labels. " +
-                                         "This replaces ALL existing labels. " +
-                                         "Example: ['bug', 'priority-high', 'frontend']",
+                            description = "Array of label names to REPLACE current labels entirely. Example: ['bug', 'priority-high']",
                             items = new { type = "string" }
                         },
                         assignees = new
                         {
                             type = "array",
-                            description = "Array of GitHub usernames to replace current assignees. " +
-                                         "This replaces ALL existing assignees. " +
-                                         "Example: ['john-doe', 'jane-smith']",
+                            description = "Array of GitHub usernames to REPLACE current assignees entirely. Example: ['john-doe', 'jane-smith']",
                             items = new { type = "string" }
                         }
                     },

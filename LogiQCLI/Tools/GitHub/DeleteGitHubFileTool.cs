@@ -30,9 +30,7 @@ namespace LogiQCLI.Tools.GitHub
             return new RegisteredTool
             {
                 Name = "delete_github_file",
-                Description = "Deletes an existing file from a GitHub repository with a commit message. " +
-                              "Requires GitHub authentication token with write access. " +
-                              "Use this tool to remove files directly from a repository.",
+                Description = "Delete existing files from GitHub repositories with commit message. Requires file SHA for conflict prevention. Requires GitHub authentication token with write access.",
                 Parameters = new Parameters
                 {
                     Type = "object",
@@ -41,52 +39,42 @@ namespace LogiQCLI.Tools.GitHub
                         owner = new
                         {
                             type = "string",
-                            description = "Repository owner (username or organization name). " +
-                                         "Required unless default owner is configured."
+                            description = "Repository owner (username or organization). Required unless default configured."
                         },
                         repo = new
                         {
                             type = "string",
-                            description = "Repository name. " +
-                                         "Required unless default repo is configured."
+                            description = "Repository name. Required unless default configured."
                         },
                         path = new
                         {
                             type = "string",
-                            description = "File path within the repository to delete. " +
-                                         "Must be an existing file. " +
-                                         "Example: 'src/old-file.js', 'docs/deprecated.md'"
+                            description = "File path within repository to delete. Must be existing file. Example: 'src/old-file.js'"
                         },
                         message = new
                         {
                             type = "string",
-                            description = "Commit message describing the file deletion. " +
-                                         "Example: 'Remove deprecated configuration', 'Delete unused test file'"
+                            description = "Commit message describing file deletion. Example: 'Remove deprecated configuration'"
                         },
                         sha = new
                         {
                             type = "string",
-                            description = "SHA of the file being deleted. " +
-                                         "Get this from get_github_file_content tool. " +
-                                         "Required to prevent conflicts."
+                            description = "SHA of file being deleted. Get from get_github_file_content tool. Required to prevent conflicts."
                         },
                         branch = new
                         {
                             type = "string",
-                            description = "Branch name to delete the file from. " +
-                                         "Default: repository's default branch (usually 'main' or 'master')"
+                            description = "Branch name to delete file from. Default: repository's default branch."
                         },
                         authorName = new
                         {
                             type = "string",
-                            description = "Author name for the commit. " +
-                                         "If not provided, uses the authenticated user's name."
+                            description = "Author name for commit. If not provided, uses authenticated user's name."
                         },
                         authorEmail = new
                         {
                             type = "string",
-                            description = "Author email for the commit. " +
-                                         "If not provided, uses the authenticated user's email."
+                            description = "Author email for commit. If not provided, uses authenticated user's email."
                         }
                     },
                     Required = new[] { "path", "message", "sha" }
