@@ -278,7 +278,6 @@ namespace LogiQCLI.Tests.ContentManipulation
 
         private async Task TestPathFilter(SearchFilesTool tool, TestFileSystem testFileSystem)
         {
-            // Create nested directory structure
             var subDir = Path.Combine(testFileSystem.TempDirectory, "subdir");
             Directory.CreateDirectory(subDir);
             
@@ -288,7 +287,7 @@ namespace LogiQCLI.Tests.ContentManipulation
             var args = new SearchFilesArguments
             {
                 Pattern = "content",
-                Path = subDir  // Search only in subdirectory
+                Path = subDir
             };
             
             var json = JsonSerializer.Serialize(args);

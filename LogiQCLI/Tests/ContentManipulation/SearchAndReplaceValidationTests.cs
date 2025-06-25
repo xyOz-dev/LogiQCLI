@@ -97,8 +97,6 @@ namespace LogiQCLI.Tests.ContentManipulation
             var json = JsonSerializer.Serialize(args);
             var result = await tool.Execute(json);
             
-            // Replace can be null (it defaults to empty string), so this should succeed if file exists
-            // But since file doesn't exist, it should fail with file not found
             if (!result.Contains("Error"))
             {
                 throw new Exception("Should handle null replacement content gracefully or fail due to missing file");

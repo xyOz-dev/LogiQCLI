@@ -130,7 +130,6 @@ namespace LogiQCLI.Tests.ContentManipulation
             var json = JsonSerializer.Serialize(args);
             var result = await tool.Execute(json);
             
-            // Should work but return no results
             if (result.Contains("Error"))
             {
                 throw new Exception("Zero max results should be handled gracefully");
@@ -149,7 +148,6 @@ namespace LogiQCLI.Tests.ContentManipulation
             var json = JsonSerializer.Serialize(args);
             var result = await tool.Execute(json);
             
-            // -1 means unlimited, other negative values should be treated as unlimited too
             if (result.Contains("Error"))
             {
                 throw new Exception("Negative max results should be handled gracefully");
