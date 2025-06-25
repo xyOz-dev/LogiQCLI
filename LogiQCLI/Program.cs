@@ -14,6 +14,8 @@ using LogiQCLI.Tools.SystemOperations;
 using LogiQCLI.Tools.GitHub;
 using LogiQCLI.Presentation.Console;
 using LogiQCLI.Presentation.Console.Components;
+using LogiQCLI.Presentation.Console.Session;
+using LogiQCLI.Commands.Core.Interfaces;
 using Spectre.Console;
 using LogiQCLI.Core.Models.Modes.Interfaces;
 using LogiQCLI.Tools.Core.Interfaces;
@@ -58,10 +60,17 @@ public class Program
             InitializeToolSystem();
 
             var modeManager = new ModeManager(configService, _toolRegistry);
+            _serviceContainer.RegisterInstance<IModeManager>(modeManager);
+            
+            // Create and register ChatSession
+            var chatSession = new ChatSession(settings.DefaultModel, modeManager);
+            _serviceContainer.RegisterInstance(chatSession);
+            
             var openRouter = _serviceContainer.GetService<OpenRouterClient>();
             var toolHandler = CreateToolHandler(modeManager, settings);
+            var commandHandler = CreateCommandHandler(settings, configService, modeManager);
 
-            var chatUI = new ChatInterface(openRouter, toolHandler, settings, configService, modeManager, _toolRegistry);
+            var chatUI = new ChatInterface(openRouter, toolHandler, settings, configService, modeManager, _toolRegistry, commandHandler, chatSession);
             await chatUI.RunAsync();
         }
         catch (Exception ex)
@@ -116,6 +125,35 @@ public class Program
         
         _toolDiscoveryService = new ToolDiscoveryService();
         _serviceContainer.RegisterInstance<IToolDiscoveryService>(_toolDiscoveryService);
+        
+        // Initialize command system
+        var commandRegistry = new LogiQCLI.Commands.Core.CommandRegistry();
+        _serviceContainer.RegisterInstance<LogiQCLI.Commands.Core.Interfaces.ICommandRegistry>(commandRegistry);
+        
+        var commandFactory = new LogiQCLI.Commands.Core.CommandFactory(_serviceContainer);
+        _serviceContainer.RegisterInstance<LogiQCLI.Commands.Core.Interfaces.ICommandFactory>(commandFactory);
+        
+        var commandDiscoveryService = new LogiQCLI.Commands.Core.CommandDiscoveryService();
+        _serviceContainer.RegisterInstance<LogiQCLI.Commands.Core.Interfaces.ICommandDiscoveryService>(commandDiscoveryService);
+        
+        // Register ConfigurationService for commands
+        var configService = new ConfigurationService();
+        _serviceContainer.RegisterInstance(configService);
+        
+        // Register display service
+        _serviceContainer.RegisterFactory<IDisplayService>(container => 
+        {
+            var appSettings = container.GetService<ApplicationSettings>();
+            var modeManager = container.GetService<IModeManager>();
+            return new DisplayService(appSettings, modeManager);
+        });
+        
+        // Register Action for InitializeDisplay
+        _serviceContainer.RegisterFactory<Action>(container =>
+        {
+            var displayService = container.GetService<IDisplayService>();
+            return displayService.GetInitializeDisplayAction();
+        });
     }
 
     private static void InitializeToolSystem()
@@ -162,10 +200,68 @@ public class Program
             {
                 AnsiConsole.MarkupLine($"[yellow]Skipped {skippedCount} tools[/]");
             }
+            
+            // Initialize command system
+            InitializeCommandSystem();
         }
         catch (Exception ex)
         {
             AnsiConsole.MarkupLine($"[red]Tool discovery failed: {ex.Message}[/]");
+        }
+    }
+    
+    private static void InitializeCommandSystem()
+    {
+        var commandRegistry = _serviceContainer?.GetService<LogiQCLI.Commands.Core.Interfaces.ICommandRegistry>();
+        var commandDiscoveryService = _serviceContainer?.GetService<LogiQCLI.Commands.Core.Interfaces.ICommandDiscoveryService>();
+        var commandFactory = _serviceContainer?.GetService<LogiQCLI.Commands.Core.Interfaces.ICommandFactory>();
+        
+        if (commandDiscoveryService == null || commandRegistry == null || commandFactory == null)
+        {
+            return;
+        }
+
+        try
+        {
+            var currentAssembly = Assembly.GetExecutingAssembly();
+            var discoveredCommands = commandDiscoveryService.DiscoverCommands(currentAssembly);
+            
+            AnsiConsole.MarkupLine($"[cyan]Discovered {discoveredCommands.Count} commands[/]");
+            
+            var registeredCount = 0;
+            var skippedCount = 0;
+            
+            foreach (var commandInfo in discoveredCommands.OrderBy(c => c.Priority).ThenBy(c => c.Name))
+            {
+                try
+                {
+                    if (commandFactory.CanCreateCommand(commandInfo))
+                    {
+                        commandRegistry.RegisterCommand(commandInfo);
+                        registeredCount++;
+                    }
+                    else
+                    {
+                        skippedCount++;
+                        AnsiConsole.MarkupLine($"[yellow]Skipped command '{commandInfo.Name}' - dependencies not met[/]");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    skippedCount++;
+                    AnsiConsole.MarkupLine($"[red]Failed to register command '{commandInfo.Name}': {ex.Message}[/]");
+                }
+            }
+            
+            AnsiConsole.MarkupLine($"[green]Successfully registered {registeredCount} commands[/]");
+            if (skippedCount > 0)
+            {
+                AnsiConsole.MarkupLine($"[yellow]Skipped {skippedCount} commands[/]");
+            }
+        }
+        catch (Exception ex)
+        {
+            AnsiConsole.MarkupLine($"[red]Command discovery failed: {ex.Message}[/]");
         }
     }
 
@@ -177,6 +273,23 @@ public class Program
         }
         
         return new ToolHandler(_toolRegistry, modeManager, _toolFactory);
+    }
+
+    private static CommandHandler CreateCommandHandler(ApplicationSettings settings, ConfigurationService configService, IModeManager modeManager)
+    {
+        var commandRegistry = _serviceContainer?.GetService<LogiQCLI.Commands.Core.Interfaces.ICommandRegistry>();
+        var commandFactory = _serviceContainer?.GetService<LogiQCLI.Commands.Core.Interfaces.ICommandFactory>();
+        
+        if (commandRegistry == null || commandFactory == null)
+        {
+            throw new InvalidOperationException("Command system not properly initialized");
+        }
+        
+        // Create the core command handler
+        var coreCommandHandler = new LogiQCLI.Commands.Core.CommandHandler(commandRegistry, commandFactory);
+        
+        // Create and return the presentation layer command handler
+        return new CommandHandler(coreCommandHandler);
     }
 
     private static void RenderError(string message)

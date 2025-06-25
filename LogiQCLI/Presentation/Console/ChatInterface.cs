@@ -40,7 +40,9 @@ namespace LogiQCLI.Presentation.Console
             ApplicationSettings settings,
             ConfigurationService configService,
             IModeManager modeManager,
-            IToolRegistry toolRegistry)
+            IToolRegistry toolRegistry,
+            CommandHandler commandHandler,
+            ChatSession chatSession)
         {
             _openRouterClient = openRouterClient;
             _toolHandler = toolHandler;
@@ -49,10 +51,10 @@ namespace LogiQCLI.Presentation.Console
             _toolRegistry = toolRegistry;
             _messageRenderer = new MessageRenderer(_settings.DefaultModel ?? "ASSISTANT");
             _animationManager = new AnimationManager();
-            _chatSession = new ChatSession(_settings.DefaultModel, _modeManager);
+            _chatSession = chatSession;
             _inputHandler = new InputHandler();
             _headerRenderer = new HeaderRenderer(_settings, _modeManager);
-            _commandHandler = new CommandHandler(_chatSession, _inputHandler, InitializeDisplay, settings, configService, _modeManager, _toolRegistry);
+            _commandHandler = commandHandler;
         }
 
         public async Task RunAsync()
