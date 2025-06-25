@@ -57,7 +57,11 @@ namespace LogiQCLI.Presentation.Console.Components
                 }
                 else
                 {
-                    result.AppendLine(ParseInlineMarkdown(line));
+                    var processedLine = ParseInlineMarkdown(line);
+                    if (!string.IsNullOrEmpty(processedLine) || string.IsNullOrEmpty(line.Trim()))
+                    {
+                        result.AppendLine(processedLine);
+                    }
                 }
             }
 

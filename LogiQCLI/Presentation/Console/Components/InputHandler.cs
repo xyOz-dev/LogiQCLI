@@ -16,6 +16,8 @@ namespace LogiQCLI.Presentation.Console.Components
         {
             var inputBuilder = new StringBuilder();
             string result = "";
+            DateTime lastKeyTime = DateTime.Now;
+            bool isPasting = false;
 
             AnsiConsole.Live(CreateInputPanel(""))
                 .AutoClear(true)
@@ -23,31 +25,87 @@ namespace LogiQCLI.Presentation.Console.Components
                     ctx.UpdateTarget(CreateInputPanel(""));
                     while(true)
                     {
+                        if (System.Console.KeyAvailable)
+                        {
+                            var currentTime = DateTime.Now;
+                            if ((currentTime - lastKeyTime).TotalMilliseconds < 50)
+                            {
+                                isPasting = true;
+                            }
+                            lastKeyTime = currentTime;
+                        }
+                        else
+                        {
+                            isPasting = false;
+                        }
+
                         var key = System.Console.ReadKey(true);
                         
-                        if (key.Key == ConsoleKey.Enter && key.Modifiers == ConsoleModifiers.Shift)
-                        {
-                            result = inputBuilder.ToString();
-                            break;
-                        }
+                        bool shouldSubmit = false;
                         
-                        switch (key.Key)
+                        if (key.Key == ConsoleKey.Enter)
                         {
-                            case ConsoleKey.Enter:
+                            if (isPasting)
+                            {
                                 inputBuilder.AppendLine();
-                                break;
-                            case ConsoleKey.Backspace:
-                                if (inputBuilder.Length > 0)
+                            }
+                            else if (key.Modifiers == ConsoleModifiers.Control)
+                            {
+                                shouldSubmit = true;
+                            }
+                            else if (key.Modifiers == ConsoleModifiers.Shift)
+                            {
+                                shouldSubmit = true;
+                            }
+                            else if (key.Modifiers == ConsoleModifiers.Alt)
+                            {
+                                shouldSubmit = true;
+                            }
+                            else if (inputBuilder.Length > 0 && inputBuilder.ToString().EndsWith(Environment.NewLine))
+                            {
+                                shouldSubmit = true;
+                            }
+                            else
+                            {
+                                inputBuilder.AppendLine();
+                            }
+                        }
+                        else if (key.Key == ConsoleKey.Tab && !isPasting)
+                        {
+                            shouldSubmit = true;
+                        }
+                        else if (key.Key == ConsoleKey.Escape && !isPasting)
+                        {
+                            shouldSubmit = true;
+                        }
+                        else if (key.Key == ConsoleKey.Backspace)
+                        {
+                            if (inputBuilder.Length > 0)
+                            {
+                                var str = inputBuilder.ToString();
+                                if (str.EndsWith(Environment.NewLine))
+                                {
+                                    inputBuilder.Length -= Environment.NewLine.Length;
+                                }
+                                else
                                 {
                                     inputBuilder.Length--;
                                 }
-                                break;
-                            default:
-                                if (!char.IsControl(key.KeyChar))
-                                {
-                                    inputBuilder.Append(key.KeyChar);
-                                }
-                                break;
+                            }
+                        }
+                        else if (key.Key == ConsoleKey.Tab && isPasting)
+                        {
+                            inputBuilder.Append('\t');
+                        }
+                        else if (!char.IsControl(key.KeyChar))
+                        {
+                            inputBuilder.Append(key.KeyChar);
+                        }
+                        
+                        if (shouldSubmit)
+                        {
+                            result = inputBuilder.ToString().TrimEnd();
+                            break;
                         }
                         
                         ctx.UpdateTarget(CreateInputPanel(inputBuilder.ToString()));
@@ -160,7 +218,7 @@ namespace LogiQCLI.Presentation.Console.Components
 
             var layout = new Rows(
                 contentMarkup,
-                new Align(new Markup("[dim](Enter for new line, Shift+Enter to submit)[/]"), HorizontalAlignment.Right)
+                new Align(new Markup("[dim](Enter for new line | Ctrl+Enter, Tab, or ESC to submit)[/]"), HorizontalAlignment.Right)
             );
                 
             return new Panel(layout)
