@@ -66,7 +66,6 @@ namespace LogiQCLI.Presentation.Console.Components
 
             var panel = new Panel(content)
                 .Header($"[{color}]{header}[/]")
-                .HeaderAlignment(Justify.Center)
                 .Border(border)
                 .BorderColor(Color.FromHex(color))
                 .Padding(1, 0, 1, 0)

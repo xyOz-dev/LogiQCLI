@@ -39,7 +39,7 @@ public class Program
                 await RunTestModeAsync(args);
                 return;
             }
-
+            
             var configService = new ConfigurationService();
             var settings = configService.LoadSettings();
 

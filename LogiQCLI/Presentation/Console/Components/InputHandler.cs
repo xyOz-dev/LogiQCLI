@@ -14,19 +14,47 @@ namespace LogiQCLI.Presentation.Console.Components
 
         private string GetAdvancedInput()
         {
-            var panel = new Panel(new Markup("[dim]Type your message and press [green]Enter[/] to send[/]"))
-                .Header("[green]New Message[/]")
-                .Border(BoxBorder.Rounded)
-                .BorderColor(Color.FromHex("#00ff87"))
-                .Padding(1, 0)
-                .Expand();
+            var inputBuilder = new StringBuilder();
+            string result = "";
+
+            AnsiConsole.Live(CreateInputPanel(""))
+                .AutoClear(true)
+                .Start(ctx => {
+                    ctx.UpdateTarget(CreateInputPanel(""));
+                    while(true)
+                    {
+                        var key = System.Console.ReadKey(true);
+                        
+                        if (key.Key == ConsoleKey.Enter && key.Modifiers == ConsoleModifiers.Shift)
+                        {
+                            result = inputBuilder.ToString();
+                            break;
+                        }
+                        
+                        switch (key.Key)
+                        {
+                            case ConsoleKey.Enter:
+                                inputBuilder.AppendLine();
+                                break;
+                            case ConsoleKey.Backspace:
+                                if (inputBuilder.Length > 0)
+                                {
+                                    inputBuilder.Length--;
+                                }
+                                break;
+                            default:
+                                if (!char.IsControl(key.KeyChar))
+                                {
+                                    inputBuilder.Append(key.KeyChar);
+                                }
+                                break;
+                        }
+                        
+                        ctx.UpdateTarget(CreateInputPanel(inputBuilder.ToString()));
+                    }
+                });
             
-            AnsiConsole.Write(panel);
-            AnsiConsole.WriteLine();
-            
-            return AnsiConsole.Prompt(
-                new TextPrompt<string>("[green]>[/]")
-                    .PromptStyle("green"));
+            return result;
         }
 
         public string GetSingleLineInput(string prompt)
@@ -124,16 +152,22 @@ namespace LogiQCLI.Presentation.Console.Components
 
         private Panel CreateInputPanel(string currentInput)
         {
-            var content = string.IsNullOrEmpty(currentInput) 
-                ? "[dim]Start typing...[/]" 
-                : Markup.Escape(currentInput) + "[blink]_[/]";
+            var contentMarkup = new Markup(
+                string.IsNullOrEmpty(currentInput)
+                ? "[dim]Start typing...[/]"
+                : Markup.Escape(currentInput) + "[blink]_[/]"
+            );
+
+            var layout = new Rows(
+                contentMarkup,
+                new Align(new Markup("[dim](Enter for new line, Shift+Enter to submit)[/]"), HorizontalAlignment.Right)
+            );
                 
-            return new Panel(new Markup(content))
-                .Header("[green]Your Message[/]")
+            return new Panel(layout)
+                .Header(new PanelHeader("[green]Your Message[/]"))
                 .Border(BoxBorder.Rounded)
                 .BorderColor(Color.FromHex("#00ff87"))
-                .Padding(1, 0)
-                .Expand();
+                .Padding(1, 0);
         }
     }
 }
