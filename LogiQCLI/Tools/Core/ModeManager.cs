@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using LogiQCLI.Core.Models.Configuration;
@@ -133,6 +134,11 @@ namespace LogiQCLI.Core.Services
             return _currentMode.AllowedTools.Contains(toolName);
         }
 
+        public int GetBuiltInModeCount()
+        {
+            return _modeSettings.DefaultModes.Count(m => m.IsBuiltIn);
+        }
+
         private void InitializeModeSettings()
         {
             var settings = _configurationService.LoadSettings();
@@ -152,22 +158,35 @@ namespace LogiQCLI.Core.Services
             _modeSettings = settings.ModeSettings;
             bool needsSave = false;
 
-            if (_modeSettings.DefaultModes == null || _modeSettings.DefaultModes.Count == 0)
+            // Initialize default modes if missing
+            if (_modeSettings.DefaultModes == null)
             {
-                _modeSettings.DefaultModes = BuiltInModes.GetBuiltInModes();
+                _modeSettings.DefaultModes = new List<Mode>();
                 needsSave = true;
             }
 
+            // Initialize custom modes if missing
             if (_modeSettings.CustomModes == null)
             {
                 _modeSettings.CustomModes = new List<Mode>();
                 needsSave = true;
             }
 
-            _modeSettings.CustomModes = _modeSettings.CustomModes
+            // Migrate built-in modes (add new ones, update existing ones)
+            needsSave = MigrateBuiltInModes() || needsSave;
+
+            // Clean up invalid custom modes
+            var validCustomModes = _modeSettings.CustomModes
                 .Where(m => IsValidMode(m))
                 .ToList();
 
+            if (validCustomModes.Count != _modeSettings.CustomModes.Count)
+            {
+                _modeSettings.CustomModes = validCustomModes;
+                needsSave = true;
+            }
+
+            // Ensure active mode is valid
             if (string.IsNullOrWhiteSpace(_modeSettings.ActiveModeId) || 
                 !GetAvailableModes().Any(m => m.Id == _modeSettings.ActiveModeId))
             {
@@ -179,6 +198,126 @@ namespace LogiQCLI.Core.Services
             {
                 SaveModeSettings();
             }
+        }
+
+        private bool MigrateBuiltInModes()
+        {
+            var currentBuiltInModes = BuiltInModes.GetBuiltInModes();
+            var existingModeIds = _modeSettings.DefaultModes.Select(m => m.Id).ToHashSet(StringComparer.OrdinalIgnoreCase);
+            bool hasChanges = false;
+            var addedModes = new List<string>();
+            var updatedModes = new List<string>();
+            var removedModes = new List<string>();
+
+            // Add new built-in modes
+            foreach (var newMode in currentBuiltInModes)
+            {
+                var existingMode = _modeSettings.DefaultModes.FirstOrDefault(m => 
+                    string.Equals(m.Id, newMode.Id, StringComparison.OrdinalIgnoreCase));
+
+                if (existingMode == null)
+                {
+                    // New mode - add it
+                    _modeSettings.DefaultModes.Add(newMode);
+                    addedModes.Add(newMode.Id);
+                    hasChanges = true;
+                }
+                else
+                {
+                    // Existing mode - check if it needs updating
+                    if (ShouldUpdateBuiltInMode(existingMode, newMode))
+                    {
+                        // Update the existing mode with new definition
+                        UpdateBuiltInMode(existingMode, newMode);
+                        updatedModes.Add(existingMode.Id);
+                        hasChanges = true;
+                    }
+                }
+            }
+
+            // Remove built-in modes that no longer exist (in case modes are removed from code)
+            var currentModeIds = currentBuiltInModes.Select(m => m.Id).ToHashSet(StringComparer.OrdinalIgnoreCase);
+            var modesToRemove = _modeSettings.DefaultModes
+                .Where(m => m.IsBuiltIn && !currentModeIds.Contains(m.Id))
+                .ToList();
+
+            foreach (var modeToRemove in modesToRemove)
+            {
+                _modeSettings.DefaultModes.Remove(modeToRemove);
+                removedModes.Add(modeToRemove.Id);
+                hasChanges = true;
+            }
+
+            // Log migration information if there are changes
+            if (hasChanges)
+            {
+                LogMigrationInfo(addedModes, updatedModes, removedModes);
+            }
+
+            return hasChanges;
+        }
+
+        private void LogMigrationInfo(List<string> addedModes, List<string> updatedModes, List<string> removedModes)
+        {
+            if (addedModes.Any())
+            {
+                Console.WriteLine($"[LogiQCLI] Added new built-in modes: {string.Join(", ", addedModes)}");
+            }
+            
+            if (updatedModes.Any())
+            {
+                Console.WriteLine($"[LogiQCLI] Updated built-in modes: {string.Join(", ", updatedModes)}");
+            }
+            
+            if (removedModes.Any())
+            {
+                Console.WriteLine($"[LogiQCLI] Removed obsolete built-in modes: {string.Join(", ", removedModes)}");
+            }
+        }
+
+        private bool ShouldUpdateBuiltInMode(Mode existingMode, Mode newMode)
+        {
+            // Only update built-in modes to preserve any user customizations to custom modes
+            if (!existingMode.IsBuiltIn)
+                return false;
+
+            // Check if the mode definition has changed
+            return existingMode.Name != newMode.Name ||
+                   existingMode.Description != newMode.Description ||
+                   existingMode.SystemPrompt != newMode.SystemPrompt ||
+                   existingMode.PreferredModel != newMode.PreferredModel ||
+                   !ListsEqual(existingMode.AllowedCategories, newMode.AllowedCategories) ||
+                   !ListsEqual(existingMode.ExcludedCategories, newMode.ExcludedCategories) ||
+                   !ListsEqual(existingMode.AllowedTags, newMode.AllowedTags) ||
+                   !ListsEqual(existingMode.ExcludedTags, newMode.ExcludedTags) ||
+                   !ListsEqual(existingMode.AllowedTools, newMode.AllowedTools);
+        }
+
+        private void UpdateBuiltInMode(Mode existingMode, Mode newMode)
+        {
+            existingMode.Name = newMode.Name;
+            existingMode.Description = newMode.Description;
+            existingMode.SystemPrompt = newMode.SystemPrompt;
+            existingMode.PreferredModel = newMode.PreferredModel;
+            existingMode.IsBuiltIn = newMode.IsBuiltIn;
+            
+            existingMode.AllowedCategories = new List<string>(newMode.AllowedCategories);
+            existingMode.ExcludedCategories = new List<string>(newMode.ExcludedCategories);
+            existingMode.AllowedTags = new List<string>(newMode.AllowedTags);
+            existingMode.ExcludedTags = new List<string>(newMode.ExcludedTags);
+            existingMode.AllowedTools = new List<string>(newMode.AllowedTools);
+        }
+
+        private bool ListsEqual<T>(List<T> list1, List<T> list2)
+        {
+            if (list1 == null && list2 == null) return true;
+            if (list1 == null || list2 == null) return false;
+            if (list1.Count != list2.Count) return false;
+            
+            var set1 = new HashSet<T>(list1, EqualityComparer<T>.Default);
+            var set2 = new HashSet<T>(list2, EqualityComparer<T>.Default);
+            
+            return set1.SetEquals(set2);
         }
 
         private bool IsValidMode(Mode mode)

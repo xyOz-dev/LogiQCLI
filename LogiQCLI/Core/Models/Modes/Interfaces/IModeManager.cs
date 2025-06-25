@@ -12,5 +12,6 @@ namespace LogiQCLI.Core.Models.Modes.Interfaces
         bool AddCustomMode(Mode mode);
         bool RemoveCustomMode(string modeId);
         bool IsToolAllowedInCurrentMode(string toolName);
+        int GetBuiltInModeCount();
     }
 }
