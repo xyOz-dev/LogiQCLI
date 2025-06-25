@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Runtime.InteropServices;
 using LogiQCLI.Infrastructure.ApiClients.OpenRouter.Models;
 using LogiQCLI.Infrastructure.ApiClients.OpenRouter.Objects;
 using LogiQCLI.Core.Models.Modes.Interfaces;
@@ -104,15 +105,150 @@ namespace LogiQCLI.Presentation.Console.Session
             var workspace = System.IO.Directory.GetCurrentDirectory();
             var sb = new StringBuilder();
             
-            // Start with the base prompt
             sb.AppendLine(basePrompt);
             sb.AppendLine();
             
-            // Add environment details
-            sb.AppendLine("== Current Working Directory ==");
-            sb.AppendLine(workspace);
-            sb.AppendLine();
-            
+            AppendSystemInformation(sb);
+            AppendTerminalInformation(sb);
+            AppendDevelopmentEnvironment(sb);
+            AppendWorkspaceInformation(sb, workspace);
+            AppendProjectStructure(sb, workspace);
+
+            return sb.ToString();
+        }
+
+        private void AppendSystemInformation(StringBuilder sb)
+        {
+            try
+            {
+                sb.AppendLine("== System Environment ==");
+                sb.AppendLine($"Operating System: {GetDetailedOSInfo()}");
+                sb.AppendLine($"Architecture: {RuntimeInformation.ProcessArchitecture}");
+                sb.AppendLine($"Runtime: {RuntimeInformation.FrameworkDescription}");
+                sb.AppendLine($"Machine Name: {System.Environment.MachineName}");
+                sb.AppendLine($"User: {System.Environment.UserName}");
+                sb.AppendLine($"Domain: {System.Environment.UserDomainName}");
+                sb.AppendLine($"Processor Count: {System.Environment.ProcessorCount}");
+                sb.AppendLine($"System Directory: {System.Environment.SystemDirectory}");
+                sb.AppendLine($"Working Set: {System.Environment.WorkingSet / 1024 / 1024} MB");
+                sb.AppendLine();
+            }
+            catch (System.Exception ex)
+            {
+                sb.AppendLine("== System Environment ==");
+                sb.AppendLine($"  (Error reading system info: {ex.Message})");
+                sb.AppendLine();
+            }
+        }
+
+        private void AppendTerminalInformation(StringBuilder sb)
+        {
+            try
+            {
+                sb.AppendLine("== Terminal Environment ==");
+                
+                var shell = GetShellInformation();
+                sb.AppendLine($"Shell: {shell}");
+                
+                sb.AppendLine($"Terminal Size: {System.Console.WindowWidth}x{System.Console.WindowHeight}");
+                sb.AppendLine($"Buffer Size: {System.Console.BufferWidth}x{System.Console.BufferHeight}");
+                sb.AppendLine($"Cursor Position: {System.Console.CursorLeft},{System.Console.CursorTop}");
+                
+                AppendCommandChainingInfo(sb);
+                
+                AppendRelevantEnvironmentVariables(sb);
+                sb.AppendLine();
+            }
+            catch (System.Exception ex)
+            {
+                sb.AppendLine("== Terminal Environment ==");
+                sb.AppendLine($"  (Error reading terminal info: {ex.Message})");
+                sb.AppendLine();
+            }
+        }
+
+        private void AppendDevelopmentEnvironment(StringBuilder sb)
+        {
+            try
+            {
+                sb.AppendLine("== Development Environment ==");
+                
+                // .NET information
+                var dotnetVersion = GetDotNetVersion();
+                if (!string.IsNullOrEmpty(dotnetVersion))
+                {
+                    sb.AppendLine($".NET Version: {dotnetVersion}");
+                }
+                
+                // Git information
+                var gitInfo = GetGitInformation();
+                if (!string.IsNullOrEmpty(gitInfo))
+                {
+                    sb.AppendLine($"Git: {gitInfo}");
+                }
+                
+                // Node.js information
+                var nodeInfo = GetNodeInformation();
+                if (!string.IsNullOrEmpty(nodeInfo))
+                {
+                    sb.AppendLine($"Node.js: {nodeInfo}");
+                }
+                
+                // Python information
+                var pythonInfo = GetPythonInformation();
+                if (!string.IsNullOrEmpty(pythonInfo))
+                {
+                    sb.AppendLine($"Python: {pythonInfo}");
+                }
+                
+                // Package managers
+                var packageManagers = GetPackageManagerInfo();
+                if (!string.IsNullOrEmpty(packageManagers))
+                {
+                    sb.AppendLine($"Package Managers: {packageManagers}");
+                }
+                
+                sb.AppendLine();
+            }
+            catch (System.Exception ex)
+            {
+                sb.AppendLine("== Development Environment ==");
+                sb.AppendLine($"  (Error reading dev environment: {ex.Message})");
+                sb.AppendLine();
+            }
+        }
+
+        private void AppendWorkspaceInformation(StringBuilder sb, string workspace)
+        {
+            try
+            {
+                sb.AppendLine("== Workspace Information ==");
+                sb.AppendLine($"Current Directory: {workspace}");
+                
+                var driveInfo = new System.IO.DriveInfo(System.IO.Path.GetPathRoot(workspace) ?? "C:");
+                sb.AppendLine($"Drive: {driveInfo.Name} ({driveInfo.DriveFormat})");
+                sb.AppendLine($"Available Space: {driveInfo.AvailableFreeSpace / 1024 / 1024 / 1024} GB");
+                sb.AppendLine($"Total Space: {driveInfo.TotalSize / 1024 / 1024 / 1024} GB");
+                
+                // Project type detection
+                var projectType = DetectProjectType(workspace);
+                if (!string.IsNullOrEmpty(projectType))
+                {
+                    sb.AppendLine($"Project Type: {projectType}");
+                }
+                
+                sb.AppendLine();
+            }
+            catch (System.Exception ex)
+            {
+                sb.AppendLine("== Workspace Information ==");
+                sb.AppendLine($"  (Error reading workspace info: {ex.Message})");
+                sb.AppendLine();
+            }
+        }
+
+        private void AppendProjectStructure(StringBuilder sb, string workspace)
+        {
             try
             {
                 var allFiles = System.IO.Directory.GetFiles(
@@ -126,7 +262,13 @@ namespace LogiQCLI.Presentation.Console.Session
                     $"{System.IO.Path.DirectorySeparatorChar}obj{System.IO.Path.DirectorySeparatorChar}",
                     $"{System.IO.Path.DirectorySeparatorChar}.git{System.IO.Path.DirectorySeparatorChar}",
                     $"{System.IO.Path.DirectorySeparatorChar}.vs{System.IO.Path.DirectorySeparatorChar}",
-                    $"{System.IO.Path.DirectorySeparatorChar}node_modules{System.IO.Path.DirectorySeparatorChar}"
+                    $"{System.IO.Path.DirectorySeparatorChar}.vscode{System.IO.Path.DirectorySeparatorChar}",
+                    $"{System.IO.Path.DirectorySeparatorChar}node_modules{System.IO.Path.DirectorySeparatorChar}",
+                    $"{System.IO.Path.DirectorySeparatorChar}__pycache__{System.IO.Path.DirectorySeparatorChar}",
+                    $"{System.IO.Path.DirectorySeparatorChar}.pytest_cache{System.IO.Path.DirectorySeparatorChar}",
+                    $"{System.IO.Path.DirectorySeparatorChar}target{System.IO.Path.DirectorySeparatorChar}",
+                    $"{System.IO.Path.DirectorySeparatorChar}dist{System.IO.Path.DirectorySeparatorChar}",
+                    $"{System.IO.Path.DirectorySeparatorChar}build{System.IO.Path.DirectorySeparatorChar}"
                 };
 
                 var filteredFiles = allFiles
@@ -139,14 +281,35 @@ namespace LogiQCLI.Presentation.Console.Session
                 
                 if (filteredFiles.Count > 0)
                 {
-                    foreach (var file in filteredFiles.Take(100)) // Limit to prevent extremely long prompts
+                    var filesByExtension = filteredFiles
+                        .GroupBy(f => System.IO.Path.GetExtension(f).ToLowerInvariant())
+                        .OrderBy(g => g.Key)
+                        .ToList();
+
+                    var totalShown = 0;
+                    foreach (var group in filesByExtension)
                     {
-                        sb.AppendLine($"  {file}");
+                        if (totalShown >= 100) break;
+                        
+                        var ext = string.IsNullOrEmpty(group.Key) ? "(no extension)" : group.Key;
+                        var filesToShow = group.Take(Math.Min(20, 100 - totalShown)).ToList();
+                        
+                        sb.AppendLine($"  {ext} files ({group.Count()}):");
+                        foreach (var file in filesToShow)
+                        {
+                            sb.AppendLine($"    {file}");
+                            totalShown++;
+                        }
+                        
+                        if (group.Count() > filesToShow.Count)
+                        {
+                            sb.AppendLine($"    ... and {group.Count() - filesToShow.Count} more {ext} files");
+                        }
                     }
                     
                     if (filteredFiles.Count > 100)
                     {
-                        sb.AppendLine($"  ... and {filteredFiles.Count - 100} more files");
+                        sb.AppendLine($"  ... and {filteredFiles.Count - 100} more files total");
                     }
                 }
                 else
@@ -159,22 +322,391 @@ namespace LogiQCLI.Presentation.Console.Session
                 sb.AppendLine("== Project File Structure ==");
                 sb.AppendLine($"  (Error reading directory: {ex.Message})");
             }
+        }
 
-            return sb.ToString();
+        private string GetDetailedOSInfo()
+        {
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                var version = System.Environment.OSVersion.Version;
+                var buildNumber = GetWindowsBuildNumber();
+                return $"Windows {version.Major}.{version.Minor}.{version.Build}{buildNumber}";
+            }
+            else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+            {
+                var distro = GetLinuxDistribution();
+                return $"Linux {RuntimeInformation.OSDescription} {distro}";
+            }
+            else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            {
+                return $"macOS {RuntimeInformation.OSDescription}";
+            }
+            else
+            {
+                return RuntimeInformation.OSDescription;
+            }
+        }
+
+        private string GetWindowsBuildNumber()
+        {
+            try
+            {
+                using var key = Microsoft.Win32.Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Microsoft\Windows NT\CurrentVersion");
+                var buildLabEx = key?.GetValue("BuildLabEx")?.ToString();
+                if (!string.IsNullOrEmpty(buildLabEx))
+                {
+                    return $" ({buildLabEx})";
+                }
+            }
+            catch { }
+            return "";
+        }
+
+        private string GetLinuxDistribution()
+        {
+            try
+            {
+                if (System.IO.File.Exists("/etc/os-release"))
+                {
+                    var lines = System.IO.File.ReadAllLines("/etc/os-release");
+                    var pretty = lines.FirstOrDefault(l => l.StartsWith("PRETTY_NAME="));
+                    if (pretty != null)
+                    {
+                        return pretty.Split('=')[1].Trim('"');
+                    }
+                }
+            }
+            catch { }
+            return "";
+        }
+
+        private string GetShellInformation()
+        {
+            var shell = System.Environment.GetEnvironmentVariable("SHELL") ?? 
+                       System.Environment.GetEnvironmentVariable("ComSpec") ?? 
+                       "Unknown";
+            
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                var psVersion = System.Environment.GetEnvironmentVariable("PSVersionTable");
+                if (!string.IsNullOrEmpty(psVersion))
+                {
+                    shell += " (PowerShell)";
+                }
+            }
+            
+            return shell;
+        }
+
+        private void AppendCommandChainingInfo(StringBuilder sb)
+        {
+            sb.AppendLine("Command Chaining Support:");
+            
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                sb.AppendLine("  Sequential Commands: command1 ; command2 ; command3");
+                sb.AppendLine("  Conditional Success: command1 && command2 && command3");
+                sb.AppendLine("  Conditional Failure: command1 || command2 || command3");
+                sb.AppendLine("  Background Process: command1 & command2");
+                sb.AppendLine("  Examples:");
+                sb.AppendLine("    dotnet build ; dotnet test ; echo Build and test complete");
+                sb.AppendLine("    cd src && dotnet run && echo App started successfully");
+                sb.AppendLine("    git add . && git commit -m \"Update\" && git push");
+            }
+            else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux) || RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            {
+                sb.AppendLine("  Sequential Commands: command1 ; command2 ; command3");
+                sb.AppendLine("  Conditional Success: command1 && command2 && command3");
+                sb.AppendLine("  Conditional Failure: command1 || command2 || command3");
+                sb.AppendLine("  Background Process: command1 & command2");
+                sb.AppendLine("  Pipe Output: command1 | command2 | command3");
+                sb.AppendLine("  Examples:");
+                sb.AppendLine("    dotnet build ; dotnet test ; echo \"Build and test complete\"");
+                sb.AppendLine("    cd src && dotnet run && echo \"App started successfully\"");
+                sb.AppendLine("    git add . && git commit -m \"Update\" && git push");
+                sb.AppendLine("    ls -la | grep \".cs\" | wc -l");
+            }
+            else
+            {
+                sb.AppendLine("  Sequential Commands: command1 ; command2 ; command3");
+                sb.AppendLine("  Conditional Success: command1 && command2 && command3");
+            }
+            
+            sb.AppendLine("IMPORTANT: Use command chaining to run multiple operations efficiently in a single terminal call.");
+            sb.AppendLine("This reduces the number of separate tool calls and improves performance significantly.");
+        }
+
+        private void AppendRelevantEnvironmentVariables(StringBuilder sb)
+        {
+            var relevantVars = new[] { "PATH", "TERM", "TERM_PROGRAM", "COLORTERM", "LC_ALL", "LANG", "EDITOR", "PAGER" };
+            
+            sb.AppendLine("Environment Variables:");
+            foreach (var varName in relevantVars)
+            {
+                var value = System.Environment.GetEnvironmentVariable(varName);
+                if (!string.IsNullOrEmpty(value))
+                {
+                    // Truncate PATH for readability
+                    if (varName == "PATH" && value.Length > 200)
+                    {
+                        value = value.Substring(0, 200) + "...";
+                    }
+                    sb.AppendLine($"  {varName}: {value}");
+                }
+            }
+        }
+
+        private string GetDotNetVersion()
+        {
+            try
+            {
+                var process = new System.Diagnostics.Process
+                {
+                    StartInfo = new System.Diagnostics.ProcessStartInfo
+                    {
+                        FileName = "dotnet",
+                        Arguments = "--version",
+                        RedirectStandardOutput = true,
+                        UseShellExecute = false,
+                        CreateNoWindow = true
+                    }
+                };
+                process.Start();
+                var output = process.StandardOutput.ReadToEnd();
+                process.WaitForExit();
+                return output.Trim();
+            }
+            catch { return ""; }
+        }
+
+        private string GetGitInformation()
+        {
+            try
+            {
+                var process = new System.Diagnostics.Process
+                {
+                    StartInfo = new System.Diagnostics.ProcessStartInfo
+                    {
+                        FileName = "git",
+                        Arguments = "--version",
+                        RedirectStandardOutput = true,
+                        UseShellExecute = false,
+                        CreateNoWindow = true
+                    }
+                };
+                process.Start();
+                var output = process.StandardOutput.ReadToEnd();
+                process.WaitForExit();
+                return output.Trim();
+            }
+            catch { return ""; }
+        }
+
+        private string GetNodeInformation()
+        {
+            try
+            {
+                var process = new System.Diagnostics.Process
+                {
+                    StartInfo = new System.Diagnostics.ProcessStartInfo
+                    {
+                        FileName = "node",
+                        Arguments = "--version",
+                        RedirectStandardOutput = true,
+                        UseShellExecute = false,
+                        CreateNoWindow = true
+                    }
+                };
+                process.Start();
+                var output = process.StandardOutput.ReadToEnd();
+                process.WaitForExit();
+                return output.Trim();
+            }
+            catch { return ""; }
+        }
+
+        private string GetPythonInformation()
+        {
+            try
+            {
+                var pythonCommands = new[] { "python3", "python" };
+                foreach (var cmd in pythonCommands)
+                {
+                    try
+                    {
+                        var process = new System.Diagnostics.Process
+                        {
+                            StartInfo = new System.Diagnostics.ProcessStartInfo
+                            {
+                                FileName = cmd,
+                                Arguments = "--version",
+                                RedirectStandardOutput = true,
+                                RedirectStandardError = true,
+                                UseShellExecute = false,
+                                CreateNoWindow = true
+                            }
+                        };
+                        process.Start();
+                        var output = process.StandardOutput.ReadToEnd();
+                        var error = process.StandardError.ReadToEnd();
+                        process.WaitForExit();
+                        var result = !string.IsNullOrEmpty(output) ? output : error;
+                        if (!string.IsNullOrEmpty(result))
+                        {
+                            return result.Trim();
+                        }
+                    }
+                    catch { }
+                }
+            }
+            catch { }
+            return "";
+        }
+
+        private string GetPackageManagerInfo()
+        {
+            var managers = new List<string>();
+            var commands = new[] 
+            { 
+                ("npm", "--version", "npm"),
+                ("yarn", "--version", "Yarn"),
+                ("pnpm", "--version", "pnpm"),
+                ("pip", "--version", "pip"),
+                ("cargo", "--version", "Cargo"),
+                ("go", "version", "Go")
+            };
+
+            foreach (var (cmd, args, name) in commands)
+            {
+                try
+                {
+                    var process = new System.Diagnostics.Process
+                    {
+                        StartInfo = new System.Diagnostics.ProcessStartInfo
+                        {
+                            FileName = cmd,
+                            Arguments = args,
+                            RedirectStandardOutput = true,
+                            UseShellExecute = false,
+                            CreateNoWindow = true
+                        }
+                    };
+                    process.Start();
+                    var output = process.StandardOutput.ReadToEnd();
+                    process.WaitForExit();
+                    if (process.ExitCode == 0 && !string.IsNullOrEmpty(output))
+                    {
+                        var version = output.Split('\n')[0].Trim();
+                        managers.Add($"{name} ({version})");
+                    }
+                }
+                catch { }
+            }
+
+            return string.Join(", ", managers);
+        }
+
+        private string DetectProjectType(string workspace)
+        {
+            var indicators = new Dictionary<string, string>
+            {
+                { "*.csproj", ".NET Project" },
+                { "*.sln", ".NET Solution" },
+                { "package.json", "Node.js Project" },
+                { "requirements.txt", "Python Project" },
+                { "Pipfile", "Python Project (Pipenv)" },
+                { "pyproject.toml", "Python Project (Poetry/PEP 518)" },
+                { "Cargo.toml", "Rust Project" },
+                { "go.mod", "Go Project" },
+                { "pom.xml", "Java Maven Project" },
+                { "build.gradle", "Java Gradle Project" },
+                { "composer.json", "PHP Composer Project" },
+                { "Gemfile", "Ruby Project" },
+                { "mix.exs", "Elixir Project" },
+                { "deno.json", "Deno Project" }
+            };
+
+            var detectedTypes = new List<string>();
+            
+            foreach (var (pattern, type) in indicators)
+            {
+                try
+                {
+                    if (pattern.Contains("*"))
+                    {
+                        var files = System.IO.Directory.GetFiles(workspace, pattern, System.IO.SearchOption.TopDirectoryOnly);
+                        if (files.Length > 0)
+                        {
+                            detectedTypes.Add(type);
+                        }
+                    }
+                    else if (System.IO.File.Exists(System.IO.Path.Combine(workspace, pattern)))
+                    {
+                        detectedTypes.Add(type);
+                    }
+                }
+                catch { }
+            }
+
+            return string.Join(", ", detectedTypes.Distinct());
         }
 
         private string GetDefaultSystemPrompt()
         {
-            return @"You are LogiQ, an expert AI software-engineering assistant.
+            var sb = new StringBuilder();
+            
+            sb.AppendLine("You are LogiQ, an expert AI software-engineering assistant and development partner.");
+            sb.AppendLine();
+            
+            sb.AppendLine("== Core Principles ==");
+            sb.AppendLine("• **Efficiency First**: Use command chaining (e.g., `cmd1 && cmd2 && cmd3`) to minimize tool calls");
+            sb.AppendLine("• **Context Awareness**: Leverage the comprehensive environment information provided");
+            sb.AppendLine("• **Quality Focus**: Write clean, maintainable, well-documented code");
+            sb.AppendLine("• **Safety**: Always validate inputs and handle edge cases gracefully");
+            sb.AppendLine();
+            
+            sb.AppendLine("== Engineering Guidelines ==");
+            sb.AppendLine("• **Code Style**: Follow existing patterns, naming conventions, and architecture");
+            sb.AppendLine("• **Design Decisions**: Think through choices systematically; explain your reasoning clearly");
+            sb.AppendLine("• **Error Handling**: Implement comprehensive error handling and validation");
+            sb.AppendLine("• **Documentation**: Include clear comments and documentation for complex logic");
+            sb.AppendLine("• **Testing**: Consider testability and suggest test cases where appropriate");
+            sb.AppendLine("• **Performance**: Be mindful of performance implications and resource usage");
+            sb.AppendLine();
+            
+            sb.AppendLine("== Communication Style ==");
+            sb.AppendLine("• **Clarity**: Provide clear, actionable responses with specific examples");
+            sb.AppendLine("• **Conciseness**: Be thorough but avoid unnecessary verbosity");
+            sb.AppendLine("• **Proactive**: Anticipate potential issues and suggest improvements");
+            sb.AppendLine("• **Questions**: Ask clarifying questions when requirements are ambiguous");
+            sb.AppendLine();
+            
+            sb.AppendLine("== Tool Usage Best Practices ==");
+            sb.AppendLine("• **Command Chaining**: Use platform-appropriate command chaining for efficiency");
+            sb.AppendLine("  - Windows: `dotnet build ; dotnet test ; echo \"Complete\"`");
+            sb.AppendLine("  - Unix: `dotnet build && dotnet test && echo \"Complete\"`");
+            sb.AppendLine("• **File Operations**: Use relative paths when possible; respect project structure");
+            sb.AppendLine("• **Parallel Execution**: Execute multiple read-only operations simultaneously when beneficial");
+            sb.AppendLine();
+            
+            sb.AppendLine("== Problem-Solving Approach ==");
+            sb.AppendLine("1. **Understand**: Analyze the request and gather extensive but necessary context");
+            sb.AppendLine("2. **Plan**: Develop a clear strategy with specific, measurable steps");
+            sb.AppendLine("3. **Execute**: Implement solutions systematically with proper validation");
+            sb.AppendLine("4. **Verify**: Test functionality and ensure requirements are met");
+            sb.AppendLine("5. **Document**: Explain changes and provide guidance for future maintenance unless specified otherwise.");
+            sb.AppendLine();
+            
+            sb.AppendLine("IMPORTANT: You have access to comprehensive environment details, project structure,");
+            sb.AppendLine("and development tools. Use this information to provide contextually appropriate");
+            sb.AppendLine("solutions that work seamlessly in the current environment.");
+            sb.AppendLine();
+            
+            sb.AppendLine("Remember: You are LogiQ - a trusted development partner. Act with the expertise");
+            sb.AppendLine("and diligence of a senior software engineer, always prioritizing code quality,");
+            sb.AppendLine("maintainability, and user success.");
 
-== Engineering guidelines ==
-- Follow existing code style, naming, and architecture.
-- Think through design choices; explain your reasoning concisely.
-- Handle edge cases and add appropriate error handling.
-- If requirements are unclear, ask follow-up questions.
-- Do not output tool commands unless you intend them to be executed.
-
-Remember: you are LogiQ. Use the tools responsibly and act as a diligent senior engineer.";
+            return sb.ToString();
         }
     }
 }
