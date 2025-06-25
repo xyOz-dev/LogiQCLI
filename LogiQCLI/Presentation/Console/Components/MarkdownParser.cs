@@ -58,7 +58,6 @@ namespace LogiQCLI.Presentation.Console.Components
                 else
                 {
                     var processedLine = ParseInlineMarkdown(line);
-                    // Only add non-empty processed lines, or preserve intentional empty lines
                     if (!string.IsNullOrEmpty(processedLine) || string.IsNullOrEmpty(line.Trim()))
                     {
                         result.AppendLine(processedLine);
