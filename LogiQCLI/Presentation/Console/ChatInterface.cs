@@ -93,14 +93,6 @@ namespace LogiQCLI.Presentation.Console
         {
             var userMessage = new Message { Role = "user", Content = message };
             _chatSession.AddMessage(userMessage);
-            
-            await AnsiConsole.Status()
-                .Spinner(Spinner.Known.CircleHalves)
-                .SpinnerStyle(Style.Parse("green"))
-                .StartAsync("[green]Processing your message...[/]", async ctx =>
-                {
-                    await _messageRenderer.RenderMessageAsync(userMessage, MessageStyle.User);
-                });
         }
 
         private async Task GenerateAssistantResponseAsync()

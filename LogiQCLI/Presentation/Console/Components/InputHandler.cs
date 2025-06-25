@@ -16,65 +16,45 @@ namespace LogiQCLI.Presentation.Console.Components
         {
             var inputBuilder = new StringBuilder();
             string result = "";
-            DateTime lastKeyTime = DateTime.Now;
-            bool isPasting = false;
-
+            
             AnsiConsole.Live(CreateInputPanel(""))
-                .AutoClear(true)
+                .AutoClear(false)
                 .Start(ctx => {
                     ctx.UpdateTarget(CreateInputPanel(""));
                     while(true)
                     {
-                        if (System.Console.KeyAvailable)
-                        {
-                            var currentTime = DateTime.Now;
-                            if ((currentTime - lastKeyTime).TotalMilliseconds < 50)
-                            {
-                                isPasting = true;
-                            }
-                            lastKeyTime = currentTime;
-                        }
-                        else
-                        {
-                            isPasting = false;
-                        }
-
                         var key = System.Console.ReadKey(true);
-                        
+                        bool isLikelyPaste = System.Console.KeyAvailable;
                         bool shouldSubmit = false;
                         
                         if (key.Key == ConsoleKey.Enter)
                         {
-                            if (isPasting)
+                            if (isLikelyPaste)
                             {
                                 inputBuilder.AppendLine();
                             }
-                            else if (key.Modifiers == ConsoleModifiers.Control)
+                            else if ((key.Modifiers & ConsoleModifiers.Shift) != 0)
                             {
-                                shouldSubmit = true;
+                                inputBuilder.AppendLine();
                             }
-                            else if (key.Modifiers == ConsoleModifiers.Shift)
-                            {
-                                shouldSubmit = true;
-                            }
-                            else if (key.Modifiers == ConsoleModifiers.Alt)
-                            {
-                                shouldSubmit = true;
-                            }
-                            else if (inputBuilder.Length > 0 && inputBuilder.ToString().EndsWith(Environment.NewLine))
+                            else if ((key.Modifiers & (ConsoleModifiers.Control | ConsoleModifiers.Alt)) != 0)
                             {
                                 shouldSubmit = true;
                             }
                             else
                             {
-                                inputBuilder.AppendLine();
+                                var trimmedContent = inputBuilder.ToString().Trim();
+                                if (!string.IsNullOrEmpty(trimmedContent))
+                                {
+                                    shouldSubmit = true;
+                                }
+                                else
+                                {
+                                    inputBuilder.AppendLine();
+                                }
                             }
                         }
-                        else if (key.Key == ConsoleKey.Tab && !isPasting)
-                        {
-                            shouldSubmit = true;
-                        }
-                        else if (key.Key == ConsoleKey.Escape && !isPasting)
+                        else if ((key.Key == ConsoleKey.Tab || key.Key == ConsoleKey.Escape) && !isLikelyPaste)
                         {
                             shouldSubmit = true;
                         }
@@ -93,7 +73,7 @@ namespace LogiQCLI.Presentation.Console.Components
                                 }
                             }
                         }
-                        else if (key.Key == ConsoleKey.Tab && isPasting)
+                        else if (key.Key == ConsoleKey.Tab && isLikelyPaste)
                         {
                             inputBuilder.Append('\t');
                         }
@@ -114,7 +94,7 @@ namespace LogiQCLI.Presentation.Console.Components
             
             return result;
         }
-
+        
         public string GetSingleLineInput(string prompt)
         {
             return AnsiConsole.Prompt(
@@ -218,7 +198,7 @@ namespace LogiQCLI.Presentation.Console.Components
 
             var layout = new Rows(
                 contentMarkup,
-                new Align(new Markup("[dim](Enter for new line | Ctrl+Enter, Tab, or ESC to submit)[/]"), HorizontalAlignment.Right)
+                new Align(new Markup("[dim](Enter to send | Shift+Enter for new line | Tab or ESC to submit)[/]"), HorizontalAlignment.Right)
             );
                 
             return new Panel(layout)
