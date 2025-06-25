@@ -16,6 +16,8 @@ namespace LogiQCLI.Presentation.Console.Components
         {
             var inputBuilder = new StringBuilder();
             string result = "";
+            DateTime lastKeyTime = DateTime.Now;
+            bool isPasting = false;
 
             AnsiConsole.Live(CreateInputPanel(""))
                 .AutoClear(true)
@@ -23,31 +25,99 @@ namespace LogiQCLI.Presentation.Console.Components
                     ctx.UpdateTarget(CreateInputPanel(""));
                     while(true)
                     {
+                        // Check if there are multiple keys available (indicates pasting)
+                        if (System.Console.KeyAvailable)
+                        {
+                            var currentTime = DateTime.Now;
+                            if ((currentTime - lastKeyTime).TotalMilliseconds < 50)
+                            {
+                                isPasting = true;
+                            }
+                            lastKeyTime = currentTime;
+                        }
+                        else
+                        {
+                            isPasting = false;
+                        }
+
                         var key = System.Console.ReadKey(true);
                         
-                        if (key.Key == ConsoleKey.Enter && key.Modifiers == ConsoleModifiers.Shift)
-                        {
-                            result = inputBuilder.ToString();
-                            break;
-                        }
+                        // Check for various submit combinations that work across platforms
+                        bool shouldSubmit = false;
                         
-                        switch (key.Key)
+                        if (key.Key == ConsoleKey.Enter)
                         {
-                            case ConsoleKey.Enter:
+                            // If we're pasting, don't treat Enter as submit - just add newline
+                            if (isPasting)
+                            {
                                 inputBuilder.AppendLine();
-                                break;
-                            case ConsoleKey.Backspace:
-                                if (inputBuilder.Length > 0)
+                            }
+                            // Ctrl+Enter to submit (works on all platforms)
+                            else if (key.Modifiers == ConsoleModifiers.Control)
+                            {
+                                shouldSubmit = true;
+                            }
+                            // Shift+Enter to submit (Windows/Linux style)
+                            else if (key.Modifiers == ConsoleModifiers.Shift)
+                            {
+                                shouldSubmit = true;
+                            }
+                            // Command+Enter on macOS (detected as Alt modifier in some terminals)
+                            else if (key.Modifiers == ConsoleModifiers.Alt)
+                            {
+                                shouldSubmit = true;
+                            }
+                            // Double Enter: if the last characters are already newlines, submit
+                            else if (inputBuilder.Length > 0 && inputBuilder.ToString().EndsWith(Environment.NewLine))
+                            {
+                                shouldSubmit = true;
+                            }
+                            // Plain Enter adds new line
+                            else
+                            {
+                                inputBuilder.AppendLine();
+                            }
+                        }
+                        else if (key.Key == ConsoleKey.Tab && !isPasting)
+                        {
+                            // Tab to submit (good alternative for macOS) - but not during paste
+                            shouldSubmit = true;
+                        }
+                        else if (key.Key == ConsoleKey.Escape && !isPasting)
+                        {
+                            // ESC to submit as well (another alternative) - but not during paste
+                            shouldSubmit = true;
+                        }
+                        else if (key.Key == ConsoleKey.Backspace)
+                        {
+                            if (inputBuilder.Length > 0)
+                            {
+                                // Handle backspace for newlines properly
+                                var str = inputBuilder.ToString();
+                                if (str.EndsWith(Environment.NewLine))
+                                {
+                                    inputBuilder.Length -= Environment.NewLine.Length;
+                                }
+                                else
                                 {
                                     inputBuilder.Length--;
                                 }
-                                break;
-                            default:
-                                if (!char.IsControl(key.KeyChar))
-                                {
-                                    inputBuilder.Append(key.KeyChar);
-                                }
-                                break;
+                            }
+                        }
+                        else if (key.Key == ConsoleKey.Tab && isPasting)
+                        {
+                            // If pasting, treat tab as regular character
+                            inputBuilder.Append('\t');
+                        }
+                        else if (!char.IsControl(key.KeyChar))
+                        {
+                            inputBuilder.Append(key.KeyChar);
+                        }
+                        
+                        if (shouldSubmit)
+                        {
+                            result = inputBuilder.ToString().TrimEnd();
+                            break;
                         }
                         
                         ctx.UpdateTarget(CreateInputPanel(inputBuilder.ToString()));
@@ -160,7 +230,7 @@ namespace LogiQCLI.Presentation.Console.Components
 
             var layout = new Rows(
                 contentMarkup,
-                new Align(new Markup("[dim](Enter for new line, Shift+Enter to submit)[/]"), HorizontalAlignment.Right)
+                new Align(new Markup("[dim](Enter for new line | Ctrl+Enter, Tab, or ESC to submit)[/]"), HorizontalAlignment.Right)
             );
                 
             return new Panel(layout)

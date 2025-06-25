@@ -88,7 +88,9 @@ namespace LogiQCLI.Presentation.Console.Components
 
         private string FormatMessageContent(string content)
         {
-            return MarkdownParser.ParseMarkdown(content);
+            // Trim whitespace and normalize line endings for better formatting
+            var normalizedContent = content?.Trim() ?? string.Empty;
+            return MarkdownParser.ParseMarkdown(normalizedContent);
         }
 
         public void ClearHistory()
