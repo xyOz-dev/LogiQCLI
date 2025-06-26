@@ -120,6 +120,10 @@ public class Program
         var documentationApiClient = new LogiQCLI.Infrastructure.ApiClients.Documentation.DocumentationApiClient(httpClient);
         _serviceContainer.RegisterInstance(documentationApiClient);
         
+        var tavilyApiKey = settings.Tavily?.ApiKey ?? "dummy-key-for-startup";
+        var tavilyClient = new LogiQCLI.Infrastructure.ApiClients.Tavily.TavilyClient(httpClient, tavilyApiKey, settings.Tavily?.BaseUrl);
+        _serviceContainer.RegisterInstance(tavilyClient);
+        
         _serviceContainer.RegisterInstance<IServiceContainer>(_serviceContainer);
         
         _toolRegistry = new ToolRegistry();

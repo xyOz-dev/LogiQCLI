@@ -22,6 +22,8 @@ namespace LogiQCLI.Presentation.Console.Components
             ConfigureWorkspace();
             ConfigureModel();
             ConfigureApiKey();
+            ConfigureGitHub();
+            ConfigureTavily();
             DisplaySelectedConfiguration();
             return _settings;
         }
@@ -132,6 +134,93 @@ namespace LogiQCLI.Presentation.Console.Components
            }
        }
 
+        private void ConfigureGitHub()
+        {
+            AnsiConsole.MarkupLine("[cyan]GitHub Integration Configuration (Optional)[/]");
+            AnsiConsole.MarkupLine("[dim]GitHub integration enables repository operations and issue management.[/]");
+            AnsiConsole.WriteLine();
+
+            var configureGitHub = AnsiConsole.Confirm("[green]Do you want to configure GitHub integration?[/]", false);
+            
+            if (configureGitHub)
+            {
+                var token = AnsiConsole.Prompt(
+                    new TextPrompt<string>("[green]Enter GitHub Personal Access Token:[/] ")
+                        .PromptStyle("green")
+                        .Secret()
+                        .AllowEmpty());
+
+                string? defaultOwner = null;
+                string? defaultRepo = null;
+
+                if (!string.IsNullOrWhiteSpace(token))
+                {
+                    var configureDefaults = AnsiConsole.Confirm("[green]Do you want to set default owner/repository?[/]", false);
+                    
+                    if (configureDefaults)
+                    {
+                        defaultOwner = AnsiConsole.Ask<string>("[green]Enter default GitHub owner/organization (optional):[/] ", string.Empty);
+                        if (!string.IsNullOrWhiteSpace(defaultOwner))
+                        {
+                            defaultRepo = AnsiConsole.Ask<string>("[green]Enter default repository name (optional):[/] ", string.Empty);
+                        }
+                    }
+
+                    _settings.GitHub = new GitHubSettings 
+                    { 
+                        Token = token,
+                        DefaultOwner = string.IsNullOrWhiteSpace(defaultOwner) ? null : defaultOwner,
+                        DefaultRepo = string.IsNullOrWhiteSpace(defaultRepo) ? null : defaultRepo
+                    };
+                    AnsiConsole.MarkupLine("[green]✓ GitHub configured successfully.[/]");
+                }
+                else
+                {
+                    AnsiConsole.MarkupLine("[yellow]Skipping GitHub configuration (no token provided).[/]");
+                }
+            }
+            else
+            {
+                AnsiConsole.MarkupLine("[dim]GitHub configuration skipped.[/]");
+            }
+
+            AnsiConsole.WriteLine();
+        }
+
+        private void ConfigureTavily()
+        {
+            AnsiConsole.MarkupLine("[cyan]Tavily Search Configuration (Optional)[/]");
+            AnsiConsole.MarkupLine("[dim]Tavily provides AI-optimized web search capabilities.[/]");
+            AnsiConsole.WriteLine();
+
+            var configureTavily = AnsiConsole.Confirm("[green]Do you want to configure Tavily search?[/]", false);
+            
+            if (configureTavily)
+            {
+                var apiKey = AnsiConsole.Prompt(
+                    new TextPrompt<string>("[green]Enter Tavily API key:[/] ")
+                        .PromptStyle("green")
+                        .Secret()
+                        .AllowEmpty());
+
+                if (!string.IsNullOrWhiteSpace(apiKey))
+                {
+                    _settings.Tavily = new TavilySettings { ApiKey = apiKey };
+                    AnsiConsole.MarkupLine("[green]✓ Tavily configured successfully.[/]");
+                }
+                else
+                {
+                    AnsiConsole.MarkupLine("[yellow]Skipping Tavily configuration.[/]");
+                }
+            }
+            else
+            {
+                AnsiConsole.MarkupLine("[dim]Tavily configuration skipped.[/]");
+            }
+
+            AnsiConsole.WriteLine();
+        }
+
         private void DisplaySelectedConfiguration()
         {
             var table = new Table()
@@ -151,6 +240,12 @@ namespace LogiQCLI.Presentation.Console.Components
             {
                 table.AddRow("[cyan]Active API Key[/]", "[yellow]Not Set[/]");
             }
+
+            var githubStatus = !string.IsNullOrEmpty(_settings.GitHub?.Token) ? "Configured" : "Not Set";
+            table.AddRow("[cyan]GitHub[/]", githubStatus == "Configured" ? "[green]Configured[/]" : "[yellow]Not Set[/]");
+
+            var tavilyStatus = !string.IsNullOrEmpty(_settings.Tavily?.ApiKey) ? "Configured" : "Not Set";
+            table.AddRow("[cyan]Tavily[/]", tavilyStatus == "Configured" ? "[green]Configured[/]" : "[yellow]Not Set[/]");
 
             AnsiConsole.Write(table);
             AnsiConsole.WriteLine();

@@ -24,6 +24,7 @@ namespace LogiQCLI.Core.Models.Configuration
         };
         public ModeSettings ModeSettings { get; set; } = new ModeSettings();
         public GitHubSettings GitHub { get; set; } = new GitHubSettings();
+        public TavilySettings Tavily { get; set; } = new TavilySettings();
         
 
 

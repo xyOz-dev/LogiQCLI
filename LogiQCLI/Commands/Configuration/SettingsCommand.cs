@@ -61,7 +61,9 @@ namespace LogiQCLI.Commands.Configuration
                 { "User Data Path", _settings.UserDataPath ?? "[dim]Not set[/]" },
                 { "Active API Key", _settings.ActiveApiKeyNickname ?? "[dim]Not set[/]" },
                 { "Workspace", _settings.Workspace ?? "[dim]Not set[/]" },
-                { "Default Model", _settings.DefaultModel ?? "[dim]Not set[/]" }
+                { "Default Model", _settings.DefaultModel ?? "[dim]Not set[/]" },
+                { "GitHub Token", !string.IsNullOrEmpty(_settings.GitHub?.Token) ? "Configured" : "[dim]Not set[/]" },
+                { "Tavily API Key", !string.IsNullOrEmpty(_settings.Tavily?.ApiKey) ? "Configured" : "[dim]Not set[/]" }
             };
 
             TableFormatter.RenderKeyValueTable("Current Settings", settingsData, Color.Blue);
@@ -98,6 +100,8 @@ namespace LogiQCLI.Commands.Configuration
                 "Change Workspace",
                 "Change Default Model",
                 "Manage API Keys",
+                "Configure GitHub",
+                "Configure Tavily",
                 "Exit"
             };
 
@@ -138,6 +142,12 @@ namespace LogiQCLI.Commands.Configuration
                         break;
                     case "Manage API Keys":
                         HandleApiKeyManagement();
+                        break;
+                    case "Configure GitHub":
+                        HandleGitHubConfiguration();
+                        break;
+                    case "Configure Tavily":
+                        HandleTavilyConfiguration();
                         break;
                     case "Exit":
                         return "[green]Settings configuration completed.[/]";
@@ -347,6 +357,163 @@ namespace LogiQCLI.Commands.Configuration
 
                 _configService.SaveSettings(_settings);
                 AnsiConsole.MarkupLine($"[green]✓ API key '{selectedKey}' removed successfully.[/]");
+            }
+        }
+
+        private void HandleGitHubConfiguration()
+        {
+            AnsiConsole.Clear();
+            AnsiConsole.MarkupLine("[cyan]GitHub Integration Configuration[/]");
+            AnsiConsole.WriteLine();
+
+            var currentToken = !string.IsNullOrEmpty(_settings.GitHub?.Token) ? "Configured" : "Not set";
+            var currentOwner = _settings.GitHub?.DefaultOwner ?? "Not set";
+            var currentRepo = _settings.GitHub?.DefaultRepo ?? "Not set";
+
+            AnsiConsole.MarkupLine($"[dim]Current Token: {currentToken}[/]");
+            AnsiConsole.MarkupLine($"[dim]Default Owner: {currentOwner}[/]");
+            AnsiConsole.MarkupLine($"[dim]Default Repository: {currentRepo}[/]");
+            AnsiConsole.WriteLine();
+
+            var options = new List<string>
+            {
+                "Set Access Token",
+                "Set Default Owner",
+                "Set Default Repository",
+                "Reset to Defaults",
+                "Back to Main Menu"
+            };
+
+            var choice = AnsiConsole.Prompt(
+                new SelectionPrompt<string>()
+                    .Title("[green]What would you like to configure?[/]")
+                    .AddChoices(options));
+
+            switch (choice)
+            {
+                case "Set Access Token":
+                    var token = AnsiConsole.Prompt(
+                        new TextPrompt<string>("[green]Enter GitHub Personal Access Token:[/]")
+                            .PromptStyle("green")
+                            .Secret()
+                            .AllowEmpty());
+                    if (_settings.GitHub == null) _settings.GitHub = new GitHubSettings();
+                    _settings.GitHub.Token = string.IsNullOrWhiteSpace(token) ? null : token;
+                    _configService.SaveSettings(_settings);
+                    AnsiConsole.MarkupLine($"[green]✓ GitHub token {(string.IsNullOrWhiteSpace(token) ? "cleared" : "updated")}.[/]");
+                    break;
+
+                case "Set Default Owner":
+                    var owner = AnsiConsole.Ask<string>("[green]Enter default GitHub owner/organization (leave empty to clear):[/]", string.Empty);
+                    if (_settings.GitHub == null) _settings.GitHub = new GitHubSettings();
+                    _settings.GitHub.DefaultOwner = string.IsNullOrWhiteSpace(owner) ? null : owner;
+                    _configService.SaveSettings(_settings);
+                    AnsiConsole.MarkupLine($"[green]✓ Default owner {(string.IsNullOrWhiteSpace(owner) ? "cleared" : $"set to: {owner}")}.[/]");
+                    break;
+
+                case "Set Default Repository":
+                    var repo = AnsiConsole.Ask<string>("[green]Enter default repository name (leave empty to clear):[/]", string.Empty);
+                    if (_settings.GitHub == null) _settings.GitHub = new GitHubSettings();
+                    _settings.GitHub.DefaultRepo = string.IsNullOrWhiteSpace(repo) ? null : repo;
+                    _configService.SaveSettings(_settings);
+                    AnsiConsole.MarkupLine($"[green]✓ Default repository {(string.IsNullOrWhiteSpace(repo) ? "cleared" : $"set to: {repo}")}.[/]");
+                    break;
+
+                case "Reset to Defaults":
+                    var confirm = AnsiConsole.Confirm("[red]Reset all GitHub settings to defaults (this will clear your token)?[/]");
+                    if (confirm)
+                    {
+                        _settings.GitHub = new GitHubSettings();
+                        _configService.SaveSettings(_settings);
+                        AnsiConsole.MarkupLine("[green]✓ GitHub settings reset to defaults.[/]");
+                    }
+                    break;
+            }
+        }
+
+        private void HandleTavilyConfiguration()
+        {
+            AnsiConsole.Clear();
+            AnsiConsole.MarkupLine("[cyan]Tavily Search Configuration[/]");
+            AnsiConsole.WriteLine();
+
+            var currentApiKey = !string.IsNullOrEmpty(_settings.Tavily?.ApiKey) ? "Configured" : "Not set";
+            var currentBaseUrl = _settings.Tavily?.BaseUrl ?? "https://api.tavily.com";
+            var currentMaxResults = _settings.Tavily?.DefaultMaxResults ?? 5;
+            var currentSearchDepth = _settings.Tavily?.DefaultSearchDepth ?? "basic";
+
+            AnsiConsole.MarkupLine($"[dim]Current API Key: {currentApiKey}[/]");
+            AnsiConsole.MarkupLine($"[dim]Current Base URL: {currentBaseUrl}[/]");
+            AnsiConsole.MarkupLine($"[dim]Default Max Results: {currentMaxResults}[/]");
+            AnsiConsole.MarkupLine($"[dim]Default Search Depth: {currentSearchDepth}[/]");
+            AnsiConsole.WriteLine();
+
+            var options = new List<string>
+            {
+                "Set API Key",
+                "Configure Base URL",
+                "Set Default Max Results",
+                "Set Default Search Depth",
+                "Reset to Defaults",
+                "Back to Main Menu"
+            };
+
+            var choice = AnsiConsole.Prompt(
+                new SelectionPrompt<string>()
+                    .Title("[green]What would you like to configure?[/]")
+                    .AddChoices(options));
+
+            switch (choice)
+            {
+                case "Set API Key":
+                    var apiKey = AnsiConsole.Prompt(
+                        new TextPrompt<string>("[green]Enter Tavily API key:[/]")
+                            .PromptStyle("green")
+                            .Secret()
+                            .AllowEmpty());
+                    if (_settings.Tavily == null) _settings.Tavily = new TavilySettings();
+                    _settings.Tavily.ApiKey = string.IsNullOrWhiteSpace(apiKey) ? null : apiKey;
+                    _configService.SaveSettings(_settings);
+                    AnsiConsole.MarkupLine($"[green]✓ Tavily API key {(string.IsNullOrWhiteSpace(apiKey) ? "cleared" : "updated")}.[/]");
+                    break;
+
+                case "Configure Base URL":
+                    var baseUrl = AnsiConsole.Ask<string>("[green]Enter Tavily base URL:[/]", "https://api.tavily.com");
+                    if (_settings.Tavily == null) _settings.Tavily = new TavilySettings();
+                    _settings.Tavily.BaseUrl = baseUrl;
+                    _configService.SaveSettings(_settings);
+                    AnsiConsole.MarkupLine($"[green]✓ Tavily base URL updated to: {baseUrl}[/]");
+                    break;
+
+                case "Set Default Max Results":
+                    var maxResults = AnsiConsole.Ask<int>("[green]Enter default max results (1-20):[/]", 5);
+                    maxResults = Math.Max(1, Math.Min(20, maxResults));
+                    if (_settings.Tavily == null) _settings.Tavily = new TavilySettings();
+                    _settings.Tavily.DefaultMaxResults = maxResults;
+                    _configService.SaveSettings(_settings);
+                    AnsiConsole.MarkupLine($"[green]✓ Default max results updated to: {maxResults}[/]");
+                    break;
+
+                case "Set Default Search Depth":
+                    var searchDepth = AnsiConsole.Prompt(
+                        new SelectionPrompt<string>()
+                            .Title("[green]Select default search depth:[/]")
+                            .AddChoices("basic", "advanced"));
+                    if (_settings.Tavily == null) _settings.Tavily = new TavilySettings();
+                    _settings.Tavily.DefaultSearchDepth = searchDepth;
+                    _configService.SaveSettings(_settings);
+                    AnsiConsole.MarkupLine($"[green]✓ Default search depth updated to: {searchDepth}[/]");
+                    break;
+
+                case "Reset to Defaults":
+                    var confirm = AnsiConsole.Confirm("[red]Reset all Tavily settings to defaults (this will clear your API key)?[/]");
+                    if (confirm)
+                    {
+                        _settings.Tavily = new TavilySettings();
+                        _configService.SaveSettings(_settings);
+                        AnsiConsole.MarkupLine("[green]✓ Tavily settings reset to defaults.[/]");
+                    }
+                    break;
             }
         }
     }
