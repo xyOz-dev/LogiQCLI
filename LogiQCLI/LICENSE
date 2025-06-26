@@ -1,0 +1,308 @@
+─────────────────────────────────────────────────────────────────────────────
+           XYOZ-DEV PERSONAL USE LICENSE (“PUL”)  •  Version 2.0
+─────────────────────────────────────────────────────────────────────────────
+Copyright © 2025 xyOz-dev.  All rights reserved.
+
+0.  ACCEPTANCE
+    By downloading, installing, executing, or otherwise using the Software
+    (as defined below) you (“You”) accept and agree to be bound by this
+    License.  If You do not agree, You must not use the Software.
+
+1.  DEFINITIONS
+    1.1  “Software” means (a) the source code, object code, scripts,
+         configuration files, documentation, illustrations, assets, sample
+         data, build files and any other material contained in or derived
+         from the repository currently entitled “LogiQCLI”; and (b) any
+         Updates (as defined in §1.12) made available by the Owner.
+
+    1.2  “Personal Use” means use of the Software by a natural person solely
+         for that person’s private, non-commercial purposes on Personal
+         Devices and entirely outside the scope of any employment, contract,
+         coursework, research programme, grant, grant proposal, internship,
+         consultancy, or other activity that confers or is intended to
+         confer a commercial, organisational, academic, strategic, or
+         monetary benefit on any party other than that natural person.
+
+    1.3  “Personal Device” means consumer-grade hardware that (a) is owned
+         or leased exclusively at the user’s personal expense, (b) is used
+         predominantly for non-commercial, private purposes, and (c) is not
+         reimbursed, subsidised, or provided by any business, employer,
+         client, school, or other organisation.
+
+    1.4  “Commercial Use” means any use, reproduction, modification,
+         distribution, public performance, public display, or making
+         available of the Software or a Derivative Work, in whole or in
+         part, (a) by, for, on behalf of, or for the benefit of any
+         organisation or third party; (b) in connection with any activity
+         that is monetised or intended to be monetised (including donations,
+         sponsorships, advertising, paid support, or subscription access);
+         or (c) that facilitates, enables, or powers any product, service,
+         or workflow—internal or external—that is supplied to, or accessed
+         by, persons other than You.
+
+    1.5  “Derivative Work” means any work, in any medium, that is based on,
+         incorporates, translates, adapts, abridges, condenses, or otherwise
+         modifies or transforms all or any portion of the Software.
+
+    1.6  “Distribute” or “Distribution” means to sell, license, sublicense,
+         lease, lend, rent, gift, publish, transmit, broadcast, host, make
+         available, provide access to, or otherwise convey or expose,
+         directly or indirectly, the Software, its functionality, or any
+         Derivative Work to any third party, whether by physical transfer,
+         network access, software-as-a-service, screen sharing, API,
+         compilation, or any other means now known or hereafter devised.
+
+    1.7  “Contribution” means any original work of authorship, code,
+         documentation, translation, dataset, or other material that You
+         intentionally submit to the Owner for inclusion in or with the
+         Software.
+
+    1.8  “Necessary Claims” means all patent claims owned or controlled by
+         the Owner that are necessarily infringed by practicing the
+         Software.
+
+    1.9  “Commercial Distribution License” (“CDL”) means a separate written
+         agreement, executed by the Owner and You, that expressly grants You
+         specified Commercial Use or Distribution rights in exchange for
+         agreed consideration.
+
+    1.10 “Marks” means the names “LogiQCLI”, “xyOz-dev”, and all associated
+         trademarks, service marks, logos, domain names, and trade dress.
+
+    1.11 “Telemetry Data” means the diagnostic, technical, performance, and
+         usage information described in §10.
+
+    1.12 “Update” means any bug-fix, patch, enhancement, or new release of
+         the Software that the Owner makes available under this License.
+
+2.  LICENSE GRANT
+    Subject to Your continuous compliance with this License, the Owner
+    hereby grants You a worldwide, non-exclusive, royalty-free, non-transfer­
+    able, and non-sublicensable licence to:
+
+    (a) Download, install, and execute unmodified copies of the Software on
+        Personal Devices for Personal Use only;
+
+    (b) Create and use Derivative Works exclusively for Personal Use,
+        provided that all such Derivative Works remain in Your sole
+        possession and are not Distributed;
+
+    (c) View, read, and study the Software’s source code for the purposes
+        permitted above; and
+
+    (d) Make a reasonable number of backup copies for disaster-recovery and
+        archival purposes, subject to all terms herein.
+
+3.  TRADEMARK DISPLAY LICENCE
+    The Owner grants You a limited, revocable, non-transferable, royalty-free
+    licence to display the Marks solely as they appear in unmodified copies
+    of the Software for the purpose of identifying the Software.  No other
+    right, title, or interest in or to the Marks is granted.  All goodwill
+    arising from such display shall inure exclusively to the Owner.
+
+4.  PATENT LICENCE AND PATENT RETALIATION
+    4.1  Grant.  The Owner hereby grants You a non-exclusive, worldwide,
+         royalty-free licence under Owner’s Necessary Claims to make, use,
+         sell, offer for sale, import, and otherwise exploit the Software
+         solely to the extent expressly permitted by §2.
+
+    4.2  Retaliation.  This License (including the patent licence of §4.1)
+         shall automatically and irrevocably terminate, without notice, if
+         You or any party acting on Your behalf asserts or voluntarily
+         assists any third party in asserting a patent infringement claim
+         alleging that the Software or any Derivative Work infringes a
+         patent.
+
+5.  PROHIBITED ACTS
+    Except to the limited extent expressly permitted in §2 or in a duly
+    executed CDL, You SHALL NOT (and shall not allow any third party to):
+
+    (a) Engage in any Commercial Use or Distribution of the Software or any
+        Derivative Work;
+
+    (b) Host, provide, or otherwise make the functionality of the Software
+        available to any third party, whether as a service, via remote
+        desktop, shared screen, container, API, or any other mechanism;
+
+    (c) Combine, link, compile, or integrate the Software or any Derivative
+        Work with other software or libraries in connection with Commercial
+        Use;
+
+    (d) Circumvent, disable, or tamper with any licence-key, telemetry, or
+        technical protection mechanism that the Owner incorporates;
+
+    (e) Remove, alter, or obscure any copyright, trademark, patent, or other
+        proprietary notice contained in the Software;
+
+    (f) Disassemble, de-obfuscate, or reverse-engineer any portion of the
+        Software for the purpose of creating a competing or substitutive
+        product or service offered to third parties;
+
+    (g) Publish or distribute any patch, diff, or other file that, when
+        applied to third-party code, reconstructs any portion of the
+        Software exceeding a de minimis excerpt;
+
+    (h) Use the Software in any manner that violates applicable law or
+        regulation, including export-control laws and data-protection laws.
+
+6.  COMMERCIAL DISTRIBUTION LICENCES
+    Any Commercial Use or Distribution of the Software or a Derivative Work
+    requires a CDL.  No right to Commercial Use or Distribution is granted
+    by default.  The Owner reserves the right to grant or withhold a CDL in
+    its sole discretion.
+
+7.  CONTRIBUTIONS
+    7.1  Licence/Assignment.  To the maximum extent permitted by applicable
+         law, and as a condition of submitting a Contribution, You hereby
+         (a) irrevocably assign to the Owner all right, title, and interest
+         in and to the Contribution, or, if such assignment is invalid,
+         grant the Owner an exclusive, perpetual, worldwide, royalty-free
+         licence (with right of sublicense) to use, reproduce, modify,
+         distribute, perform, display, and create derivative works of the
+         Contribution for any purpose; and (b) waive and agree never to
+         assert any moral or similar rights in the Contribution against the
+         Owner or its licensees.
+
+    7.2  No Obligation to Accept.  The Owner has sole discretion whether to
+         use, merge, modify, relicence, or discard any Contribution.
+
+8.  ATTRIBUTION & NOTICE
+    8.1  All copies of the Software and all Derivative Works, in whole or in
+         part, must conspicuously retain (a) this License, (b) the copyright
+         notice above, and (c) all other proprietary legends present in the
+         Software.
+
+    8.2  You must not misrepresent the origin of the Software, rename the
+         Software, or remove or alter any reference to the name “LogiQCLI”
+         or the Owner.
+
+9.  COMPLIANCE VERIFICATION (AUDIT)
+    Upon fourteen (14) days’ written notice, and no more than once in any
+    twelve-month period unless material non-compliance is found, the Owner
+    or its independent auditor may audit Your records and systems solely to
+    verify compliance with this License.  The audit shall occur during
+    normal business hours and be subject to reasonable confidentiality
+    obligations.  If an audit reveals material non-compliance (defined as
+    any violation affecting more than five per cent of installations or
+    usage), You shall promptly (a) obtain the requisite CDL(s) retroactive
+    to the date the non-compliance began, (b) pay the reasonable costs of
+    the audit, and (c) implement corrective measures.
+
+10. TELEMETRY, PRIVACY & DATA PROTECTION
+    10.1 Collection.  The Software may automatically collect and transmit
+         Telemetry Data—such as unique installation IDs, operating-system
+         details, feature-usage frequency, performance metrics, and error
+         logs—to the Owner.
+
+    10.2 Purpose.  Telemetry Data is processed for the legitimate interests
+         of (a) improving the Software, (b) providing support, and (c)
+         verifying compliance with this License.  Telemetry Data is not sold
+         to third parties.
+
+    10.3 Personal Data.  Where Telemetry Data constitutes personal data
+         under the UK GDPR, EU GDPR, CCPA, or similar laws, the Owner shall
+         process such data in accordance with those laws under the lawful
+         basis of legitimate interests.  You are responsible for ensuring
+         that Your use of the Software, including any processing of personal
+         data, complies with all applicable laws.
+
+    10.4 Opt-Out.  If the Software provides an in-product setting to disable
+         telemetry, You may exercise that option.  If no such setting is
+         provided, Your only means of opting out is to cease using the
+         Software.
+
+    10.5 Security & Retention.  The Owner shall implement commercially
+         reasonable technical and organisational measures to protect
+         Telemetry Data and shall retain Telemetry Data only as long as
+         necessary for the purposes stated above or as required by law.
+
+11. RESERVATION OF RIGHTS
+    All rights not expressly granted to You are reserved by the Owner.  No
+    licence or right is created by implication, estoppel, or otherwise.
+
+12. TERM, TERMINATION & CURE
+    12.1  Term.  This License commences on the date You first obtain the
+          Software and continues until terminated.
+
+    12.2  Termination for Breach.  The Owner may terminate this License upon
+          written notice if You materially breach any provision and fail to
+          cure such breach within fourteen (14) days of notice.  No cure
+          period applies to breaches that are incapable of cure, to
+          violations of §4.2 (patent retaliation), or to intentional
+          infringement of the Owner’s intellectual-property rights, all of
+          which result in immediate termination without notice.
+
+    12.3  Post-Termination Obligations.  Upon termination, You must
+          immediately cease all use of the Software and Derivative Works,
+          destroy all copies in Your possession or control, and certify such
+          destruction to the Owner in writing within fifteen (15) days.
+
+    12.4  Survival.  §§3–6, 7.1–7.2, 8–15, and any other provision that by
+          its nature should survive, shall survive termination.
+
+13. DISCLAIMER OF WARRANTY
+    THE SOFTWARE IS PROVIDED “AS IS” AND “AS AVAILABLE” WITHOUT WARRANTY OF
+    ANY KIND, EXPRESS OR IMPLIED, INCLUDING, WITHOUT LIMITATION,
+    MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, TITLE, ACCURACY, AND
+    NON-INFRINGEMENT.  YOUR USE OF THE SOFTWARE IS AT YOUR SOLE RISK.
+
+14. LIMITATION OF LIABILITY
+    TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW, IN NO EVENT SHALL
+    THE OWNER OR ITS CONTRIBUTORS BE LIABLE FOR ANY INDIRECT, INCIDENTAL,
+    SPECIAL, EXEMPLARY, PUNITIVE, OR CONSEQUENTIAL DAMAGES OR FOR ANY LOSS
+    OF PROFITS, REVENUE, DATA, OR GOODWILL, HOWEVER CAUSED AND ON ANY THEORY
+    OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+    NEGLIGENCE), EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.  EXCEPT
+    FOR LIABILITY THAT CANNOT LEGALLY BE LIMITED (E.G., FOR DEATH OR
+    PERSONAL INJURY CAUSED BY NEGLIGENCE, OR FOR FRAUD), THE OWNER’S
+    AGGREGATE LIABILITY UNDER THIS LICENSE SHALL NOT EXCEED THE GREATER OF
+    (A) FIFTY POUNDS STERLING (£50) OR (B) THE AMOUNT, IF ANY, ACTUALLY PAID
+    BY YOU TO THE OWNER FOR A CDL WITHIN THE TWELVE MONTHS PRECEDING THE
+    CLAIM.
+
+15. GOVERNING LAW & DISPUTE RESOLUTION
+    15.1  Governing Law.  This License shall be governed by and construed in
+          accordance with the laws of England and Wales, without regard to
+          conflict-of-laws principles.
+
+    15.2  Jurisdiction.  The courts located in England shall have exclusive
+          jurisdiction over any dispute arising out of or relating to this
+          License, except that if You are a consumer resident in a
+          jurisdiction that mandates local venue, this §15.2 does not
+          deprive You of any right to bring or defend claims in that local
+          venue.
+
+    15.3  Jury-Trial Waiver.  Each party irrevocably waives, to the maximum
+          extent permitted by law, any right to trial by jury in any dispute
+          arising out of or related to this License.
+
+16. EQUITABLE RELIEF
+    You acknowledge that a breach of this License may cause irreparable harm
+    to the Owner for which monetary damages are an inadequate remedy, and
+    agree that, in such event, the Owner may seek injunctive or other
+    equitable relief in any court of competent jurisdiction, in addition to
+    any other remedies available at law or in equity.
+
+17. SEVERABILITY
+    If any provision of this License is held unenforceable or invalid by a
+    court of competent jurisdiction, the provision shall be revised only to
+    the minimum extent necessary to make it enforceable, and the remaining
+    provisions shall remain in full force and effect.
+
+18. ENTIRE AGREEMENT
+    This License constitutes the complete and exclusive agreement between
+    You and the Owner concerning the Software and supersedes all prior or
+    contemporaneous oral or written communications, proposals, and
+    representations.
+
+19. AMENDMENTS
+    The Owner may publish new versions of this License.  A new version will
+    not apply to You unless and until (a) You expressly agree to the new
+    version, or (b) You install or use an Update that is expressly
+    distributed under the new version, in which case Your first use of that
+    Update constitutes acceptance of the new version with respect to that
+    Update only.
+
+─────────────────────────────────────────────────────────────────────────────
+                         END OF PUL VERSION 2.0
+─────────────────────────────────────────────────────────────────────────────
