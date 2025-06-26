@@ -21,13 +21,10 @@ namespace LogiQCLI.Presentation.Console.Components.Objects
                 .BorderColor(borderColor ?? Color.Grey)
                 .Title($"[bold cyan]{title}[/]");
 
-            // Add columns
             foreach (var column in firstRow.Keys)
             {
                 table.AddColumn($"[bold]{column}[/]");
             }
-
-            // Add rows
             foreach (var row in data)
             {
                 var values = firstRow.Keys.Select(key => Markup.Escape(row.GetValueOrDefault(key, ""))).ToArray();

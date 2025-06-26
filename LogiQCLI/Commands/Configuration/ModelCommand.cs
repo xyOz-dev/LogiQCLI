@@ -57,14 +57,14 @@ namespace LogiQCLI.Commands.Configuration
 
                 ModelCommandArguments? arguments = null;
                 
-                // Try to parse as JSON first
+    
                 try
                 {
                     arguments = JsonSerializer.Deserialize<ModelCommandArguments>(args);
                 }
                 catch
                 {
-                    // If JSON parsing fails, treat the entire args as the model name
+    
                     arguments = new ModelCommandArguments { Model = args.Trim() };
                 }
 

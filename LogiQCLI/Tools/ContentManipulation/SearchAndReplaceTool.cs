@@ -116,18 +116,17 @@ namespace LogiQCLI.Tools.ContentManipulation
 
                 if (backup && originalContent != newContent)
                 {
+                    var backupPath = fullPath + ".bak";
+                    await File.WriteAllTextAsync(backupPath, originalContent);
+                    
                     try
                     {
-        
                         var backupManager = new LogiqBackupManager();
                         await backupManager.CreateBackupAsync(fullPath, originalContent, "SearchAndReplaceTool", "pre-modification", 
                             "Backup before search and replace");
                     }
                     catch
                     {
-        
-                        var backupPath = fullPath + ".bak";
-                        await File.WriteAllTextAsync(backupPath, originalContent);
                     }
                 }
 

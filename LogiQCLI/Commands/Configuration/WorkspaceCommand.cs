@@ -51,14 +51,14 @@ namespace LogiQCLI.Commands.Configuration
 
                 WorkspaceCommandArguments? arguments = null;
                 
-                // Try to parse as JSON first
+    
                 try
                 {
                     arguments = JsonSerializer.Deserialize<WorkspaceCommandArguments>(args);
                 }
                 catch
                 {
-                    // If JSON parsing fails, treat the entire args as the path
+    
                     arguments = new WorkspaceCommandArguments { Path = args.Trim() };
                 }
 

@@ -55,7 +55,7 @@ namespace LogiQCLI.Commands.Configuration
 
         private string DisplayCurrentSettings()
         {
-            // Display main settings
+
             var settingsData = new Dictionary<string, string>
             {
                 { "User Data Path", _settings.UserDataPath ?? "[dim]Not set[/]" },
@@ -66,7 +66,7 @@ namespace LogiQCLI.Commands.Configuration
 
             TableFormatter.RenderKeyValueTable("Current Settings", settingsData, Color.Blue);
 
-            // Display API keys if any exist
+
             if (_settings.ApiKeys.Any())
             {
                 var apiKeyRows = _settings.ApiKeys.Select(key => new ApiKeyTableRow
@@ -78,7 +78,7 @@ namespace LogiQCLI.Commands.Configuration
                 TableFormatter.RenderApiKeysTable(apiKeyRows, _settings.ActiveApiKeyNickname ?? "");
             }
 
-            // Display help information
+
             var centeredHelp = Align.Center(new Markup("[dim]Use [green]/settings interactive[/] for interactive mode or specific commands:[/]\n" +
                                                       "[dim]  /addkey - Add new API key[/]\n" +
                                                       "[dim]  /switchkey - Switch API keys[/]\n" +
@@ -87,7 +87,7 @@ namespace LogiQCLI.Commands.Configuration
             AnsiConsole.Write(centeredHelp);
             AnsiConsole.WriteLine();
 
-            return ""; // Tables are rendered directly
+            return "";
         }
 
         private string HandleInteractiveMode()
@@ -105,7 +105,7 @@ namespace LogiQCLI.Commands.Configuration
             {
                 AnsiConsole.Clear();
                 
-                // Display current settings summary at top
+    
                 var summaryPanel = new Panel($"[cyan]Current Configuration[/]\n" +
                                            $"Workspace: [yellow]{_settings.Workspace ?? "Not set"}[/]\n" +
                                            $"Model: [yellow]{_settings.DefaultModel ?? "Not set"}[/]\n" +

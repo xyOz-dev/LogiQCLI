@@ -86,7 +86,7 @@ namespace LogiQCLI.Commands.Core
             });
 
             TableFormatter.RenderCommandsTable(commandRows);
-            return ""; // Table is rendered directly, no string return needed
+            return "";
         }
 
         private string ShowCommandHelp(string commandName)
@@ -115,7 +115,6 @@ namespace LogiQCLI.Commands.Core
             output.AppendLine($"[dim]Priority: {commandTypeInfo.Priority}[/]");
             output.AppendLine($"[dim]Requires Workspace: {commandTypeInfo.RequiresWorkspace}[/]");
             
-            // Try to get description from the command instance
             var description = GetCommandDescription(commandName);
             output.AppendLine($"[dim]Description: {description}[/]");
             
@@ -126,7 +125,6 @@ namespace LogiQCLI.Commands.Core
         {
             try
             {
-                // First try to get the command instance from registry
                 var command = _commandRegistry.GetCommand(commandName);
                 if (command != null)
                 {
@@ -137,7 +135,6 @@ namespace LogiQCLI.Commands.Core
                     }
                 }
                 
-                // If no instance in registry, try to create one using the factory
                 var commandTypeInfo = _commandRegistry.GetCommandInfo(commandName);
                 if (commandTypeInfo != null && _commandFactory.CanCreateCommand(commandTypeInfo))
                 {
@@ -152,13 +149,11 @@ namespace LogiQCLI.Commands.Core
                     }
                     catch
                     {
-                        // If we can't create instance, fall through to default
                     }
                 }
             }
             catch
             {
-                // Ignore errors and fall back to default
             }
             return "No description available";
         }

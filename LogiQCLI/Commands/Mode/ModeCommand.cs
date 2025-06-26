@@ -99,7 +99,7 @@ namespace LogiQCLI.Commands.Mode
             };
 
             TableFormatter.RenderKeyValueTable("Current Mode", modeData, Color.Green);
-            return ""; // Table is rendered directly, no string return needed
+            return "";
         }
 
         private string ShowAvailableModes()
@@ -116,7 +116,7 @@ namespace LogiQCLI.Commands.Mode
             });
 
             TableFormatter.RenderModesTable(modeRows, currentMode.Id);
-            return ""; // Table is rendered directly, no string return needed
+            return "";
         }
 
         private string HandleModeSwitch(string modeId)

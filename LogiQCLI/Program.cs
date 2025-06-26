@@ -58,12 +58,10 @@ public class Program
 
             InitializeServices(settings);
             
-            // Register ModeManager and ChatSession BEFORE InitializeToolSystem() so commands can resolve dependencies
             var configurationService = _serviceContainer.GetService<ConfigurationService>();
             var modeManager = new ModeManager(configurationService, _toolRegistry);
             _serviceContainer.RegisterInstance<IModeManager>(modeManager);
             
-            // Create and register ChatSession
             var chatSession = new ChatSession(settings.DefaultModel, modeManager);
             _serviceContainer.RegisterInstance(chatSession);
 
@@ -129,7 +127,6 @@ public class Program
         _toolDiscoveryService = new ToolDiscoveryService();
         _serviceContainer.RegisterInstance<IToolDiscoveryService>(_toolDiscoveryService);
         
-        // Initialize command system
         var commandRegistry = new LogiQCLI.Commands.Core.CommandRegistry();
         _serviceContainer.RegisterInstance<LogiQCLI.Commands.Core.Interfaces.ICommandRegistry>(commandRegistry);
         
@@ -139,11 +136,9 @@ public class Program
         var commandDiscoveryService = new LogiQCLI.Commands.Core.CommandDiscoveryService();
         _serviceContainer.RegisterInstance<LogiQCLI.Commands.Core.Interfaces.ICommandDiscoveryService>(commandDiscoveryService);
         
-        // Register ConfigurationService for commands
         var configService = new ConfigurationService();
         _serviceContainer.RegisterInstance(configService);
         
-        // Register display service
         _serviceContainer.RegisterFactory<IDisplayService>(container => 
         {
             var appSettings = container.GetService<ApplicationSettings>();
@@ -151,7 +146,6 @@ public class Program
             return new DisplayService(appSettings, modeManager);
         });
         
-        // Register Action for InitializeDisplay
         _serviceContainer.RegisterFactory<Action>(container =>
         {
             var displayService = container.GetService<IDisplayService>();
@@ -204,7 +198,6 @@ public class Program
                 AnsiConsole.MarkupLine($"[yellow]Skipped {skippedCount} tools[/]");
             }
             
-            // Initialize command system
             InitializeCommandSystem();
         }
         catch (Exception ex)
@@ -288,10 +281,8 @@ public class Program
             throw new InvalidOperationException("Command system not properly initialized");
         }
         
-        // Create the core command handler
         var coreCommandHandler = new LogiQCLI.Commands.Core.CommandHandler(commandRegistry, commandFactory);
         
-        // Create and return the presentation layer command handler
         return new CommandHandler(coreCommandHandler);
     }
 

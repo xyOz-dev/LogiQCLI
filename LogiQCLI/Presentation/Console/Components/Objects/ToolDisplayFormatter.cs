@@ -140,8 +140,6 @@ namespace LogiQCLI.Presentation.Console.Components.Objects
                     .Padding(1, 0);
 
                 AnsiConsole.Write(panel);
-                
-                // Show the result message
                 var statusColor = isPreview ? "yellow" : "green";
                 AnsiConsole.MarkupLine($"[{statusColor}]{Markup.Escape(result)}[/]");
                 AnsiConsole.WriteLine();
@@ -368,7 +366,7 @@ namespace LogiQCLI.Presentation.Console.Components.Objects
             var totalLines = lines.Length;
             var fileSize = System.Text.Encoding.UTF8.GetByteCount(content);
             
-            var displayLines = lines.Take(10).ToArray(); // Show fewer lines for write operations
+            var displayLines = lines.Take(10).ToArray();
             var truncated = lines.Length > 10;
             
             var contentLines = displayLines.Select((line, index) => 
@@ -396,16 +394,13 @@ namespace LogiQCLI.Presentation.Console.Components.Objects
             
             var diffLines = new List<object>();
             
-            // Create unified diff display
             diffLines.Add(new Markup("[dim]@@ Diff View @@[/]"));
-            
-            // Show removed lines (original)
             if (!string.IsNullOrEmpty(original))
             {
-                foreach (var line in originalLines.Take(15)) // Limit display for readability
+                foreach (var line in originalLines.Take(15))
                 {
                     var displayLine = TruncateLine(line);
-                    var wrappedLines = WrapLine(displayLine, MaxLineLength - 4); // Account for "- " prefix and padding
+                    var wrappedLines = WrapLine(displayLine, MaxLineLength - 4);
                     foreach (var wrappedLine in wrappedLines)
                     {
                         diffLines.Add(new Markup($"[red]- {Markup.Escape(wrappedLine)}[/]"));
@@ -417,13 +412,12 @@ namespace LogiQCLI.Presentation.Console.Components.Objects
                 }
             }
             
-            // Show added lines (replacement)
             if (!string.IsNullOrEmpty(replacement))
             {
-                foreach (var line in replacementLines.Take(15)) // Limit display for readability
+                foreach (var line in replacementLines.Take(15))
                 {
                     var displayLine = TruncateLine(line);
-                    var wrappedLines = WrapLine(displayLine, MaxLineLength - 4); // Account for "+ " prefix and padding
+                    var wrappedLines = WrapLine(displayLine, MaxLineLength - 4);
                     foreach (var wrappedLine in wrappedLines)
                     {
                         diffLines.Add(new Markup($"[green]+ {Markup.Escape(wrappedLine)}[/]"));
@@ -456,7 +450,7 @@ namespace LogiQCLI.Presentation.Console.Components.Objects
                 return wrapped;
             }
             
-            // Simple word wrapping - break at spaces when possible
+
             var words = line.Split(' ');
             var currentLine = "";
             

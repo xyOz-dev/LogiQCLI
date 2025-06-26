@@ -23,7 +23,6 @@ namespace LogiQCLI.Commands.Core
             
             _commands[commandInfo.Name] = entry;
             
-            // Also register by alias if present
             if (!string.IsNullOrEmpty(commandInfo.Alias))
             {
                 _commands[commandInfo.Alias] = entry;
@@ -66,7 +65,6 @@ namespace LogiQCLI.Commands.Core
             
             _commands[commandInfo.Name] = entry;
             
-            // Also register by alias if present
             if (!string.IsNullOrEmpty(commandInfo.Alias))
             {
                 _commands[commandInfo.Alias] = entry;
@@ -95,7 +93,7 @@ namespace LogiQCLI.Commands.Core
         {
             return _commands.Values
                 .Select(e => e.CommandInfo)
-                .GroupBy(c => c.Name) // Remove duplicates from aliases
+                .GroupBy(c => c.Name)
                 .Select(g => g.First())
                 .ToList();
         }
@@ -105,7 +103,7 @@ namespace LogiQCLI.Commands.Core
             return _commands.Values
                 .Where(e => string.Equals(e.CommandInfo.Category, category, StringComparison.OrdinalIgnoreCase))
                 .Select(e => e.CommandInfo)
-                .GroupBy(c => c.Name) // Remove duplicates from aliases
+                .GroupBy(c => c.Name)
                 .Select(g => g.First())
                 .ToList();
         }
@@ -115,7 +113,7 @@ namespace LogiQCLI.Commands.Core
             return _commands.Values
                 .Where(e => e.CommandInfo.Tags.Any(t => string.Equals(t, tag, StringComparison.OrdinalIgnoreCase)))
                 .Select(e => e.CommandInfo)
-                .GroupBy(c => c.Name) // Remove duplicates from aliases
+                .GroupBy(c => c.Name)
                 .Select(g => g.First())
                 .ToList();
         }
@@ -125,7 +123,7 @@ namespace LogiQCLI.Commands.Core
             return _commands.Values
                 .Where(e => predicate(e.CommandInfo))
                 .Select(e => e.CommandInfo)
-                .GroupBy(c => c.Name) // Remove duplicates from aliases
+                .GroupBy(c => c.Name)
                 .Select(g => g.First())
                 .ToList();
         }

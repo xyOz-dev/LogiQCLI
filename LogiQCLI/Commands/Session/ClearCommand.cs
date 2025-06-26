@@ -24,7 +24,7 @@ namespace LogiQCLI.Commands.Session
             {
                 Name = "clear",
                 Description = "Clear the chat history and reset the display",
-                // No parameters needed for this command
+    
             };
         }
 

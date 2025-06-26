@@ -25,7 +25,7 @@ namespace LogiQCLI.Commands.Core
         public async Task<bool> TryExecuteCommand(string userInput)
         {
             var parts = userInput.Trim().Split(new[] { ' ' }, 2, StringSplitOptions.RemoveEmptyEntries);
-            var commandName = parts[0].TrimStart('/'); // Remove the '/' prefix
+            var commandName = parts[0].TrimStart('/');
             var args = parts.Length > 1 ? parts[1] : string.Empty;
 
             var command = _commandRegistry.GetCommand(commandName);
@@ -41,14 +41,14 @@ namespace LogiQCLI.Commands.Core
                     catch (Exception ex)
                     {
                         AnsiConsole.MarkupLine($"[red]Error creating command '/{commandName}': {ex.Message}[/]");
-                        return true; // We handled it, even if it failed
+                        return true;
                     }
                 }
             }
 
             if (command == null)
             {
-                return false; // We can't handle this command
+                return false;
             }
 
             try
@@ -63,7 +63,7 @@ namespace LogiQCLI.Commands.Core
             catch (Exception ex)
             {
                 AnsiConsole.MarkupLine($"[red]Error executing command '/{commandName}': {ex.Message}[/]");
-                return true; // We handled it, even if it failed
+                return true;
             }
         }
 

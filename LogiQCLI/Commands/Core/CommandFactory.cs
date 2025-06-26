@@ -142,7 +142,7 @@ namespace LogiQCLI.Commands.Core
                 return true;
             }
 
-            // Handle delegate types like Action, Func<>, etc.
+            
             if (typeof(Delegate).IsAssignableFrom(parameter.ParameterType))
             {
                 return _serviceContainer.IsRegistered(parameter.ParameterType);

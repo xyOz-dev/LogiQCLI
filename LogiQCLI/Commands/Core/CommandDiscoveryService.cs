@@ -121,7 +121,7 @@ namespace LogiQCLI.Commands.Core
 
         private string ConvertToCommandName(string typeName)
         {
-            // Convert PascalCase to lowercase with underscores
+
             var result = string.Empty;
             for (int i = 0; i < typeName.Length; i++)
             {
