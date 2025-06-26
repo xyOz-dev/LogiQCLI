@@ -62,7 +62,8 @@ public class Program
             var modeManager = new ModeManager(configurationService, _toolRegistry);
             _serviceContainer.RegisterInstance<IModeManager>(modeManager);
             
-            var chatSession = new ChatSession(settings.DefaultModel, modeManager);
+            var fileReadRegistry = _serviceContainer.GetService<LogiQCLI.Presentation.Console.Session.FileReadRegistry>();
+            var chatSession = new ChatSession(settings.DefaultModel, modeManager, fileReadRegistry);
             _serviceContainer.RegisterInstance(chatSession);
 
             InitializeToolSystem();
@@ -71,7 +72,7 @@ public class Program
             var toolHandler = CreateToolHandler(modeManager, settings);
             var commandHandler = CreateCommandHandler(settings, configService, modeManager);
 
-            var chatUI = new ChatInterface(openRouter, toolHandler, settings, configService, modeManager, _toolRegistry, commandHandler, chatSession);
+            var chatUI = new ChatInterface(openRouter, toolHandler, settings, configService, modeManager, _toolRegistry, commandHandler, chatSession, fileReadRegistry);
             await chatUI.RunAsync();
         }
         catch (Exception ex)
@@ -159,6 +160,9 @@ public class Program
             var displayService = container.GetService<IDisplayService>();
             return displayService.GetInitializeDisplayAction();
         });
+
+        var fileReadRegistry = new LogiQCLI.Presentation.Console.Session.FileReadRegistry();
+        _serviceContainer.RegisterInstance(fileReadRegistry);
     }
 
     private static void InitializeToolSystem()

@@ -24,6 +24,7 @@ namespace LogiQCLI.Presentation.Console.Components
             ConfigureApiKey();
             ConfigureGitHub();
             ConfigureTavily();
+            ConfigureExperimental();
             DisplaySelectedConfiguration();
             return _settings;
         }
@@ -221,6 +222,17 @@ namespace LogiQCLI.Presentation.Console.Components
             AnsiConsole.WriteLine();
         }
 
+        private void ConfigureExperimental()
+        {
+            AnsiConsole.MarkupLine("[cyan]Experimental Features[/]");
+            AnsiConsole.WriteLine();
+
+            var enableDedup = AnsiConsole.Confirm("[green]Enable file read deduplication (remove old file reads from context)?[/]", _settings.Experimental.DeduplicateFileReads);
+            _settings.Experimental.DeduplicateFileReads = enableDedup;
+
+            AnsiConsole.WriteLine();
+        }
+
         private void DisplaySelectedConfiguration()
         {
             var table = new Table()
@@ -246,6 +258,9 @@ namespace LogiQCLI.Presentation.Console.Components
 
             var tavilyStatus = !string.IsNullOrEmpty(_settings.Tavily?.ApiKey) ? "Configured" : "Not Set";
             table.AddRow("[cyan]Tavily[/]", tavilyStatus == "Configured" ? "[green]Configured[/]" : "[yellow]Not Set[/]");
+
+            var dedupStatus = _settings.Experimental.DeduplicateFileReads ? "Enabled" : "Disabled";
+            table.AddRow("[cyan]File Read Deduplication[/]", dedupStatus == "Enabled" ? "[green]Enabled[/]" : "[yellow]Disabled[/]");
 
             AnsiConsole.Write(table);
             AnsiConsole.WriteLine();

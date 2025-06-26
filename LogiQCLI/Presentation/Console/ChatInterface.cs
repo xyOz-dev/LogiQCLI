@@ -16,6 +16,8 @@ using LogiQCLI.Infrastructure.ApiClients.OpenRouter.Models;
 using LogiQCLI.Presentation.Console.Components.Objects;
 using LogiQCLI.Core.Models.Modes.Interfaces;
 using LogiQCLI.Tools.Core.Interfaces;
+using System.Security.Cryptography;
+using System.Text.Json;
 
 namespace LogiQCLI.Presentation.Console
 {
@@ -29,6 +31,7 @@ namespace LogiQCLI.Presentation.Console
         private readonly MessageRenderer _messageRenderer;
         private readonly AnimationManager _animationManager;
         private readonly ChatSession _chatSession;
+        private readonly FileReadRegistry _fileReadRegistry;
         private readonly InputHandler _inputHandler;
         private readonly HeaderRenderer _headerRenderer;
         private readonly CommandHandler _commandHandler;
@@ -42,7 +45,8 @@ namespace LogiQCLI.Presentation.Console
             IModeManager modeManager,
             IToolRegistry toolRegistry,
             CommandHandler commandHandler,
-            ChatSession chatSession)
+            ChatSession chatSession,
+            FileReadRegistry fileReadRegistry)
         {
             _openRouterClient = openRouterClient;
             _toolHandler = toolHandler;
@@ -52,6 +56,7 @@ namespace LogiQCLI.Presentation.Console
             _messageRenderer = new MessageRenderer(_settings.DefaultModel ?? "ASSISTANT");
             _animationManager = new AnimationManager();
             _chatSession = chatSession;
+            _fileReadRegistry = fileReadRegistry;
             _inputHandler = new InputHandler();
             _headerRenderer = new HeaderRenderer(_settings, _modeManager);
             _commandHandler = commandHandler;
@@ -178,11 +183,91 @@ namespace LogiQCLI.Presentation.Console
             var toolExecutor = new ToolExecutor(_toolHandler);
             var toolResults = await toolExecutor.ExecuteToolsAsync(toolCalls, usage);
 
-            foreach (var result in toolResults)
+            for (int i = 0; i < toolResults.Count; i++)
             {
-                _chatSession.AddMessage(result);
+                var result = toolResults[i];
+                var call = toolCalls[i];
+
+                if (IsFileReadCall(call))
+                {
+                    if (result.Content?.ToString() == "__UNCHANGED__")
+                    {
+                        AnsiConsole.MarkupLine($"[grey]Skipped unchanged read of {ExtractPathFromArguments(call.Function.Arguments)} (kept prior content)[/]");
+                        result.Content = "__UNCHANGED__";
+                        _chatSession.AddMessage(result);
+                        continue;
+                    }
+
+                    if (_settings.Experimental == null || !_settings.Experimental.DeduplicateFileReads)
+                    {
+                        _chatSession.AddMessage(result);
+                        continue;
+                    }
+
+                    var path = ExtractPathFromArguments(call.Function.Arguments);
+                    if (string.IsNullOrEmpty(path))
+                    {
+                        _chatSession.AddMessage(result);
+                        continue;
+                    }
+
+                    var fullPath = System.IO.Path.GetFullPath(path.Replace('/', System.IO.Path.DirectorySeparatorChar).Replace('\\', System.IO.Path.DirectorySeparatorChar));
+
+                    var hash = ComputeHash(result.Content?.ToString() ?? string.Empty);
+
+                    if (_fileReadRegistry.TryGet(fullPath, out var entry))
+                    {
+                        if (entry.Hash == hash)
+                        {
+                            AnsiConsole.MarkupLine($"[grey]Skipped unchanged read of {fullPath} (kept prior content)[/]");
+                            result.Content = "__UNCHANGED__";
+                            _chatSession.AddMessage(result);
+                            continue;
+                        }
+
+                        _chatSession.RemoveMessage(entry.MessageRef);
+                        _fileReadRegistry.Remove(fullPath);
+                        AnsiConsole.MarkupLine($"[yellow]Replaced previous read of {fullPath}[/]");
+                    }
+
+                    _chatSession.AddMessage(result);
+
+                    var info = new System.IO.FileInfo(fullPath);
+                    _fileReadRegistry.Register(fullPath, hash, info.LastWriteTimeUtc, info.Length, result);
+                }
+                else
+                {
+                    _chatSession.AddMessage(result);
+                }
             }
         }
 
+        private static bool IsFileReadCall(ToolCall call)
+        {
+            var name = call.Function.Name?.ToLowerInvariant();
+            return name == "read_file" || name == "read_file_by_line_count";
+        }
+
+        private static string ExtractPathFromArguments(string argumentsJson)
+        {
+            try
+            {
+                var dict = JsonSerializer.Deserialize<System.Collections.Generic.Dictionary<string, object>>(argumentsJson);
+                if (dict != null && dict.TryGetValue("path", out var pathObj))
+                {
+                    return pathObj?.ToString() ?? string.Empty;
+                }
+            }
+            catch { }
+            return string.Empty;
+        }
+
+        private static string ComputeHash(string content)
+        {
+            using var sha = System.Security.Cryptography.SHA256.Create();
+            var bytes = System.Text.Encoding.UTF8.GetBytes(content);
+            var hashBytes = sha.ComputeHash(bytes);
+            return Convert.ToHexString(hashBytes);
+        }
     }
 }

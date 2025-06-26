@@ -13,13 +13,15 @@ namespace LogiQCLI.Presentation.Console.Session
         private readonly List<Message> _messages;
         private readonly object _messageLock;
         private readonly IModeManager _modeManager;
+        private readonly FileReadRegistry _fileReadRegistry;
         public string Model { get; set; }
 
-        public ChatSession(string? model = null, IModeManager? modeManager = null)
+        public ChatSession(string? model = null, IModeManager? modeManager = null, FileReadRegistry? fileReadRegistry = null)
         {
             _messages = new List<Message>();
             _messageLock = new object();
             _modeManager = modeManager!;
+            _fileReadRegistry = fileReadRegistry ?? new FileReadRegistry();
             Model = model ?? "google/gemini-2.5-pro";
             InitializeSystemPrompt();
         }
@@ -50,6 +52,7 @@ namespace LogiQCLI.Presentation.Console.Session
                 {
                     _messages.Add(systemMessage);
                 }
+                _fileReadRegistry.Clear();
             }
         }
 
@@ -707,6 +710,14 @@ namespace LogiQCLI.Presentation.Console.Session
             sb.AppendLine("maintainability, and user success.");
 
             return sb.ToString();
+        }
+
+        public void RemoveMessage(Message message)
+        {
+            lock (_messageLock)
+            {
+                _messages.Remove(message);
+            }
         }
     }
 }

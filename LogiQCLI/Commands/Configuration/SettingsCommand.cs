@@ -102,6 +102,7 @@ namespace LogiQCLI.Commands.Configuration
                 "Manage API Keys",
                 "Configure GitHub",
                 "Configure Tavily",
+                "Experimental Features",
                 "Exit"
             };
 
@@ -148,6 +149,9 @@ namespace LogiQCLI.Commands.Configuration
                         break;
                     case "Configure Tavily":
                         HandleTavilyConfiguration();
+                        break;
+                    case "Experimental Features":
+                        HandleExperimentalFeatures();
                         break;
                     case "Exit":
                         return "[green]Settings configuration completed.[/]";
@@ -514,6 +518,36 @@ namespace LogiQCLI.Commands.Configuration
                         AnsiConsole.MarkupLine("[green]✓ Tavily settings reset to defaults.[/]");
                     }
                     break;
+            }
+        }
+
+        private void HandleExperimentalFeatures()
+        {
+            while (true)
+            {
+                AnsiConsole.Clear();
+                AnsiConsole.MarkupLine("[cyan]Experimental Features[/]");
+                AnsiConsole.WriteLine();
+
+                var prompt = new MultiSelectionPrompt<string>()
+                    .Title("[green]Toggle features (space to select, enter to save)[/]")
+                    .NotRequired();
+
+                // features
+                const string dedupLabel = "File-read deduplication";
+                prompt.AddChoice(dedupLabel);
+
+                if (_settings.Experimental.DeduplicateFileReads)
+                    prompt.Select(dedupLabel);
+
+                var selections = AnsiConsole.Prompt(prompt);
+
+                _settings.Experimental.DeduplicateFileReads = selections.Contains(dedupLabel);
+                _configService.SaveSettings(_settings);
+
+                AnsiConsole.MarkupLine("[green]✓ Settings saved. Press any key to go back.[/]");
+                Console.ReadKey(true);
+                return;
             }
         }
     }

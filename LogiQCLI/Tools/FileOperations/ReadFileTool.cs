@@ -7,12 +7,25 @@ using System.Threading.Tasks;
 using LogiQCLI.Tools.Core.Interfaces;
 using LogiQCLI.Tools.Core.Objects;
 using LogiQCLI.Tools.FileOperations.Arguments;
+using LogiQCLI.Presentation.Console.Session;
+using LogiQCLI.Core.Models.Configuration;
 
 namespace LogiQCLI.Tools.FileOperations
 {
     [ToolMetadata("FileOperations", Tags = new[] { "essential", "safe" })]
     public class ReadFileTool : ITool
     {
+        private readonly FileReadRegistry _registry;
+        private readonly ApplicationSettings _settings;
+
+        public ReadFileTool(FileReadRegistry registry, ApplicationSettings settings)
+        {
+            _registry = registry;
+            _settings = settings;
+        }
+
+        public ReadFileTool() : this(new FileReadRegistry(), new ApplicationSettings()) {}
+
         public override RegisteredTool GetToolInfo()
         {
             return new RegisteredTool
@@ -47,6 +60,17 @@ namespace LogiQCLI.Tools.FileOperations
 
                 var fullPath = Path.GetFullPath(arguments.Path.Replace('/', Path.DirectorySeparatorChar)
                     .Replace('\\', Path.DirectorySeparatorChar));
+
+                // Early exit if deduplication enabled and file unchanged
+                if (_settings.Experimental?.DeduplicateFileReads == true &&
+                    _registry.TryGet(fullPath, out var meta))
+                {
+                    var info = new FileInfo(fullPath);
+                    if (meta.LastWriteUtc == info.LastWriteTimeUtc && meta.Length == info.Length)
+                    {
+                        return "__UNCHANGED__";
+                    }
+                }
 
                 return await File.ReadAllTextAsync(fullPath);
             }
