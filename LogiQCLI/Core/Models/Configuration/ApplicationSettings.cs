@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using LogiQCLI.Core.Models.Modes;
+using LogiQCLI.Infrastructure.ApiClients.OpenRouter;
 
 namespace LogiQCLI.Core.Models.Configuration
 {
@@ -23,6 +24,14 @@ namespace LogiQCLI.Core.Models.Configuration
         };
         public ModeSettings ModeSettings { get; set; } = new ModeSettings();
         public GitHubSettings GitHub { get; set; } = new GitHubSettings();
+        
+
+
+
+
+
+
+        public CacheStrategy CacheStrategy { get; set; } = CacheStrategy.Auto;
 
         public ApiKeySettings? GetActiveApiKey() => ApiKeys.FirstOrDefault(k => k.Nickname == ActiveApiKeyNickname);
     }

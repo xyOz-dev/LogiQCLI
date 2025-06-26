@@ -109,7 +109,8 @@ public class Program
         _serviceContainer.RegisterFactory<OpenRouterClient>(container =>
             new OpenRouterClient(
                 httpClient,
-                apiKey
+                apiKey,
+                settings.CacheStrategy
             )
         );
 

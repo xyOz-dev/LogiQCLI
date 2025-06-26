@@ -1,4 +1,4 @@
-﻿using LogiQCLI.Core.Services;
+using LogiQCLI.Core.Services;
 using LogiQCLI.Tools.Core.Objects;
 using System;
 using System.Collections.Generic;
