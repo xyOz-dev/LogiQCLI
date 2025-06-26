@@ -26,7 +26,9 @@ namespace LogiQCLI.Presentation.Console.Components.Objects
             { "list_github_pull_requests", "List repository pull requests with filtering" },
             { "merge_github_pull_request", "Merge pull requests using specified strategy" },
             { "get_github_repository_info", "Get detailed repository information and metadata" },
-            { "create_github_branch", "Create new branches from existing branches or commits" }
+            { "create_github_branch", "Create new branches from existing branches or commits" },
+            { "resolve_library_id", "Search for library documentation and retrieve library IDs" },
+            { "get_library_docs", "Fetch comprehensive documentation for a specific library" }
         };
     }
 }

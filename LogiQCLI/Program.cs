@@ -117,6 +117,9 @@ public class Program
         var gitHubClient = new GitHubClientWrapper(settings.GitHub?.Token);
         _serviceContainer.RegisterInstance(gitHubClient);
         
+        var documentationApiClient = new LogiQCLI.Infrastructure.ApiClients.Documentation.DocumentationApiClient(httpClient);
+        _serviceContainer.RegisterInstance(documentationApiClient);
+        
         _serviceContainer.RegisterInstance<IServiceContainer>(_serviceContainer);
         
         _toolRegistry = new ToolRegistry();
