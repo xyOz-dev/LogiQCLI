@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using LogiQCLI.Infrastructure.ApiClients.OpenRouter.Models;
 using LogiQCLI.Infrastructure.ApiClients.OpenRouter.Objects;
 using LogiQCLI.Tools.Core;
+using LogiQCLI.Presentation.Console.Components.Objects;
 using Spectre.Console;
 
 namespace LogiQCLI.Presentation.Console.Components
@@ -80,7 +81,7 @@ namespace LogiQCLI.Presentation.Console.Components
                     await Task.Delay(500);
                 });
 
-            RenderToolResult(toolCall.Function.Name, result, hasError);
+            RenderEnhancedToolResult(toolCall.Function.Name, toolCall.Function.Arguments, result, hasError);
             
             return new Message
             {
@@ -111,25 +112,9 @@ namespace LogiQCLI.Presentation.Console.Components
             AnsiConsole.Write(panel);
         }
 
-        private void RenderToolResult(string toolName, string result, bool hasError = false)
+        private void RenderEnhancedToolResult(string toolName, string arguments, string result, bool hasError = false)
         {
-            var displayResult = TruncateResult(result);
-            var borderColor = hasError ? Color.FromHex("#ff5f5f") : Color.FromHex("#00ff87");
-            var headerColor = hasError ? "[red]" : "[green]";
-            
-            var table = new Table()
-                .Border(TableBorder.Rounded)
-                .BorderColor(borderColor)
-                .AddColumn($"{headerColor}Tool[/]")
-                .AddColumn($"{headerColor}Result[/]")
-                .AddRow(
-                    $"[bold]{toolName}[/]",
-                    hasError
-                        ? $"[red]{Markup.Escape(displayResult)}[/]"
-                        : $"[dim]{Markup.Escape(displayResult)}[/]"
-                );
-            
-            AnsiConsole.Write(table);
+            ToolDisplayFormatter.RenderEnhancedToolResult(toolName, arguments, result, hasError);
         }
 
         private void RenderToolExecutionComplete()
@@ -141,16 +126,6 @@ namespace LogiQCLI.Presentation.Console.Components
             AnsiConsole.WriteLine();
         }
 
-        private string TruncateResult(string result)
-        {
-            if (string.IsNullOrEmpty(result))
-                return "No output";
 
-            const int maxLength = 100;
-            if (result.Length <= maxLength)
-                return result;
-
-            return result.Substring(0, maxLength) + "...";
-        }
     }
 }

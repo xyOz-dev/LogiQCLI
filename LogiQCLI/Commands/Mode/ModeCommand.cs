@@ -6,7 +6,9 @@ using LogiQCLI.Commands.Core.Interfaces;
 using LogiQCLI.Commands.Core.Objects;
 using LogiQCLI.Core.Models.Modes.Interfaces;
 using LogiQCLI.Presentation.Console.Session;
+using LogiQCLI.Presentation.Console.Components.Objects;
 using LogiQCLI.Tools.Core.Objects;
+using Spectre.Console;
 
 namespace LogiQCLI.Commands.Mode
 {
@@ -87,15 +89,17 @@ namespace LogiQCLI.Commands.Mode
         {
             var currentMode = _modeManager.GetCurrentMode();
             
-            var output = new StringBuilder();
-            output.AppendLine("[bold green]Current Mode[/]");
-            output.AppendLine($"[dim]ID:[/] [cyan]{currentMode.Id}[/]");
-            output.AppendLine($"[dim]Name:[/] [cyan]{currentMode.Name}[/]");
-            output.AppendLine($"[dim]Description:[/] [white]{currentMode.Description}[/]");
-            output.AppendLine($"[dim]Type:[/] [cyan]{(currentMode.IsBuiltIn ? "Built-in" : "Custom")}[/]");
-            output.AppendLine($"[dim]Allowed Tools:[/] [yellow]{currentMode.AllowedTools.Count}[/]");
-            
-            return output.ToString();
+            var modeData = new Dictionary<string, string>
+            {
+                { "ID", currentMode.Id },
+                { "Name", currentMode.Name },
+                { "Description", currentMode.Description },
+                { "Type", currentMode.IsBuiltIn ? "Built-in" : "Custom" },
+                { "Allowed Tools", currentMode.AllowedTools.Count.ToString() }
+            };
+
+            TableFormatter.RenderKeyValueTable("Current Mode", modeData, Color.Green);
+            return ""; // Table is rendered directly, no string return needed
         }
 
         private string ShowAvailableModes()
@@ -103,22 +107,16 @@ namespace LogiQCLI.Commands.Mode
             var modes = _modeManager.GetAvailableModes();
             var currentMode = _modeManager.GetCurrentMode();
             
-            var output = new StringBuilder();
-            output.AppendLine("[cyan]Available Modes:[/]");
-            output.AppendLine();
-
-            foreach (var mode in modes.OrderBy(m => m.IsBuiltIn ? 0 : 1).ThenBy(m => m.Name))
+            var modeRows = modes.Select(m => new ModeTableRow
             {
-                var status = mode.Id == currentMode.Id ? " [green](Active)[/]" : "";
-                var type = mode.IsBuiltIn ? "[cyan]Built-in[/]" : "[yellow]Custom[/]";
-                
-                output.AppendLine($"[bold]{mode.Id}[/] - {mode.Name}{status}");
-                output.AppendLine($"  Type: {type} | Tools: {mode.AllowedTools.Count}");
-                output.AppendLine($"  {mode.Description}");
-                output.AppendLine();
-            }
+                Id = m.Id,
+                Name = m.Name,
+                IsBuiltIn = m.IsBuiltIn,
+                ToolCount = m.AllowedTools.Count
+            });
 
-            return output.ToString();
+            TableFormatter.RenderModesTable(modeRows, currentMode.Id);
+            return ""; // Table is rendered directly, no string return needed
         }
 
         private string HandleModeSwitch(string modeId)

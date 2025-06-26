@@ -10,7 +10,7 @@ namespace LogiQCLI.Core.Services
     public class ServiceContainer : IServiceContainer
     {
         private readonly Dictionary<Type, ServiceRegistration> _services = new Dictionary<Type, ServiceRegistration>();
-        private readonly ReaderWriterLockSlim _lock = new ReaderWriterLockSlim();
+        private readonly ReaderWriterLockSlim _lock = new ReaderWriterLockSlim(LockRecursionPolicy.SupportsRecursion);
         private readonly HashSet<Type> _resolving = new HashSet<Type>();
 
         public void RegisterInstance<TService>(TService instance) where TService : class

@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using LogiQCLI.Commands.Core.Interfaces;
 using LogiQCLI.Commands.Core.Objects;
 using LogiQCLI.Tools.Core.Objects;
+using LogiQCLI.Presentation.Console.Components.Objects;
 using Spectre.Console;
 
 namespace LogiQCLI.Commands.Core
@@ -14,10 +15,12 @@ namespace LogiQCLI.Commands.Core
     public class HelpCommand : ICommand
     {
         private readonly ICommandRegistry _commandRegistry;
+        private readonly ICommandFactory _commandFactory;
 
-        public HelpCommand(ICommandRegistry commandRegistry)
+        public HelpCommand(ICommandRegistry commandRegistry, ICommandFactory commandFactory)
         {
             _commandRegistry = commandRegistry ?? throw new ArgumentNullException(nameof(commandRegistry));
+            _commandFactory = commandFactory ?? throw new ArgumentNullException(nameof(commandFactory));
         }
 
         public override RegisteredCommand GetCommandInfo()
@@ -73,57 +76,91 @@ namespace LogiQCLI.Commands.Core
                 return "[yellow]No commands available.[/]";
             }
 
-            var output = new StringBuilder();
-            output.AppendLine("[cyan]Available Commands (New System):[/]");
-            output.AppendLine();
-
-            var categories = commands.GroupBy(c => c.Category).OrderBy(g => g.Key);
-            
-            foreach (var category in categories)
+            var commandRows = commands.Select(c => new CommandTableRow
             {
-                output.AppendLine($"[bold yellow]{category.Key}:[/]");
-                
-                foreach (var command in category.OrderBy(c => c.Name))
-                {
-                    var alias = !string.IsNullOrEmpty(command.Alias) ? $" (alias: /{command.Alias})" : "";
-                    var tags = command.Tags.Any() ? $" [dim]({string.Join(", ", command.Tags)})[/]" : "";
-                    
-                    output.AppendLine($"  [green]/{command.Name}[/]{alias}{tags}");
-                }
-                
-                output.AppendLine();
-            }
-            
-            return output.ToString();
+                Name = c.Name,
+                Alias = c.Alias,
+                Category = c.Category,
+                Description = GetCommandDescription(c.Name),
+                Tags = c.Tags.ToList()
+            });
+
+            TableFormatter.RenderCommandsTable(commandRows);
+            return ""; // Table is rendered directly, no string return needed
         }
 
         private string ShowCommandHelp(string commandName)
         {
-            var commandInfo = _commandRegistry.GetCommandInfo(commandName);
-            if (commandInfo == null)
+            var commandTypeInfo = _commandRegistry.GetCommandInfo(commandName);
+            if (commandTypeInfo == null)
             {
                 return $"[red]Command '/{commandName}' not found.[/]";
             }
 
             var output = new StringBuilder();
-            output.AppendLine($"[cyan]Command: /{commandInfo.Name}[/]");
+            output.AppendLine($"[cyan]Command: /{commandTypeInfo.Name}[/]");
             
-            if (!string.IsNullOrEmpty(commandInfo.Alias))
+            if (!string.IsNullOrEmpty(commandTypeInfo.Alias))
             {
-                output.AppendLine($"[dim]Alias: /{commandInfo.Alias}[/]");
+                output.AppendLine($"[dim]Alias: /{commandTypeInfo.Alias}[/]");
             }
             
-            output.AppendLine($"[dim]Category: {commandInfo.Category}[/]");
+            output.AppendLine($"[dim]Category: {commandTypeInfo.Category}[/]");
             
-            if (commandInfo.Tags.Any())
+            if (commandTypeInfo.Tags.Any())
             {
-                output.AppendLine($"[dim]Tags: {string.Join(", ", commandInfo.Tags)}[/]");
+                output.AppendLine($"[dim]Tags: {string.Join(", ", commandTypeInfo.Tags)}[/]");
             }
             
-            output.AppendLine($"[dim]Priority: {commandInfo.Priority}[/]");
-            output.AppendLine($"[dim]Requires Workspace: {commandInfo.RequiresWorkspace}[/]");
+            output.AppendLine($"[dim]Priority: {commandTypeInfo.Priority}[/]");
+            output.AppendLine($"[dim]Requires Workspace: {commandTypeInfo.RequiresWorkspace}[/]");
+            
+            // Try to get description from the command instance
+            var description = GetCommandDescription(commandName);
+            output.AppendLine($"[dim]Description: {description}[/]");
             
             return output.ToString();
+        }
+
+        private string GetCommandDescription(string commandName)
+        {
+            try
+            {
+                // First try to get the command instance from registry
+                var command = _commandRegistry.GetCommand(commandName);
+                if (command != null)
+                {
+                    var registeredCommand = command.GetCommandInfo();
+                    if (!string.IsNullOrEmpty(registeredCommand?.Description))
+                    {
+                        return registeredCommand.Description;
+                    }
+                }
+                
+                // If no instance in registry, try to create one using the factory
+                var commandTypeInfo = _commandRegistry.GetCommandInfo(commandName);
+                if (commandTypeInfo != null && _commandFactory.CanCreateCommand(commandTypeInfo))
+                {
+                    try
+                    {
+                        var tempCommand = _commandFactory.CreateCommand(commandTypeInfo);
+                        var tempRegisteredCommand = tempCommand.GetCommandInfo();
+                        if (!string.IsNullOrEmpty(tempRegisteredCommand?.Description))
+                        {
+                            return tempRegisteredCommand.Description;
+                        }
+                    }
+                    catch
+                    {
+                        // If we can't create instance, fall through to default
+                    }
+                }
+            }
+            catch
+            {
+                // Ignore errors and fall back to default
+            }
+            return "No description available";
         }
     }
 } 

@@ -57,6 +57,10 @@ namespace LogiQCLI.Presentation.Console.Components
 
             AnsiConsole.Write(Align.Center(new Markup($"[dim]{message}[/]")));
             AnsiConsole.WriteLine();
+            
+            // Add helpful tip about the help command
+            AnsiConsole.Write(Align.Center(new Markup("[dim]💡 Tip: Type [green]/help[/] to see all available commands[/]")));
+            AnsiConsole.WriteLine();
         }
     }
 }

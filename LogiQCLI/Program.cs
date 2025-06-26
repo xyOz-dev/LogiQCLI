@@ -57,14 +57,17 @@ public class Program
             Directory.SetCurrentDirectory(settings.Workspace);
 
             InitializeServices(settings);
-            InitializeToolSystem();
-
-            var modeManager = new ModeManager(configService, _toolRegistry);
+            
+            // Register ModeManager and ChatSession BEFORE InitializeToolSystem() so commands can resolve dependencies
+            var configurationService = _serviceContainer.GetService<ConfigurationService>();
+            var modeManager = new ModeManager(configurationService, _toolRegistry);
             _serviceContainer.RegisterInstance<IModeManager>(modeManager);
             
             // Create and register ChatSession
             var chatSession = new ChatSession(settings.DefaultModel, modeManager);
             _serviceContainer.RegisterInstance(chatSession);
+
+            InitializeToolSystem();
             
             var openRouter = _serviceContainer.GetService<OpenRouterClient>();
             var toolHandler = CreateToolHandler(modeManager, settings);
