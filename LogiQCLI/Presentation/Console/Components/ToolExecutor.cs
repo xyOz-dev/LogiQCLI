@@ -109,7 +109,7 @@ namespace LogiQCLI.Presentation.Console.Components
                 .Padding(1, 0)
                 .Expand();
             
-            AnsiConsole.Write(panel);
+            AnsiConsole.Write(Align.Center(panel));
         }
 
         private void RenderEnhancedToolResult(string toolName, string arguments, string result, bool hasError = false)

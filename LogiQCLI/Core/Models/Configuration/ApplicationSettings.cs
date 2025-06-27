@@ -27,11 +27,7 @@ namespace LogiQCLI.Core.Models.Configuration
         public TavilySettings Tavily { get; set; } = new TavilySettings();
         public ExperimentalSettings Experimental { get; set; } = new ExperimentalSettings();
         
-
-
-
-
-
+        public Dictionary<string, LogiQCLI.Infrastructure.ApiClients.OpenRouter.Objects.ModelEndpointsData> ModelMetadata { get; set; } = new();
 
         public CacheStrategy CacheStrategy { get; set; } = CacheStrategy.Auto;
 

@@ -55,6 +55,26 @@ namespace LogiQCLI.Infrastructure.ApiClients.OpenRouter
             return result?.Data ?? new List<Model>();
         }
 
+        public async Task<Objects.ModelEndpointsData> GetModelEndpointsAsync(string author, string slug, CancellationToken cancellationToken = default)
+        {
+            if (string.IsNullOrWhiteSpace(author)) throw new ArgumentNullException(nameof(author));
+            if (string.IsNullOrWhiteSpace(slug)) throw new ArgumentNullException(nameof(slug));
+
+            var url = $"https://openrouter.ai/api/v1/models/{author}/{slug}/endpoints";
+
+            var response = await _httpClient.GetAsync(url, cancellationToken);
+            if (!response.IsSuccessStatusCode)
+            {
+                var body = await response.Content.ReadAsStringAsync();
+                throw new HttpRequestException($"Failed to get model endpoints: {(int)response.StatusCode} ({response.ReasonPhrase}). Body: {body}");
+            }
+
+            var json = await response.Content.ReadAsStringAsync();
+
+            var data = JsonSerializer.Deserialize<Objects.ModelEndpointsResponse>(json);
+            return data?.Data ?? new Objects.ModelEndpointsData();
+        }
+
         private void ApplyCachingStrategy(ChatRequest request)
         {
             if (request.Model == null || request.Messages == null || _cacheStrategy == CacheStrategy.None)

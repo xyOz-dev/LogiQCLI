@@ -72,7 +72,8 @@ public class Program
             var toolHandler = CreateToolHandler(modeManager, settings);
             var commandHandler = CreateCommandHandler(settings, configService, modeManager);
 
-            var chatUI = new ChatInterface(openRouter, toolHandler, settings, configService, modeManager, _toolRegistry, commandHandler, chatSession, fileReadRegistry);
+            var metadataService = _serviceContainer.GetService<LogiQCLI.Infrastructure.ApiClients.OpenRouter.ModelMetadataService>();
+            var chatUI = new ChatInterface(openRouter, toolHandler, settings, configService, modeManager, _toolRegistry, commandHandler, chatSession, fileReadRegistry, metadataService);
             await chatUI.RunAsync();
         }
         catch (Exception ex)
@@ -163,6 +164,8 @@ public class Program
 
         var fileReadRegistry = new LogiQCLI.Presentation.Console.Session.FileReadRegistry();
         _serviceContainer.RegisterInstance(fileReadRegistry);
+
+        _serviceContainer.RegisterSingleton<LogiQCLI.Infrastructure.ApiClients.OpenRouter.ModelMetadataService, LogiQCLI.Infrastructure.ApiClients.OpenRouter.ModelMetadataService>();
     }
 
     private static void InitializeToolSystem()

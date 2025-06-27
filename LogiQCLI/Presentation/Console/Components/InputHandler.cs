@@ -202,7 +202,8 @@ namespace LogiQCLI.Presentation.Console.Components
             );
                 
             return new Panel(layout)
-                .Header(new PanelHeader("[green]Your Message[/]"))
+                .Header(new PanelHeader("[green]Your Message[/]") )
+                .HeaderAlignment(Spectre.Console.Justify.Center)
                 .Border(BoxBorder.Rounded)
                 .BorderColor(Color.FromHex("#00ff87"))
                 .Padding(1, 0);

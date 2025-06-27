@@ -18,6 +18,7 @@ using LogiQCLI.Core.Models.Modes.Interfaces;
 using LogiQCLI.Tools.Core.Interfaces;
 using System.Security.Cryptography;
 using System.Text.Json;
+using LogiQCLI.Infrastructure.ApiClients.OpenRouter;
 
 namespace LogiQCLI.Presentation.Console
 {
@@ -35,7 +36,9 @@ namespace LogiQCLI.Presentation.Console
         private readonly InputHandler _inputHandler;
         private readonly HeaderRenderer _headerRenderer;
         private readonly CommandHandler _commandHandler;
+        private readonly ModelMetadataService _metadataService;
         private decimal _totalCost = 0;
+        private readonly Action _initializeDisplay;
 
         public ChatInterface(
             OpenRouterClient openRouterClient,
@@ -46,20 +49,23 @@ namespace LogiQCLI.Presentation.Console
             IToolRegistry toolRegistry,
             CommandHandler commandHandler,
             ChatSession chatSession,
-            FileReadRegistry fileReadRegistry)
+            FileReadRegistry fileReadRegistry,
+            ModelMetadataService metadataService)
         {
             _openRouterClient = openRouterClient;
             _toolHandler = toolHandler;
             _settings = settings;
             _modeManager = modeManager;
             _toolRegistry = toolRegistry;
-            _messageRenderer = new MessageRenderer(_settings.DefaultModel ?? "ASSISTANT");
+            _messageRenderer = new MessageRenderer(chatSession.Model);
             _animationManager = new AnimationManager();
             _chatSession = chatSession;
             _fileReadRegistry = fileReadRegistry;
             _inputHandler = new InputHandler();
-            _headerRenderer = new HeaderRenderer(_settings, _modeManager);
+            _headerRenderer = new HeaderRenderer(settings, modeManager);
             _commandHandler = commandHandler;
+            _metadataService = metadataService;
+            _initializeDisplay = () => { };
         }
 
         public async Task RunAsync()
@@ -157,6 +163,31 @@ namespace LogiQCLI.Presentation.Console
             else if (message.Content != null)
             {
                 _chatSession.AddMessage(message);
+
+                int? contextLeft = null;
+                EndpointInfo? best = null;
+                try
+                {
+                    var parts = _chatSession.Model.Split('/', 2);
+                    if (parts.Length == 2 && response?.Usage != null)
+                    {
+                        var meta = await _metadataService.GetModelMetadataAsync(parts[0], parts[1]);
+                        best = _metadataService.GetBestEndpoint(meta);
+                        if (best != null && best.ContextLength > 0)
+                        {
+                            var used = response.Usage.PromptTokens + response.Usage.CompletionTokens;
+                            contextLeft = best.ContextLength - used;
+                        }
+                    }
+                }
+                catch { }
+
+                if (contextLeft.HasValue && best != null)
+                {
+                    var used = response.Usage.PromptTokens + response.Usage.CompletionTokens;
+                    _messageRenderer.RenderUsagePanel(response.Usage, _totalCost, used, best.ContextLength);
+                }
+
                 await _messageRenderer.RenderMessageAsync(message, MessageStyle.Assistant, response.Usage, _totalCost);
             }
             else

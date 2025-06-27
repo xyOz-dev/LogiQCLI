@@ -10,8 +10,8 @@ namespace LogiQCLI.Presentation.Console.Components.Objects
 {
     public static class ToolDisplayFormatter
     {
-        private const int MaxDisplayLines = 50;
-        private const int MaxLineLength = 120;
+        private const int MaxDisplayLines = 70;
+        private const int MaxLineLength = 500;
 
         public static void RenderEnhancedToolResult(string toolName, string arguments, string result, bool hasError = false)
         {
@@ -66,10 +66,11 @@ namespace LogiQCLI.Presentation.Console.Components.Objects
                 
                 var panel = new Panel((Spectre.Console.Rendering.IRenderable)CreateFileContentDisplay(result, lines))
                     .Header($"[green]📖 File Read: {Markup.Escape(filePath)}[/]")
-                    .HeaderAlignment(Justify.Left)
+                    .HeaderAlignment(Justify.Center)
                     .Border(BoxBorder.Rounded)
                     .BorderColor(Color.Green)
-                    .Padding(1, 0);
+                    .Padding(1, 0)
+                    .Expand();
 
                 var infoText = $"[dim]Lines: {totalLines} | Size: {FormatFileSize(fileSize)}[/]";
                 AnsiConsole.Write(panel);
@@ -95,10 +96,11 @@ namespace LogiQCLI.Presentation.Console.Components.Objects
                 
                 var panel = new Panel((Spectre.Console.Rendering.IRenderable)CreateFileContentDisplay(result, lines))
                     .Header($"[green]📖 File Read (First {lineCount} lines): {Markup.Escape(filePath)}[/]")
-                    .HeaderAlignment(Justify.Left)
+                    .HeaderAlignment(Justify.Center)
                     .Border(BoxBorder.Rounded)
                     .BorderColor(Color.Green)
-                    .Padding(1, 0);
+                    .Padding(1, 0)
+                    .Expand();
 
                 var infoText = $"[dim]Requested: {lineCount} lines | Actual: {actualLines} lines[/]";
                 AnsiConsole.Write(panel);
@@ -134,10 +136,11 @@ namespace LogiQCLI.Presentation.Console.Components.Objects
 
                 var panel = new Panel((Spectre.Console.Rendering.IRenderable)diffDisplay)
                     .Header(headerText)
-                    .HeaderAlignment(Justify.Left)
+                    .HeaderAlignment(Justify.Center)
                     .Border(BoxBorder.Rounded)
                     .BorderColor(isPreview ? Color.Yellow : Color.Green)
-                    .Padding(1, 0);
+                    .Padding(1, 0)
+                    .Expand();
 
                 AnsiConsole.Write(panel);
                 var statusColor = isPreview ? "yellow" : "green";
@@ -167,10 +170,11 @@ namespace LogiQCLI.Presentation.Console.Components.Objects
                 var contentPreview = CreateContentPreview(content);
                 var panel = new Panel((Spectre.Console.Rendering.IRenderable)contentPreview)
                     .Header($"[blue]💾 File Written: {Markup.Escape(filePath)}[/]")
-                    .HeaderAlignment(Justify.Left)
+                    .HeaderAlignment(Justify.Center)
                     .Border(BoxBorder.Rounded)
                     .BorderColor(Color.Blue)
-                    .Padding(1, 0);
+                    .Padding(1, 0)
+                    .Expand();
 
                 AnsiConsole.Write(panel);
                 AnsiConsole.MarkupLine($"[green]{Markup.Escape(result)}[/]");
@@ -201,10 +205,11 @@ namespace LogiQCLI.Presentation.Console.Components.Objects
                 var icon = overwrite ? "🔄" : "📄";
                 var panel = new Panel((Spectre.Console.Rendering.IRenderable)contentPreview)
                     .Header($"[cyan]{icon} File Created: {Markup.Escape(filePath)}[/]")
-                    .HeaderAlignment(Justify.Left)
+                    .HeaderAlignment(Justify.Center)
                     .Border(BoxBorder.Rounded)
                     .BorderColor(Color.FromHex("#00ffff"))
-                    .Padding(1, 0);
+                    .Padding(1, 0)
+                    .Expand();
 
                 AnsiConsole.Write(panel);
                 AnsiConsole.MarkupLine($"[green]{Markup.Escape(result)}[/]");
@@ -233,10 +238,11 @@ namespace LogiQCLI.Presentation.Console.Components.Objects
                 var contentPreview = CreateContentPreview(content);
                 var panel = new Panel((Spectre.Console.Rendering.IRenderable)contentPreview)
                     .Header($"[yellow]📝 Content Appended: {Markup.Escape(filePath)}[/]")
-                    .HeaderAlignment(Justify.Left)
+                    .HeaderAlignment(Justify.Center)
                     .Border(BoxBorder.Rounded)
                     .BorderColor(Color.Yellow)
-                    .Padding(1, 0);
+                    .Padding(1, 0)
+                    .Expand();
 
                 AnsiConsole.Write(panel);
                 AnsiConsole.MarkupLine($"[green]{Markup.Escape(result)}[/]");
@@ -262,10 +268,11 @@ namespace LogiQCLI.Presentation.Console.Components.Objects
 
                 var panel = new Panel(new Markup($"[dim]File path: {Markup.Escape(filePath)}[/]"))
                     .Header($"[{headerColor}]{icon} File Deletion[/]")
-                    .HeaderAlignment(Justify.Left)
+                    .HeaderAlignment(Justify.Center)
                     .Border(BoxBorder.Rounded)
                     .BorderColor(color)
-                    .Padding(1, 0);
+                    .Padding(1, 0)
+                    .Expand();
 
                 AnsiConsole.Write(panel);
                 var resultColor = hasError ? "red" : "green";
@@ -294,10 +301,11 @@ namespace LogiQCLI.Presentation.Console.Components.Objects
                 var moveInfo = new Markup($"[dim]From: {Markup.Escape(sourcePath)}[/]\n[dim]To: {Markup.Escape(destinationPath)}[/]");
                 var panel = new Panel(moveInfo)
                     .Header($"[{headerColor}]{icon} File Move[/]")
-                    .HeaderAlignment(Justify.Left)
+                    .HeaderAlignment(Justify.Center)
                     .Border(BoxBorder.Rounded)
                     .BorderColor(color)
-                    .Padding(1, 0);
+                    .Padding(1, 0)
+                    .Expand();
 
                 AnsiConsole.Write(panel);
                 var resultColor = hasError ? "red" : "green";
@@ -328,31 +336,41 @@ namespace LogiQCLI.Presentation.Console.Components.Objects
                         : $"[dim]{Markup.Escape(displayResult)}[/]"
                 );
             
-            AnsiConsole.Write(table);
+            AnsiConsole.Write(Align.Center(table));
         }
 
         private static object CreateFileContentDisplay(string content, string[] lines)
         {
             var displayLines = lines.Take(MaxDisplayLines).ToArray();
             var truncated = lines.Length > MaxDisplayLines;
-            
-            var renderable = new Rows(
-                displayLines.Select((line, index) => 
+
+            var sb = new System.Text.StringBuilder();
+            var consoleWidth = System.Console.WindowWidth > 0 ? System.Console.WindowWidth : MaxLineLength;
+            var contentWidth = consoleWidth - 10; // leave room for borders & line numbers
+            if (contentWidth < 20) contentWidth = 20;
+
+            for (int i = 0; i < displayLines.Length; i++)
+            {
+                var lineNumber = (i + 1).ToString().PadLeft(4);
+                var rawLine = displayLines[i];
+                var displayLine = rawLine.Length <= contentWidth ? rawLine : rawLine.Substring(0, contentWidth - 3) + "...";
+
+                sb.Append("[dim]").Append(lineNumber).Append("[/] ")
+                  .Append(Markup.Escape(displayLine));
+
+                if (i < displayLines.Length - 1 || truncated)
                 {
-                    var lineNumber = (index + 1).ToString().PadLeft(4);
-                    var displayLine = TruncateLine(line);
-                    return new Markup($"[dim]{lineNumber}[/] {Markup.Escape(displayLine)}");
-                }).ToArray()
-            );
+                    sb.Append('\n');
+                }
+            }
 
             if (truncated)
             {
                 var remainingLines = lines.Length - MaxDisplayLines;
-                var truncationMessage = new Markup($"[dim]... and {remainingLines} more lines[/]");
-                return new Rows(renderable, truncationMessage);
+                sb.Append("[dim]... and ").Append(remainingLines).Append(" more lines[/]");
             }
 
-            return renderable;
+            return new Markup(sb.ToString());
         }
 
         private static object CreateContentPreview(string content)

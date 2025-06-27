@@ -39,7 +39,7 @@ namespace LogiQCLI.Presentation.Console.Components
                     var panel = CreateMessagePanel(message, style, usage, totalCost);
                     _messageHistory.Add(panel);
 
-                    AnsiConsole.Write(panel);
+                    AnsiConsole.Write(Align.Center(panel));
                     AnsiConsole.WriteLine();
                 }
             });
@@ -50,22 +50,9 @@ namespace LogiQCLI.Presentation.Console.Components
             var (color, header, border) = GetStyleConfiguration(style);
             var content = FormatMessageContent((string)(message.Content ?? string.Empty));
             
-            if (style == MessageStyle.Assistant && usage != null)
-            {
-                var requestCost = usage.Cost.ToString("C3");
-                var totalSessionCost = totalCost.ToString("C3");
-                var totalTokens = usage.PromptTokens + usage.CompletionTokens - (usage.PromptTokensDetails?.CachedTokens ?? 0);
-                
-                header = $"Request Cost: {requestCost} | Total Cost: {totalSessionCost} | Prompt: {usage.PromptTokens} | Completion: {usage.CompletionTokens} | Total: {totalTokens}";
-
-                if (usage.PromptTokensDetails?.CachedTokens > 0)
-                {
-                    header += $" | Cached: {usage.PromptTokensDetails.CachedTokens}";
-                }
-            }
-
             var panel = new Panel(content)
                 .Header($"[{color}]{header}[/]")
+                .HeaderAlignment(style == MessageStyle.Assistant ? Justify.Center : Justify.Left)
                 .Border(border)
                 .BorderColor(Color.FromHex(color))
                 .Padding(1, 0, 1, 0)
@@ -79,7 +66,7 @@ namespace LogiQCLI.Presentation.Console.Components
             return style switch
             {
                 MessageStyle.User => ("#00ff87", "YOU", BoxBorder.Rounded),
-                MessageStyle.Assistant => ("#5f87ff", _modelName.ToUpper(), BoxBorder.Rounded),
+                MessageStyle.Assistant => ("#5f87ff", _modelName, BoxBorder.Rounded),
                 MessageStyle.System => ("#808080", "SYSTEM", BoxBorder.Square),
                 MessageStyle.Tool => ("#ffaf00", "TOOL", BoxBorder.Heavy),
                 _ => ("#ffffff", "MESSAGE", BoxBorder.Rounded)
@@ -99,6 +86,43 @@ namespace LogiQCLI.Presentation.Console.Components
                 _messageHistory.Clear();
                 AnsiConsole.Clear();
             }
+        }
+
+        public void RenderUsagePanel(Usage usage, decimal totalCost, int contextUsed, int contextLength)
+        {
+            var percentUsed = contextLength > 0 ? (double)contextUsed / contextLength : 0;
+            var barWidth = Math.Min(System.Console.WindowWidth - 20, 60);
+            if (barWidth < 10) barWidth = 10;
+            var filled = (int)Math.Round(percentUsed * barWidth);
+            var barColor = percentUsed < 0.5 ? "#00ff87" : percentUsed < 0.8 ? "#ffaf00" : "#ff0000";
+            var bar = $"[{barColor}]{new string('█', filled)}[/]{new string('░', barWidth - filled)}";
+
+            var pieces = new List<string>
+            {
+                $"Prompt {usage.PromptTokens}",
+                $"Completion {usage.CompletionTokens}"
+            };
+
+            if (usage.PromptTokensDetails?.CachedTokens > 0)
+            {
+                pieces.Add($"Cached {usage.PromptTokensDetails.CachedTokens}");
+            }
+
+            pieces.Add($"Total {usage.PromptTokens + usage.CompletionTokens}");
+            pieces.Add($"Cost {usage.Cost:C3}");
+            pieces.Add($"Session {totalCost:C3}");
+
+            var info = string.Join(" | ", pieces);
+
+            var body = $"{info}\n{bar} [grey]({contextUsed}/{contextLength})[/]";
+
+            var panel = new Panel(body)
+                .Border(BoxBorder.Rounded)
+                .BorderColor(Color.FromHex(barColor))
+                .Padding(1,0,1,0);
+
+            AnsiConsole.Write(Align.Center(panel));
+            AnsiConsole.WriteLine();
         }
     }
 }

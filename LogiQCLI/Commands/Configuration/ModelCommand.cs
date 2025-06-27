@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
@@ -6,6 +8,8 @@ using LogiQCLI.Commands.Core.Interfaces;
 using LogiQCLI.Commands.Core.Objects;
 using LogiQCLI.Presentation.Console.Session;
 using LogiQCLI.Tools.Core.Objects;
+using LogiQCLI.Infrastructure.ApiClients.OpenRouter;
+using LogiQCLI.Core.Models.Configuration;
 
 namespace LogiQCLI.Commands.Configuration
 {
@@ -19,10 +23,14 @@ namespace LogiQCLI.Commands.Configuration
     public class ModelCommand : ICommand
     {
         private readonly ChatSession _chatSession;
+        private readonly ModelMetadataService _metadataService;
+        private readonly ApplicationSettings _settings;
 
-        public ModelCommand(ChatSession chatSession)
+        public ModelCommand(ChatSession chatSession, ModelMetadataService metadataService, ApplicationSettings settings)
         {
             _chatSession = chatSession ?? throw new ArgumentNullException(nameof(chatSession));
+            _metadataService = metadataService ?? throw new ArgumentNullException(nameof(metadataService));
+            _settings = settings ?? throw new ArgumentNullException(nameof(settings));
         }
 
         public override RegisteredCommand GetCommandInfo()
@@ -46,13 +54,38 @@ namespace LogiQCLI.Commands.Configuration
             };
         }
 
-        public override Task<string> Execute(string args)
+        public override async Task<string> Execute(string args)
         {
             try
             {
                 if (string.IsNullOrWhiteSpace(args))
                 {
-                    return Task.FromResult($"[yellow]Current model: {_chatSession.Model}[/]");
+                    return $"[yellow]Current model: {_chatSession.Model}[/]";
+                }
+
+                // Handle "refresh" command directly
+                if (args.Trim().Equals("refresh", StringComparison.OrdinalIgnoreCase))
+                {
+                    var keys = _settings.ModelMetadata?.Keys.ToList() ?? new List<string>();
+                    if (!keys.Any())
+                    {
+                        return "[yellow]No cached models to refresh.[/]";
+                    }
+
+                    var refreshed = 0;
+                    foreach (var key in keys)
+                    {
+                        var parts = key.Split('/', 2);
+                        if (parts.Length != 2) continue;
+                        try
+                        {
+                            await _metadataService.GetModelMetadataAsync(parts[0], parts[1], true);
+                            refreshed++;
+                        }
+                        catch { }
+                    }
+
+                    return $"[green]Refreshed metadata for {refreshed} model(s).[/]";
                 }
 
                 ModelCommandArguments? arguments = null;
@@ -70,15 +103,33 @@ namespace LogiQCLI.Commands.Configuration
 
                 if (arguments?.Model != null)
                 {
-                    _chatSession.Model = arguments.Model.Trim();
-                    return Task.FromResult($"[green]Model updated to: {_chatSession.Model}[/]");
+                    var candidate = arguments.Model.Trim();
+                    if (!candidate.Contains('/'))
+                    {
+                        return "[red]Model must be specified as 'provider/model' (e.g., 'openai/gpt-4o').[/]";
+                    }
+
+                    _chatSession.Model = candidate;
+
+                    // Trigger metadata fetch/cache (best-effort)
+                    try
+                    {
+                        var parts = candidate.Split('/', 2);
+                        if (parts.Length == 2)
+                        {
+                            await _metadataService.GetModelMetadataAsync(parts[0], parts[1]);
+                        }
+                    }
+                    catch { /* ignore failures here */ }
+
+                    return $"[green]Model updated to: {_chatSession.Model}[/]";
                 }
 
-                return Task.FromResult($"[yellow]Current model: {_chatSession.Model}[/]");
+                return $"[yellow]Current model: {_chatSession.Model}[/]";
             }
             catch (Exception ex)
             {
-                return Task.FromResult($"[red]Error: {ex.Message}[/]");
+                return $"[red]Error: {ex.Message}[/]";
             }
         }
     }
