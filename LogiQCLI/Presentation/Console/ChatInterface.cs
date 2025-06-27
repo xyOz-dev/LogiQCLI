@@ -39,6 +39,7 @@ namespace LogiQCLI.Presentation.Console
         private readonly ModelMetadataService _metadataService;
         private decimal _totalCost = 0;
         private readonly Action _initializeDisplay;
+        private readonly Queue<(LogiQCLI.Infrastructure.ApiClients.OpenRouter.Objects.Usage usage, decimal costSnapshot, int contextUsed, int contextLength)> _usageHistory = new();
 
         public ChatInterface(
             OpenRouterClient openRouterClient,
@@ -80,6 +81,10 @@ namespace LogiQCLI.Presentation.Console
                 if (_commandHandler.IsCommand(userInput))
                 {
                     await _commandHandler.ExecuteCommand(userInput);
+                    if (userInput.Trim().StartsWith("/model", StringComparison.OrdinalIgnoreCase))
+                    {
+                        await RefreshDisplayAsync();
+                    }
                 }
                 else
                 {
@@ -154,6 +159,11 @@ namespace LogiQCLI.Presentation.Console
                 return;
             }
 
+            if (string.Equals(message.Role, "assistant", StringComparison.OrdinalIgnoreCase))
+            {
+                message.Name = _chatSession.Model;
+            }
+
             if (message.ToolCalls != null && message.ToolCalls.Length > 0)
             {
                 _chatSession.AddMessage(message);
@@ -180,12 +190,18 @@ namespace LogiQCLI.Presentation.Console
                         }
                     }
                 }
-                catch { }
+                catch {  }
 
                 if (contextLeft.HasValue && best != null)
                 {
                     var used = response.Usage.PromptTokens + response.Usage.CompletionTokens;
                     _messageRenderer.RenderUsagePanel(response.Usage, _totalCost, used, best.ContextLength);
+                    _usageHistory.Enqueue((response.Usage, _totalCost, used, best.ContextLength));
+                }
+
+                if (string.Equals(message.Role, "assistant", StringComparison.OrdinalIgnoreCase))
+                {
+                    _messageRenderer.SetModelName(message.Name ?? _chatSession.Model);
                 }
 
                 await _messageRenderer.RenderMessageAsync(message, MessageStyle.Assistant, response.Usage, _totalCost);
@@ -277,7 +293,7 @@ namespace LogiQCLI.Presentation.Console
                             _fileReadRegistry.Register(fullPath, hash, info.LastWriteTimeUtc, info.Length, result);
                         }
                     }
-                    catch { /* safety: ignore unexpected file system errors */ }
+                    catch {  }
                 }
                 else
                 {
@@ -312,6 +328,51 @@ namespace LogiQCLI.Presentation.Console
             var bytes = System.Text.Encoding.UTF8.GetBytes(content);
             var hashBytes = sha.ComputeHash(bytes);
             return Convert.ToHexString(hashBytes);
+        }
+
+        private async Task RefreshDisplayAsync()
+        {
+            _messageRenderer.ClearHistory();
+
+            _headerRenderer.RenderHeader();
+            _messageRenderer.RenderChatArea();
+
+            var messages = _chatSession.GetMessages();
+            var usageQueue = new System.Collections.Generic.Queue<(LogiQCLI.Infrastructure.ApiClients.OpenRouter.Objects.Usage usage, decimal costSnapshot, int contextUsed, int contextLength)>(_usageHistory);
+
+            foreach (var msg in messages)
+            {
+                if (msg.Role != null && msg.Role.Equals("system", StringComparison.OrdinalIgnoreCase))
+                {
+                    continue;
+                }
+
+                var style = GetStyleForRole(msg.Role);
+                if (style == MessageStyle.Assistant)
+                {
+                    var modelLabel = msg.Name ?? _chatSession.Model;
+                    _messageRenderer.SetModelName(modelLabel);
+                }
+
+                if (style == MessageStyle.Assistant && usageQueue.Count > 0)
+                {
+                    var (usage, costSnapshot, ctxUsed, ctxLen) = usageQueue.Dequeue();
+                    _messageRenderer.RenderUsagePanel(usage, costSnapshot, ctxUsed, ctxLen);
+                }
+
+                await _messageRenderer.RenderMessageAsync(msg, style);
+            }
+        }
+
+        private static MessageStyle GetStyleForRole(string? role)
+        {
+            return role?.ToLowerInvariant() switch
+            {
+                "user" => MessageStyle.User,
+                "assistant" => MessageStyle.Assistant,
+                "system" => MessageStyle.System,
+                _ => MessageStyle.Tool
+            };
         }
     }
 }

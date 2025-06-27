@@ -63,7 +63,6 @@ namespace LogiQCLI.Commands.Configuration
                     return $"[yellow]Current model: {_chatSession.Model}[/]";
                 }
 
-                // Handle "refresh" command directly
                 if (args.Trim().Equals("refresh", StringComparison.OrdinalIgnoreCase))
                 {
                     var keys = _settings.ModelMetadata?.Keys.ToList() ?? new List<string>();
@@ -110,8 +109,8 @@ namespace LogiQCLI.Commands.Configuration
                     }
 
                     _chatSession.Model = candidate;
+                    _settings.DefaultModel = candidate;
 
-                    // Trigger metadata fetch/cache (best-effort)
                     try
                     {
                         var parts = candidate.Split('/', 2);
@@ -120,7 +119,7 @@ namespace LogiQCLI.Commands.Configuration
                             await _metadataService.GetModelMetadataAsync(parts[0], parts[1]);
                         }
                     }
-                    catch { /* ignore failures here */ }
+                    catch {  }
 
                     return $"[green]Model updated to: {_chatSession.Model}[/]";
                 }

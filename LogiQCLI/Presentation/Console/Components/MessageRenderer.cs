@@ -13,13 +13,21 @@ namespace LogiQCLI.Presentation.Console.Components
     {
         private readonly List<Panel> _messageHistory;
         private readonly object _renderLock;
-        private readonly string _modelName;
+        private string _modelName;
 
         public MessageRenderer(string modelName = "ASSISTANT")
         {
             _messageHistory = new List<Panel>();
             _renderLock = new object();
             _modelName = modelName;
+        }
+
+        public void SetModelName(string modelName)
+        {
+            if (!string.IsNullOrWhiteSpace(modelName))
+            {
+                _modelName = modelName.Trim();
+            }
         }
 
         public void RenderChatArea()
