@@ -5,13 +5,13 @@ namespace LogiQCLI.Infrastructure.ApiClients.OpenRouter.Objects
     public class Pricing
     {
         [JsonPropertyName("prompt")]
-        public string Prompt { get; set; }
+        public string Prompt { get; set; } = string.Empty;
 
         [JsonPropertyName("completion")]
-        public string Completion { get; set; }
+        public string Completion { get; set; } = string.Empty;
 
         [JsonPropertyName("request")]
-        public string Request { get; set; }
+        public string Request { get; set; } = string.Empty;
 
         [JsonPropertyName("image")]
         public string? Image { get; set; }

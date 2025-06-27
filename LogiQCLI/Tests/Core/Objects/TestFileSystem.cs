@@ -18,7 +18,7 @@ namespace LogiQCLI.Tests.Core.Objects
             _createdDirectories.Add(_tempDirectory);
         }
 
-        public string CreateTempFile(string content, string fileName = null)
+        public string CreateTempFile(string content, string? fileName = null)
         {
             fileName = fileName ?? $"test_{Guid.NewGuid()}.txt";
             var filePath = Path.Combine(_tempDirectory, fileName);
@@ -35,7 +35,7 @@ namespace LogiQCLI.Tests.Core.Objects
             return filePath;
         }
 
-        public string CreateLargeFile(int sizeInMB, string fileName = null)
+        public string CreateLargeFile(int sizeInMB, string? fileName = null)
         {
             fileName = fileName ?? $"large_{sizeInMB}MB_{Guid.NewGuid()}.txt";
             var filePath = Path.Combine(_tempDirectory, fileName);
@@ -55,7 +55,7 @@ namespace LogiQCLI.Tests.Core.Objects
             return filePath;
         }
 
-        public string CreateFileWithLineEndings(string content, string lineEndingType, string fileName = null)
+        public string CreateFileWithLineEndings(string content, string lineEndingType, string? fileName = null)
         {
             fileName = fileName ?? $"lineending_{lineEndingType}_{Guid.NewGuid()}.txt";
             
@@ -89,7 +89,7 @@ namespace LogiQCLI.Tests.Core.Objects
             return CreateTempFile(processedContent, fileName);
         }
 
-        public string CreateBinaryFile(byte[] data, string fileName = null)
+        public string CreateBinaryFile(byte[] data, string? fileName = null)
         {
             fileName = fileName ?? $"binary_{Guid.NewGuid()}.bin";
             var filePath = Path.Combine(_tempDirectory, fileName);

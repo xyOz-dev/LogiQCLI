@@ -5,13 +5,13 @@ namespace LogiQCLI.Tools.ContentManipulation.Arguments
     internal class SearchFilesArguments
     {
         [JsonPropertyName("pattern")]
-        public string Pattern { get; set; }
+        public string Pattern { get; set; } = string.Empty;
 
         [JsonPropertyName("path")]
-        public string Path { get; set; }
+        public string Path { get; set; } = string.Empty;
 
         [JsonPropertyName("file_pattern")]
-        public string FilePattern { get; set; }
+        public string FilePattern { get; set; } = string.Empty;
 
         [JsonPropertyName("use_regex")]
         public bool? UseRegex { get; set; }

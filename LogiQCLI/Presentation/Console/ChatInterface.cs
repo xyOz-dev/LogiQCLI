@@ -18,7 +18,6 @@ using LogiQCLI.Core.Models.Modes.Interfaces;
 using LogiQCLI.Tools.Core.Interfaces;
 using System.Security.Cryptography;
 using System.Text.Json;
-using LogiQCLI.Infrastructure.ApiClients.OpenRouter;
 
 namespace LogiQCLI.Presentation.Console
 {

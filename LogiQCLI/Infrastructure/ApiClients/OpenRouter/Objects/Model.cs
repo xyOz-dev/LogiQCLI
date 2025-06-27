@@ -6,25 +6,25 @@ namespace LogiQCLI.Infrastructure.ApiClients.OpenRouter.Objects
     public class Model
     {
         [JsonPropertyName("id")]
-        public string Id { get; set; }
+        public string Id { get; set; } = string.Empty;
 
         [JsonPropertyName("name")]
-        public string Name { get; set; }
+        public string Name { get; set; } = string.Empty;
 
         [JsonPropertyName("description")]
-        public string Description { get; set; }
+        public string Description { get; set; } = string.Empty;
 
         [JsonPropertyName("pricing")]
-        public Pricing Pricing { get; set; }
+        public Pricing? Pricing { get; set; }
 
         [JsonPropertyName("context_length")]
         public int ContextLength { get; set; }
 
         [JsonPropertyName("architecture")]
-        public Architecture Architecture { get; set; }
+        public Architecture? Architecture { get; set; }
 
         [JsonPropertyName("top_provider")]
-        public TopProvider TopProvider { get; set; }
+        public TopProvider? TopProvider { get; set; }
 
         [JsonPropertyName("per_request_limits")]
         public PerRequestLimits? PerRequestLimits { get; set; }
@@ -33,10 +33,10 @@ namespace LogiQCLI.Infrastructure.ApiClients.OpenRouter.Objects
     public class Architecture
     {
         [JsonPropertyName("modality")]
-        public string Modality { get; set; }
+        public string Modality { get; set; } = string.Empty;
 
         [JsonPropertyName("tokenizer")]
-        public string Tokenizer { get; set; }
+        public string Tokenizer { get; set; } = string.Empty;
 
         [JsonPropertyName("instruct_type")]
         public string? InstructType { get; set; }

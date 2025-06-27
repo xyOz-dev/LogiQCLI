@@ -62,6 +62,8 @@ namespace LogiQCLI.Core.Services
 
         public ITool? GetTool(string name)
         {
+            if (string.IsNullOrEmpty(name)) throw new ArgumentNullException(nameof(name));
+
             if (_tools.TryGetValue(name, out var entry))
             {
                 return entry.Instance;
@@ -71,6 +73,8 @@ namespace LogiQCLI.Core.Services
 
         public ToolTypeInfo? GetToolInfo(string name)
         {
+            if (string.IsNullOrEmpty(name)) throw new ArgumentNullException(nameof(name));
+
             if (_tools.TryGetValue(name, out var entry))
             {
                 return entry.ToolInfo;
@@ -109,6 +113,7 @@ namespace LogiQCLI.Core.Services
 
         public bool IsToolRegistered(string name)
         {
+            if (string.IsNullOrEmpty(name)) return false;
             return _tools.ContainsKey(name);
         }
     }

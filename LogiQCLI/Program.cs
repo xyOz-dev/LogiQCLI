@@ -64,25 +64,25 @@ public class Program
             }
 
             ValidateEnvironment(settings);
-            Directory.SetCurrentDirectory(settings.Workspace);
+            Directory.SetCurrentDirectory(settings.Workspace!);
 
             InitializeServices(settings);
             
-            var configurationService = _serviceContainer.GetService<ConfigurationService>();
-            var modeManager = new ModeManager(configurationService, _toolRegistry);
+            var configurationService = _serviceContainer.GetService<ConfigurationService>()!;
+            var modeManager = new ModeManager(configurationService, _toolRegistry!);
             _serviceContainer.RegisterInstance<IModeManager>(modeManager);
             
-            var fileReadRegistry = _serviceContainer.GetService<LogiQCLI.Presentation.Console.Session.FileReadRegistry>();
-            var chatSession = new ChatSession(settings.DefaultModel, modeManager, fileReadRegistry);
+            var fileReadRegistry = _serviceContainer.GetService<LogiQCLI.Presentation.Console.Session.FileReadRegistry>()!;
+            var chatSession = new ChatSession(settings.DefaultModel!, modeManager, fileReadRegistry);
             _serviceContainer.RegisterInstance(chatSession);
 
             InitializeToolSystem();
             
-            var openRouter = _serviceContainer.GetService<OpenRouterClient>();
+            var openRouter = _serviceContainer.GetService<OpenRouterClient>()!;
             var toolHandler = CreateToolHandler(modeManager, settings);
             var commandHandler = CreateCommandHandler(settings, configService, modeManager);
 
-            var metadataService = _serviceContainer.GetService<LogiQCLI.Infrastructure.ApiClients.OpenRouter.ModelMetadataService>();
+            var metadataService = _serviceContainer.GetService<LogiQCLI.Infrastructure.ApiClients.OpenRouter.ModelMetadataService>()!;
             var chatUI = new ChatInterface(openRouter, toolHandler, settings, configService, modeManager, _toolRegistry, commandHandler, chatSession, fileReadRegistry, metadataService);
             await chatUI.RunAsync();
         }
@@ -328,7 +328,7 @@ public class Program
         {
             InitializeServices(new ApplicationSettings { Workspace = Directory.GetCurrentDirectory() });
             
-            var testRunner = new TestRunner(_serviceContainer);
+            var testRunner = new TestRunner(_serviceContainer!);
             
             var categoryFilter = GetArgumentValue(args, "-category", "--category");
             var testNameFilter = GetArgumentValue(args, "-test", "--test-name");
@@ -358,7 +358,7 @@ public class Program
         }
     }
 
-    private static string GetArgumentValue(string[] args, params string[] flags)
+    private static string? GetArgumentValue(string[] args, params string[] flags)
     {
         for (int i = 0; i < args.Length - 1; i++)
         {

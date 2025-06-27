@@ -5,10 +5,10 @@ namespace LogiQCLI.Tools.FileOperations.Arguments
     internal class MoveFileArguments
     {
         [JsonPropertyName("source")]
-        public string Source { get; set; }
+        public string Source { get; set; } = string.Empty;
         
         [JsonPropertyName("destination")]
-        public string Destination { get; set; }
+        public string Destination { get; set; } = string.Empty;
         
         [JsonPropertyName("overwrite")]
         public bool? Overwrite { get; set; }

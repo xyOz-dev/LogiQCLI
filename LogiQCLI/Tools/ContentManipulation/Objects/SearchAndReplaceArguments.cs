@@ -5,13 +5,13 @@ namespace LogiQCLI.Tools.ContentManipulation.Objects
     internal class SearchAndReplaceArguments
     {
         [JsonPropertyName("path")]
-        public string Path { get; set; }
+        public string Path { get; set; } = string.Empty;
         
         [JsonPropertyName("search")]
-        public string Search { get; set; }
+        public string Search { get; set; } = string.Empty;
         
         [JsonPropertyName("replace")]
-        public string Replace { get; set; }
+        public string Replace { get; set; } = string.Empty;
         
         [JsonPropertyName("useRegex")]
         public bool? UseRegex { get; set; }
