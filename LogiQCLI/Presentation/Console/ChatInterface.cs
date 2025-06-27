@@ -246,6 +246,12 @@ namespace LogiQCLI.Presentation.Console
 
                     var hash = ComputeHash(result.Content?.ToString() ?? string.Empty);
 
+                    if (result.Content?.ToString()?.StartsWith("Error ") == true)
+                    {
+                        _chatSession.AddMessage(result);
+                        continue;
+                    }
+
                     if (_fileReadRegistry.TryGet(fullPath, out var entry))
                     {
                         if (entry.Hash == hash)
@@ -263,8 +269,15 @@ namespace LogiQCLI.Presentation.Console
 
                     _chatSession.AddMessage(result);
 
-                    var info = new System.IO.FileInfo(fullPath);
-                    _fileReadRegistry.Register(fullPath, hash, info.LastWriteTimeUtc, info.Length, result);
+                    try
+                    {
+                        if (System.IO.File.Exists(fullPath))
+                        {
+                            var info = new System.IO.FileInfo(fullPath);
+                            _fileReadRegistry.Register(fullPath, hash, info.LastWriteTimeUtc, info.Length, result);
+                        }
+                    }
+                    catch { /* safety: ignore unexpected file system errors */ }
                 }
                 else
                 {
