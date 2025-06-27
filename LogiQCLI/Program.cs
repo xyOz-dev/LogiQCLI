@@ -43,6 +43,15 @@ public class Program
             }
             
             var configService = new ConfigurationService();
+            var dataDirectory = configService.GetDataDirectory();
+            var configFilePath = Path.Combine(dataDirectory, "settings.json");
+            var migratedFlagPath = Path.Combine(dataDirectory, "migrated.flag");
+
+            if (File.Exists(configFilePath) && !File.Exists(migratedFlagPath))
+            {
+                File.Delete(configFilePath);
+            }
+
             var settings = configService.LoadSettings();
 
             if (settings == null)
@@ -51,6 +60,7 @@ public class Program
                 settings = configManager.ConfigureInteractively();
                 settings.UserDataPath = configService.GetDataDirectory();
                 configService.SaveSettings(settings);
+                File.WriteAllText(migratedFlagPath, "migrated");
             }
 
             ValidateEnvironment(settings);
