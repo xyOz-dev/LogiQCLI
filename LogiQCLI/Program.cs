@@ -93,11 +93,9 @@ public class Program
             var toolHandler = CreateToolHandler(modeManager, settings);
             var commandHandler = CreateCommandHandler(settings, configService, modeManager);
 
-            // Obtain the provider according to env var LOGIQ_PROVIDER (defaults to OpenRouter)
-            var llmProvider = ProviderFactory.Create(_serviceContainer);
-
+            // Provider will now be resolved on demand inside ChatInterface
             var metadataService = _serviceContainer.GetService<LogiQCLI.Infrastructure.ApiClients.OpenRouter.ModelMetadataService>()!;
-            var chatUI = new ChatInterface(llmProvider, toolHandler, settings, configService, modeManager, _toolRegistry!, commandHandler, chatSession, fileReadRegistry, metadataService);
+            var chatUI = new ChatInterface(_serviceContainer!, toolHandler, settings, configService, modeManager, _toolRegistry!, commandHandler, chatSession, fileReadRegistry, metadataService);
             await chatUI.RunAsync();
         }
         catch (Exception ex)

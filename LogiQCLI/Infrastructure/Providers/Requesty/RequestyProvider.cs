@@ -16,49 +16,23 @@ namespace LogiQCLI.Infrastructure.Providers.Requesty
     /// </summary>
     public sealed class RequestyProvider : ILlmProvider, IDisposable
     {
-        private readonly HttpClient _httpClient;
+        private readonly RequestyClient _client;
 
-        public RequestyProvider(HttpClient httpClient, string apiKey)
+        public RequestyProvider(RequestyClient client)
         {
-            if (string.IsNullOrWhiteSpace(apiKey))
-                throw new ArgumentNullException(nameof(apiKey));
-
-            _httpClient = httpClient;
-            _httpClient.BaseAddress = new Uri("https://router.requesty.ai/v1/");
-            _httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", apiKey);
-            _httpClient.DefaultRequestHeaders.Add("HTTP-Referer", "https://github.com/xyOz-dev/LogiQCLI");
-            _httpClient.DefaultRequestHeaders.Add("X-Title", "LogiQCLI");
+            _client = client;
         }
 
         public async Task<ChatCompletionResponse> CreateChatCompletionAsync(ChatCompletionRequest request, CancellationToken cancellationToken = default)
         {
-            var options = new JsonSerializerOptions { DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull };
-            var content = new StringContent(JsonSerializer.Serialize(request, options), Encoding.UTF8, "application/json");
-            var response = await _httpClient.PostAsync("chat/completions", content, cancellationToken);
-
-            if (!response.IsSuccessStatusCode)
-            {
-                var body = await response.Content.ReadAsStringAsync(cancellationToken);
-                throw new HttpRequestException($"Requesty error {(int)response.StatusCode}: {response.ReasonPhrase}. Body: {body}");
-            }
-
-            var json = await response.Content.ReadAsStringAsync(cancellationToken);
-            var result = JsonSerializer.Deserialize<ChatCompletionResponse>(json);
-            return result ?? new ChatCompletionResponse();
+            return await _client.ChatAsync(request, cancellationToken);
         }
 
         public async Task<IReadOnlyList<Model>> ListModelsAsync(CancellationToken cancellationToken = default)
         {
-            var response = await _httpClient.GetAsync("models", cancellationToken);
-            response.EnsureSuccessStatusCode();
-            var json = await response.Content.ReadAsStringAsync(cancellationToken);
-            var list = JsonSerializer.Deserialize<ModelListResponse>(json);
-            return list?.Data ?? new List<Model>();
+            return await _client.ListModelsAsync(cancellationToken);
         }
 
-        public void Dispose()
-        {
-            _httpClient?.Dispose();
-        }
+        public void Dispose() { /* Client disposed by DI container or caller */ }
     }
 } 

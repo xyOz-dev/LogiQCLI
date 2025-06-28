@@ -37,19 +37,23 @@ namespace LogiQCLI.Commands.Configuration
             try
             {
                 AnsiConsole.MarkupLine("[cyan]Add New API Key[/]");
-                var nickname = AnsiConsole.Ask<string>("[green]Enter a nickname for the new API key:[/] ");
 
-                var provider = "openrouter";
-                if (AnsiConsole.Confirm("[green]Is this key for Requesty router?[/]", false))
-                {
-                    provider = "requesty";
-                }
+                // 1. Select provider first
+                var providerChoices = new[] { "openrouter", "requesty" };
+                var provider = AnsiConsole.Prompt(
+                    new SelectionPrompt<string>()
+                        .Title("[green]Select the provider for this API key:[/]")
+                        .AddChoices(providerChoices));
+
+                // 2. Enter nickname
+                var nickname = AnsiConsole.Ask<string>("[green]Enter a nickname for the new API key:[/] ");
 
                 if (_settings.ApiKeys.Any(k => k.Nickname.Equals(nickname, StringComparison.OrdinalIgnoreCase)))
                 {
                     return Task.FromResult($"[red]An API key with the nickname '{nickname}' already exists.[/]");
                 }
 
+                // 3. Enter key value
                 var apiKey = AnsiConsole.Prompt(
                     new TextPrompt<string>($"[green]Enter API key for '{nickname}':[/] ")
                         .PromptStyle("green")
@@ -64,6 +68,7 @@ namespace LogiQCLI.Commands.Configuration
                 if (AnsiConsole.Confirm($"[green]Do you want to make '{nickname}' the active key?[/]", false))
                 {
                     _settings.ActiveApiKeyNickname = nickname;
+                    _settings.DefaultProvider = provider;
                     _configService.SaveSettings(_settings);
                     _initializeDisplay();
                     result += $"\n[green]API key switched to '{nickname}'.[/]";

@@ -58,11 +58,19 @@ namespace LogiQCLI.Commands.Configuration
                 }
 
                 var selectedKeyLabel = AnsiConsole.Prompt(selection);
-                var selectedNickname = selectedKeyLabel.Split(' ')[0];
+                // Extract the nickname portion before the first " [" to preserve nicknames that contain spaces.
+                var bracketIndex = selectedKeyLabel.IndexOf(" [", StringComparison.Ordinal);
+                var selectedNickname = bracketIndex > 0 ? selectedKeyLabel.Substring(0, bracketIndex) : selectedKeyLabel;
 
                 if (selectedNickname != _settings.ActiveApiKeyNickname)
                 {
                     _settings.ActiveApiKeyNickname = selectedNickname;
+                    // Align default provider with the newly selected key
+                    var keyEntry = _settings.ApiKeys.FirstOrDefault(k => k.Nickname == selectedNickname);
+                    if (keyEntry != null)
+                    {
+                        _settings.DefaultProvider = keyEntry.Provider;
+                    }
                     _configService.SaveSettings(_settings);
                     _initializeDisplay();
                     return Task.FromResult($"[green]API key switched to '{selectedNickname}'.[/]");

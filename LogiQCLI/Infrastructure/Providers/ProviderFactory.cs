@@ -33,7 +33,8 @@ namespace LogiQCLI.Infrastructure.Providers
                         {
                             throw new InvalidOperationException("No Requesty API key found. Use /settings or /addkey to add one for provider 'requesty'.");
                         }
-                        return new Infrastructure.Providers.Requesty.RequestyProvider(http, key);
+                        var reqClient = new Infrastructure.Providers.Requesty.RequestyClient(http, key);
+                        return new Infrastructure.Providers.Requesty.RequestyProvider(reqClient);
                     }
                 case "openrouter":
                 default:

@@ -18,11 +18,13 @@ namespace LogiQCLI.Commands.Configuration
     {
         private readonly ApplicationSettings _settings;
         private readonly ConfigurationService _configService;
+        private readonly Action _initializeDisplay;
 
-        public SettingsCommand(ApplicationSettings settings, ConfigurationService configService)
+        public SettingsCommand(ApplicationSettings settings, ConfigurationService configService, Action initializeDisplay)
         {
             _settings = settings ?? throw new ArgumentNullException(nameof(settings));
             _configService = configService ?? throw new ArgumentNullException(nameof(configService));
+            _initializeDisplay = initializeDisplay ?? throw new ArgumentNullException(nameof(initializeDisplay));
         }
 
         public override RegisteredCommand GetCommandInfo()
@@ -227,6 +229,7 @@ namespace LogiQCLI.Commands.Configuration
             _settings.DefaultProvider = providerChoice;
             _configService.SaveSettings(_settings);
             AnsiConsole.MarkupLine($"[green]✓ Default provider set to {providerChoice}.[/]");
+            _initializeDisplay();
         }
 
         private void HandleModelChange()
@@ -317,24 +320,34 @@ namespace LogiQCLI.Commands.Configuration
 
         private void HandleAddApiKey()
         {
+            // 1. Choose provider
+            var providerChoices = new[] { "openrouter", "requesty" };
+            var provider = AnsiConsole.Prompt(
+                new SelectionPrompt<string>()
+                    .Title("[green]Select the provider for this API key:[/]")
+                    .AddChoices(providerChoices));
+
+            // 2. Enter nickname
             var nickname = AnsiConsole.Ask<string>("[green]Enter a nickname for the API key:[/]");
-            
+
             if (_settings.ApiKeys.Any(k => k.Nickname.Equals(nickname, StringComparison.OrdinalIgnoreCase)))
             {
                 AnsiConsole.MarkupLine($"[red]✗ An API key with nickname '{nickname}' already exists.[/]");
                 return;
             }
 
+            // 3. Enter key value
             var apiKey = AnsiConsole.Prompt(
                 new TextPrompt<string>("[green]Enter the API key:[/]")
                     .PromptStyle("green")
                     .Secret());
 
-            _settings.ApiKeys.Add(new ApiKeySettings { Nickname = nickname, ApiKey = apiKey, Provider = _settings.DefaultProvider });
+            _settings.ApiKeys.Add(new ApiKeySettings { Nickname = nickname, ApiKey = apiKey, Provider = provider });
             
             if (_settings.ApiKeys.Count == 1)
             {
                 _settings.ActiveApiKeyNickname = nickname;
+                _settings.DefaultProvider = provider;
             }
 
             _configService.SaveSettings(_settings);
@@ -353,8 +366,15 @@ namespace LogiQCLI.Commands.Configuration
                     .AddChoices(keyNicknames));
 
             _settings.ActiveApiKeyNickname = selectedKey;
+            // Ensure default provider matches the selected key's provider to avoid mismatches
+            var keyEntry = _settings.ApiKeys.FirstOrDefault(k => k.Nickname == selectedKey);
+            if (keyEntry != null)
+            {
+                _settings.DefaultProvider = keyEntry.Provider;
+            }
             _configService.SaveSettings(_settings);
             AnsiConsole.MarkupLine($"[green]✓ Switched to API key: {selectedKey}[/]");
+            _initializeDisplay();
         }
 
         private void HandleRemoveApiKey()
@@ -376,7 +396,12 @@ namespace LogiQCLI.Commands.Configuration
                 
                 if (_settings.ActiveApiKeyNickname == selectedKey)
                 {
-                    _settings.ActiveApiKeyNickname = _settings.ApiKeys.FirstOrDefault()?.Nickname;
+                    var newActive = _settings.ApiKeys.FirstOrDefault();
+                    _settings.ActiveApiKeyNickname = newActive?.Nickname;
+                    if (newActive != null)
+                    {
+                        _settings.DefaultProvider = newActive.Provider;
+                    }
                 }
 
                 _configService.SaveSettings(_settings);

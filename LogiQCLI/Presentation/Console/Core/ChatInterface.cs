@@ -15,17 +15,17 @@ using Spectre.Console;
 using LogiQCLI.Infrastructure.ApiClients.OpenRouter.Models;
 using LogiQCLI.Presentation.Console.Components.Objects;
 using LogiQCLI.Core.Models.Modes.Interfaces;
-using LogiQCLI.Tools.Core.Interfaces;
 using System.Security.Cryptography;
 using System.Text.Json;
 using LogiQCLI.Infrastructure.Providers;
 using LogiQCLI.Infrastructure.Providers.Objects;
+using LogiQCLI.Tools.Core.Interfaces;
 
 namespace LogiQCLI.Presentation.Console
 {
     public class ChatInterface
     {
-        private readonly ILlmProvider _llmProvider;
+        private readonly IServiceContainer _container;
         private readonly ToolHandler _toolHandler;
         private readonly ApplicationSettings _settings;
         private readonly IModeManager _modeManager;
@@ -43,7 +43,7 @@ namespace LogiQCLI.Presentation.Console
         private readonly Queue<(LogiQCLI.Infrastructure.ApiClients.OpenRouter.Objects.Usage usage, decimal costSnapshot, int contextUsed, int contextLength)> _usageHistory = new();
 
         public ChatInterface(
-            ILlmProvider llmProvider,
+            IServiceContainer container,
             ToolHandler toolHandler,
             ApplicationSettings settings,
             ConfigurationService configService,
@@ -54,7 +54,7 @@ namespace LogiQCLI.Presentation.Console
             FileReadRegistry fileReadRegistry,
             ModelMetadataService metadataService)
         {
-            _llmProvider = llmProvider;
+            _container = container ?? throw new ArgumentNullException(nameof(container));
             _toolHandler = toolHandler;
             _settings = settings;
             _modeManager = modeManager;
@@ -134,7 +134,8 @@ namespace LogiQCLI.Presentation.Console
                 {
                     try
                     {
-                        response = await _llmProvider.CreateChatCompletionAsync(request);
+                        var llmProvider = ProviderFactory.Create(_container);
+                        response = await llmProvider.CreateChatCompletionAsync(request);
                         if (response?.Usage != null)
                         {
                             _totalCost += (decimal)response.Usage.Cost;
