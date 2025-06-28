@@ -8,6 +8,7 @@ using LogiQCLI.Infrastructure.ApiClients.GitHub;
 using LogiQCLI.Tools.Core.Objects;
 using LogiQCLI.Tools.Core.Interfaces;
 using LogiQCLI.Infrastructure.ApiClients.GitHub.Objects;
+using LogiQCLI.Tools.GitHub.Objects;
 
 namespace LogiQCLI.Tools.GitHub
 {
@@ -96,21 +97,6 @@ namespace LogiQCLI.Tools.GitHub
             {
                 return $"Error commenting on GitHub pull request: {ex.Message}";
             }
-        }
-
-        internal class CommentOnPullRequestArguments
-        {
-            [JsonPropertyName("owner")]
-            public string? Owner { get; set; }
-
-            [JsonPropertyName("repo")]
-            public string? Repo { get; set; }
-
-            [JsonPropertyName("pullRequestNumber")]
-            public int PullRequestNumber { get; set; }
-
-            [JsonPropertyName("comment")]
-            public string? Comment { get; set; }
         }
     }
 }

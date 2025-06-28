@@ -8,6 +8,7 @@ using LogiQCLI.Infrastructure.ApiClients.GitHub;
 using LogiQCLI.Tools.Core.Objects;
 using LogiQCLI.Tools.Core.Interfaces;
 using LogiQCLI.Infrastructure.ApiClients.GitHub.Objects;
+using LogiQCLI.Tools.GitHub.Objects;
 
 namespace LogiQCLI.Tools.GitHub
 {
@@ -67,12 +68,6 @@ namespace LogiQCLI.Tools.GitHub
             {
                 return $"Error marking GitHub notification as read: {ex.Message}";
             }
-        }
-
-        internal class MarkNotificationAsReadArguments
-        {
-            [JsonPropertyName("notificationId")]
-            public string? NotificationId { get; set; }
         }
     }
 }
