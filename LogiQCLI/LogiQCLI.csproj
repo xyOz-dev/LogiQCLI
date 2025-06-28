@@ -13,8 +13,8 @@
     <Version>1.0.0</Version>
     <Authors>LogiQ Team</Authors>
     <Description>LogiQ CLI - Your AI-Powered Code Assistant</Description>
-    <PackageProjectUrl>https://github.com/logiq/logiq-cli</PackageProjectUrl>
-    <RepositoryUrl>https://github.com/logiq/logiq-cli</RepositoryUrl>
+    <PackageProjectUrl>https://github.com/xyOz-dev/LogiQCLI</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/xyOz-dev/LogiQCLI</RepositoryUrl>
   </PropertyGroup>
 
   <ItemGroup>
