@@ -140,7 +140,7 @@ namespace LogiQCLI.Presentation.Console
                     }
                     catch (Exception ex)
                     {
-                        AnsiConsole.MarkupLine($"[red]Error calling API: {ex.Message}[/]");
+                        AnsiConsole.MarkupLine($"[red]Error calling API:[/] {Markup.Escape(ex.Message)}");
                     }
                 });
 
@@ -239,7 +239,7 @@ namespace LogiQCLI.Presentation.Console
                 {
                     if (result.Content?.ToString() == "__UNCHANGED__")
                     {
-                        AnsiConsole.MarkupLine($"[grey]Skipped unchanged read of {ExtractPathFromArguments(call.Function.Arguments)} (kept prior content)[/]");
+                        AnsiConsole.MarkupLine($"[grey]Skipped unchanged read of {Markup.Escape(ExtractPathFromArguments(call.Function.Arguments))} (kept prior content)[/]");
                         result.Content = "__UNCHANGED__";
                         _chatSession.AddMessage(result);
                         continue;
@@ -272,7 +272,7 @@ namespace LogiQCLI.Presentation.Console
                     {
                         if (entry.Hash == hash)
                         {
-                            AnsiConsole.MarkupLine($"[grey]Skipped unchanged read of {fullPath} (kept prior content)[/]");
+                            AnsiConsole.MarkupLine($"[grey]Skipped unchanged read of {Markup.Escape(fullPath)} (kept prior content)[/]");
                             result.Content = "__UNCHANGED__";
                             _chatSession.AddMessage(result);
                             continue;
@@ -280,7 +280,7 @@ namespace LogiQCLI.Presentation.Console
 
                         _chatSession.RemoveMessage(entry.MessageRef);
                         _fileReadRegistry.Remove(fullPath);
-                        AnsiConsole.MarkupLine($"[yellow]Replaced previous read of {fullPath}[/]");
+                        AnsiConsole.MarkupLine($"[yellow]Replaced previous read of {Markup.Escape(fullPath)}[/]");
                     }
 
                     _chatSession.AddMessage(result);
