@@ -10,6 +10,7 @@ using LogiQCLI.Presentation.Console.Session;
 using LogiQCLI.Tools.Core.Objects;
 using LogiQCLI.Infrastructure.ApiClients.OpenRouter;
 using LogiQCLI.Core.Models.Configuration;
+using Spectre.Console;
 
 namespace LogiQCLI.Commands.Configuration
 {
@@ -60,7 +61,23 @@ namespace LogiQCLI.Commands.Configuration
             {
                 if (string.IsNullOrWhiteSpace(args))
                 {
-                    return $"[yellow]Current model: {_chatSession.Model}[/]";
+                    if (_settings.AvailableModels == null || _settings.AvailableModels.Count == 0)
+                        return "[yellow]No quick models configured. Run /models to add some.[/]";
+
+                    var prompt = new SelectionPrompt<string>()
+                        .Title("[green]Select a model:[/]")
+                        .AddChoices(_settings.AvailableModels)
+                        .PageSize(10);
+
+                    var chosen = AnsiConsole.Prompt(prompt);
+                    if (!string.IsNullOrWhiteSpace(chosen))
+                    {
+                        _chatSession.Model = chosen;
+                        _settings.DefaultModel = chosen;
+                        return $"[green]Model set to: {chosen}[/]";
+                    }
+
+                    return string.Empty;
                 }
 
                 if (args.Trim().Equals("refresh", StringComparison.OrdinalIgnoreCase))

@@ -22,6 +22,7 @@ using LogiQCLI.Tools.Core.Interfaces;
 using LogiQCLI.Tests.Core;
 using System.Text;
 using LogiQCLI.Infrastructure.Providers;
+using System.Net.Http;
 
 public class Program
 {
@@ -193,6 +194,7 @@ public class Program
         _serviceContainer.RegisterInstance(fileReadRegistry);
 
         _serviceContainer.RegisterSingleton<LogiQCLI.Infrastructure.ApiClients.OpenRouter.ModelMetadataService, LogiQCLI.Infrastructure.ApiClients.OpenRouter.ModelMetadataService>();
+        _serviceContainer.RegisterSingleton<IModelDiscoveryService, ModelDiscoveryService>();
     }
 
     private static void InitializeToolSystem()

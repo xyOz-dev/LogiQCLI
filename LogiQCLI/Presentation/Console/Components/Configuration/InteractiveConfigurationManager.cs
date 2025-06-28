@@ -4,6 +4,9 @@ using System.IO;
 using System.Linq;
 using LogiQCLI.Core.Models.Configuration;
 using Spectre.Console;
+using LogiQCLI.Presentation.Console.Animation;
+using LogiQCLI.Presentation.Console.Components.Configuration;
+using LogiQCLI.Core.Services;
 
 namespace LogiQCLI.Presentation.Console.Components
 {
@@ -21,8 +24,8 @@ namespace LogiQCLI.Presentation.Console.Components
             RenderConfigurationHeader();
             ConfigureWorkspace();
             ConfigureProvider();
-            ConfigureModel();
             ConfigureApiKey();
+            ConfigureModel();
             ConfigureGitHub();
             ConfigureTavily();
             ConfigureExperimental();
@@ -87,67 +90,41 @@ namespace LogiQCLI.Presentation.Console.Components
             AnsiConsole.WriteLine();
         }
 
-        private void ConfigureModel()
+        private void ConfigureApiKey()
         {
-            var defaultModel = "google/gemini-2.5-pro";
-            
-            AnsiConsole.MarkupLine("[cyan]AI Model Selection[/]");
-            AnsiConsole.MarkupLine($"[dim]Available models:[/]");
-            
-            for (int i = 0; i < _settings.AvailableModels.Count; i++)
-            {
-                var model = _settings.AvailableModels[i];
-                var prefix = model == defaultModel ? "[green]✓[/]" : " ";
-                AnsiConsole.MarkupLine($"  {prefix} [yellow]{i + 1}[/]. {model}");
-            }
+            AnsiConsole.MarkupLine("[cyan]API Key Configuration[/]");
+            AnsiConsole.MarkupLine("[dim]You can add multiple API keys and switch between them.[/]");
             AnsiConsole.WriteLine();
 
-            var modelChoice = AnsiConsole.Ask<string>(
-                $"[green]Select model by number or enter custom model name[/] [dim](press Enter for default: {defaultModel})[/]:",
-                defaultModel);
+            var addMoreKeys = true;
+            while (addMoreKeys)
+            {
+                var nickname = AnsiConsole.Ask<string>("[green]Enter a nickname for the API key:[/] ");
+                var apiKey = AnsiConsole.Prompt(
+                    new TextPrompt<string>($"[green]Enter API key for '{nickname}':[/] ")
+                        .PromptStyle("green")
+                        .Secret());
 
-            if (int.TryParse(modelChoice, out int index) && index >= 1 && index <= _settings.AvailableModels.Count)
-            {
-                _settings.DefaultModel = _settings.AvailableModels[index - 1];
-            }
-            else if (!string.IsNullOrWhiteSpace(modelChoice))
-            {
-                _settings.DefaultModel = modelChoice;
-            }
-            else
-            {
-                _settings.DefaultModel = defaultModel;
-            }
+                _settings.ApiKeys.Add(new ApiKeySettings { Nickname = nickname, ApiKey = apiKey, Provider = _settings.DefaultProvider });
+                
+                if (_settings.ApiKeys.Count == 1)
+                {
+                    _settings.ActiveApiKeyNickname = nickname;
+                }
 
-            AnsiConsole.WriteLine();
+                addMoreKeys = AnsiConsole.Confirm("[green]Add another API key?[/]", false);
+                AnsiConsole.WriteLine();
+            }
         }
 
-       private void ConfigureApiKey()
-       {
-           AnsiConsole.MarkupLine("[cyan]API Key Configuration[/]");
-           AnsiConsole.MarkupLine("[dim]You can add multiple API keys and switch between them.[/]");
-           AnsiConsole.WriteLine();
-
-           var addMoreKeys = true;
-           while (addMoreKeys)
-           {
-               var nickname = AnsiConsole.Ask<string>("[green]Enter a nickname for the API key:[/] ");
-               var apiKey = AnsiConsole.Prompt(
-                   new TextPrompt<string>($"[green]Enter API key for '{nickname}':[/] ")
-                       .PromptStyle("green")
-                       .Secret());
-
-               _settings.ApiKeys.Add(new ApiKeySettings { Nickname = nickname, ApiKey = apiKey, Provider = _settings.DefaultProvider });
-               
-               if (_settings.ApiKeys.Count == 1)
-               {
-                   _settings.ActiveApiKeyNickname = nickname;
-               }
-
-               addMoreKeys = AnsiConsole.Confirm("[green]Add another API key?[/]", false);
-               AnsiConsole.WriteLine();
-           }
-       }
+        private void ConfigureModel()
+        {
+            var animationManager = new AnimationManager();
+            var discoveryService = new ModelDiscoveryService();
+            var picker = new ModelPicker(animationManager, discoveryService, _settings, true);
+            picker.Run();
+            AnsiConsole.WriteLine();
+        }
 
         private void ConfigureGitHub()
         {
