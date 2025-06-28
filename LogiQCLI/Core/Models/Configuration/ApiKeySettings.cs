@@ -4,6 +4,7 @@ namespace LogiQCLI.Core.Models.Configuration
     {
         public string Nickname { get; set; } = string.Empty;
         public string ApiKey { get; set; } = string.Empty;
+        public string Provider { get; set; } = "openrouter";
 
         public string GetObfuscatedKey()
         {

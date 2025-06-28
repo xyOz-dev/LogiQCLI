@@ -31,6 +31,8 @@ namespace LogiQCLI.Core.Models.Configuration
 
         public CacheStrategy CacheStrategy { get; set; } = CacheStrategy.Auto;
 
+        public string DefaultProvider { get; set; } = "openrouter";
+
         public ApiKeySettings? GetActiveApiKey() => ApiKeys.FirstOrDefault(k => k.Nickname == ActiveApiKeyNickname);
     }
 }

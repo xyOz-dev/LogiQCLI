@@ -31,6 +31,7 @@ namespace LogiQCLI.Presentation.Console.Components
             
             var infoPanel = new Panel(new Rows(
                 new Markup($"[dim]Workspace:[/] [cyan]{_settings.Workspace ?? "Unknown"}[/]"),
+                new Markup($"[dim]Provider:[/] [cyan]{_settings.DefaultProvider}[/]"),
                 new Markup($"[dim]Model:[/] [cyan]{_settings.DefaultModel ?? "Unknown"}[/]"),
                 new Markup($"[dim]Mode:[/] [green]{modeDisplay}[/]"),
                 new Markup($"[dim]Time:[/] [cyan]{DateTime.Now:yyyy-MM-dd HH:mm:ss}[/]")

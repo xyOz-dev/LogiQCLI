@@ -12,8 +12,8 @@ namespace LogiQCLI.Core.Services
     {
         private readonly ConfigurationService _configurationService;
         private readonly IToolRegistry _toolRegistry;
-        private ModeSettings _modeSettings;
-        private Mode _currentMode;
+        private ModeSettings _modeSettings = null!;
+        private Mode _currentMode = null!;
 
         public ModeManager(ConfigurationService configurationService, IToolRegistry toolRegistry)
         {
@@ -136,7 +136,7 @@ namespace LogiQCLI.Core.Services
 
         public int GetBuiltInModeCount()
         {
-            return _modeSettings.DefaultModes.Count(m => m.IsBuiltIn);
+            return _modeSettings?.DefaultModes?.Count(m => m.IsBuiltIn) ?? 0;
         }
 
         private void InitializeModeSettings()

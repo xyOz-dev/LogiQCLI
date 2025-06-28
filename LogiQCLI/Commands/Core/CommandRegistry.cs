@@ -21,11 +21,12 @@ namespace LogiQCLI.Commands.Core
                 Instance = null
             };
             
-            _commands[commandInfo.Name] = entry;
+            var key = string.IsNullOrEmpty(commandInfo.Name) ? Guid.NewGuid().ToString("N") : commandInfo.Name;
+            _commands[key] = entry;
             
             if (!string.IsNullOrEmpty(commandInfo.Alias))
             {
-                _commands[commandInfo.Alias] = entry;
+                _commands[commandInfo.Alias!] = entry;
             }
         }
 
@@ -63,11 +64,12 @@ namespace LogiQCLI.Commands.Core
                 Instance = commandInstance
             };
             
-            _commands[commandInfo.Name] = entry;
+            var key = string.IsNullOrEmpty(commandInfo.Name) ? Guid.NewGuid().ToString("N") : commandInfo.Name;
+            _commands[key] = entry;
             
             if (!string.IsNullOrEmpty(commandInfo.Alias))
             {
-                _commands[commandInfo.Alias] = entry;
+                _commands[commandInfo.Alias!] = entry;
             }
         }
 

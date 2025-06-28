@@ -18,12 +18,14 @@ using LogiQCLI.Core.Models.Modes.Interfaces;
 using LogiQCLI.Tools.Core.Interfaces;
 using System.Security.Cryptography;
 using System.Text.Json;
+using LogiQCLI.Infrastructure.Providers;
+using LogiQCLI.Infrastructure.Providers.Objects;
 
 namespace LogiQCLI.Presentation.Console
 {
     public class ChatInterface
     {
-        private readonly OpenRouterClient _openRouterClient;
+        private readonly ILlmProvider _llmProvider;
         private readonly ToolHandler _toolHandler;
         private readonly ApplicationSettings _settings;
         private readonly IModeManager _modeManager;
@@ -41,7 +43,7 @@ namespace LogiQCLI.Presentation.Console
         private readonly Queue<(LogiQCLI.Infrastructure.ApiClients.OpenRouter.Objects.Usage usage, decimal costSnapshot, int contextUsed, int contextLength)> _usageHistory = new();
 
         public ChatInterface(
-            OpenRouterClient openRouterClient,
+            ILlmProvider llmProvider,
             ToolHandler toolHandler,
             ApplicationSettings settings,
             ConfigurationService configService,
@@ -52,7 +54,7 @@ namespace LogiQCLI.Presentation.Console
             FileReadRegistry fileReadRegistry,
             ModelMetadataService metadataService)
         {
-            _openRouterClient = openRouterClient;
+            _llmProvider = llmProvider;
             _toolHandler = toolHandler;
             _settings = settings;
             _modeManager = modeManager;
@@ -123,7 +125,7 @@ namespace LogiQCLI.Presentation.Console
             }
 
             var request = CreateChatRequest();
-            ChatResponse? response = null;
+            ChatCompletionResponse? response = null;
             
             await AnsiConsole.Status()
                 .Spinner(Spinner.Known.Dots)
@@ -132,7 +134,7 @@ namespace LogiQCLI.Presentation.Console
                 {
                     try
                     {
-                        response = await _openRouterClient.Chat(request);
+                        response = await _llmProvider.CreateChatCompletionAsync(request);
                         if (response?.Usage != null)
                         {
                             _totalCost += (decimal)response.Usage.Cost;
@@ -213,9 +215,9 @@ namespace LogiQCLI.Presentation.Console
         }
 
 
-        private ChatRequest CreateChatRequest()
+        private ChatCompletionRequest CreateChatRequest()
         {
-            return new ChatRequest
+            return new ChatCompletionRequest
             {
                 Model = _chatSession.Model,
                 Messages = _chatSession.GetMessages(),

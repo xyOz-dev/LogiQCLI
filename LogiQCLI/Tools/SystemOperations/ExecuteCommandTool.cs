@@ -175,6 +175,11 @@ public class ExecuteCommandTool : ITool, IDisposable
 
     private async Task<string> ExecuteCommandInSession(TerminalSession session, string command, int timeout)
     {
+        if (session.Output == null)
+        {
+            return "Error: Session output stream is not available.";
+        }
+
         var outputBuilder = new StringBuilder();
         var completionMarker = $"__LOGIQ_COMMAND_COMPLETE_{Guid.NewGuid():N}__";
         
@@ -185,7 +190,7 @@ public class ExecuteCommandTool : ITool, IDisposable
             
             while (!markerFound)
             {
-                var charsRead = await session.Output.ReadAsync(buffer, 0, buffer.Length);
+                var charsRead = await session.Output!.ReadAsync(buffer, 0, buffer.Length);
                 if (charsRead > 0)
                 {
                     var chunk = new string(buffer, 0, charsRead);

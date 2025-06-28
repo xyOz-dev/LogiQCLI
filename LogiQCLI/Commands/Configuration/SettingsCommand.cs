@@ -62,6 +62,7 @@ namespace LogiQCLI.Commands.Configuration
                 { "Active API Key", _settings.ActiveApiKeyNickname ?? "[dim]Not set[/]" },
                 { "Workspace", _settings.Workspace ?? "[dim]Not set[/]" },
                 { "Default Model", _settings.DefaultModel ?? "[dim]Not set[/]" },
+                { "Default Provider", _settings.DefaultProvider },
                 { "GitHub Token", !string.IsNullOrEmpty(_settings.GitHub?.Token) ? "Configured" : "[dim]Not set[/]" },
                 { "Tavily API Key", !string.IsNullOrEmpty(_settings.Tavily?.ApiKey) ? "Configured" : "[dim]Not set[/]" }
             };
@@ -98,6 +99,7 @@ namespace LogiQCLI.Commands.Configuration
             {
                 "View Current Settings",
                 "Change Workspace",
+                "Change Default Provider",
                 "Change Default Model",
                 "Manage API Keys",
                 "Configure GitHub",
@@ -137,6 +139,9 @@ namespace LogiQCLI.Commands.Configuration
                         break;
                     case "Change Workspace":
                         HandleWorkspaceChange();
+                        break;
+                    case "Change Default Provider":
+                        HandleProviderChange();
                         break;
                     case "Change Default Model":
                         HandleModelChange();
@@ -207,6 +212,21 @@ namespace LogiQCLI.Commands.Configuration
                     }
                 }
             }
+        }
+
+        private void HandleProviderChange()
+        {
+            AnsiConsole.Clear();
+            AnsiConsole.MarkupLine("[cyan]Change Default Provider[/]");
+            var providers = new[] { "openrouter", "requesty" };
+            var providerChoice = AnsiConsole.Prompt(
+                new SelectionPrompt<string>()
+                    .Title("[green]Select new default provider:[/]")
+                    .AddChoices(providers));
+
+            _settings.DefaultProvider = providerChoice;
+            _configService.SaveSettings(_settings);
+            AnsiConsole.MarkupLine($"[green]✓ Default provider set to {providerChoice}.[/]");
         }
 
         private void HandleModelChange()
@@ -310,7 +330,7 @@ namespace LogiQCLI.Commands.Configuration
                     .PromptStyle("green")
                     .Secret());
 
-            _settings.ApiKeys.Add(new ApiKeySettings { Nickname = nickname, ApiKey = apiKey });
+            _settings.ApiKeys.Add(new ApiKeySettings { Nickname = nickname, ApiKey = apiKey, Provider = _settings.DefaultProvider });
             
             if (_settings.ApiKeys.Count == 1)
             {

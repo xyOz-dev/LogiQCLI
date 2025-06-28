@@ -21,6 +21,7 @@ using LogiQCLI.Core.Models.Modes.Interfaces;
 using LogiQCLI.Tools.Core.Interfaces;
 using LogiQCLI.Tests.Core;
 using System.Text;
+using LogiQCLI.Infrastructure.Providers;
 
 public class Program
 {
@@ -72,7 +73,9 @@ public class Program
             InitializeServices(settings);
             
             var configurationService = _serviceContainer.GetService<ConfigurationService>()!;
-            var modeManager = new ModeManager(configurationService, _toolRegistry!);
+
+            var toolRegistry = _toolRegistry ?? throw new InvalidOperationException("Tool registry not initialized.");
+            var modeManager = new ModeManager(configurationService, toolRegistry);
             _serviceContainer.RegisterInstance<IModeManager>(modeManager);
             
             var fileReadRegistry = _serviceContainer.GetService<LogiQCLI.Presentation.Console.Session.FileReadRegistry>()!;
@@ -81,12 +84,20 @@ public class Program
 
             InitializeToolSystem();
             
-            var openRouter = _serviceContainer.GetService<OpenRouterClient>()!;
+            // _toolRegistry is guaranteed non-null after InitializeServices, but add guard for static analysis.
+            if (_toolRegistry == null)
+            {
+                throw new InvalidOperationException("Tool registry not initialized.");
+            }
+
             var toolHandler = CreateToolHandler(modeManager, settings);
             var commandHandler = CreateCommandHandler(settings, configService, modeManager);
 
+            // Obtain the provider according to env var LOGIQ_PROVIDER (defaults to OpenRouter)
+            var llmProvider = ProviderFactory.Create(_serviceContainer);
+
             var metadataService = _serviceContainer.GetService<LogiQCLI.Infrastructure.ApiClients.OpenRouter.ModelMetadataService>()!;
-            var chatUI = new ChatInterface(openRouter, toolHandler, settings, configService, modeManager, _toolRegistry!, commandHandler, chatSession, fileReadRegistry, metadataService);
+            var chatUI = new ChatInterface(llmProvider, toolHandler, settings, configService, modeManager, _toolRegistry!, commandHandler, chatSession, fileReadRegistry, metadataService);
             await chatUI.RunAsync();
         }
         catch (Exception ex)

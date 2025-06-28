@@ -20,6 +20,7 @@ namespace LogiQCLI.Presentation.Console.Components
         {
             RenderConfigurationHeader();
             ConfigureWorkspace();
+            ConfigureProvider();
             ConfigureModel();
             ConfigureApiKey();
             ConfigureGitHub();
@@ -73,6 +74,19 @@ namespace LogiQCLI.Presentation.Console.Components
             AnsiConsole.WriteLine();
         }
 
+        private void ConfigureProvider()
+        {
+            AnsiConsole.MarkupLine("[cyan]Provider Selection[/]");
+            var providers = new[] { "openrouter", "requesty" };
+            var providerChoice = AnsiConsole.Prompt(
+                new SelectionPrompt<string>()
+                    .Title("[green]Choose default provider:[/]")
+                    .AddChoices(providers));
+
+            _settings.DefaultProvider = providerChoice;
+            AnsiConsole.WriteLine();
+        }
+
         private void ConfigureModel()
         {
             var defaultModel = "google/gemini-2.5-pro";
@@ -123,7 +137,7 @@ namespace LogiQCLI.Presentation.Console.Components
                        .PromptStyle("green")
                        .Secret());
 
-               _settings.ApiKeys.Add(new ApiKeySettings { Nickname = nickname, ApiKey = apiKey });
+               _settings.ApiKeys.Add(new ApiKeySettings { Nickname = nickname, ApiKey = apiKey, Provider = _settings.DefaultProvider });
                
                if (_settings.ApiKeys.Count == 1)
                {
@@ -243,6 +257,8 @@ namespace LogiQCLI.Presentation.Console.Components
 
             table.AddRow("[cyan]Workspace[/]", $"[green]{_settings.Workspace}[/]");
             table.AddRow("[cyan]Model[/]", $"[green]{_settings.DefaultModel}[/]");
+            table.AddRow("[cyan]Provider[/]", $"[green]{_settings.DefaultProvider}[/]");
+
             var activeKey = _settings.GetActiveApiKey();
             if (activeKey != null)
             {

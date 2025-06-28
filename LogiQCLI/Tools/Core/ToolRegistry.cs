@@ -21,7 +21,8 @@ namespace LogiQCLI.Core.Services
                 Instance = null
             };
             
-            _tools[toolInfo.Name] = entry;
+            var key = string.IsNullOrEmpty(toolInfo.Name) ? Guid.NewGuid().ToString("N") : toolInfo.Name;
+            _tools[key] = entry;
         }
 
         public void RegisterTool(ITool toolInstance)
@@ -33,7 +34,7 @@ namespace LogiQCLI.Core.Services
             
             ToolTypeInfo toolInfo;
             
-            if (_tools.TryGetValue(registeredInfo.Name, out var existingEntry) && existingEntry.ToolInfo != null)
+            if (_tools.TryGetValue(registeredInfo.Name!, out var existingEntry) && existingEntry.ToolInfo != null)
             {
                 toolInfo = existingEntry.ToolInfo;
             }
@@ -57,7 +58,8 @@ namespace LogiQCLI.Core.Services
                 Instance = toolInstance
             };
             
-            _tools[toolInfo.Name] = entry;
+            var key = string.IsNullOrEmpty(toolInfo.Name) ? Guid.NewGuid().ToString("N") : toolInfo.Name;
+            _tools[key] = entry;
         }
 
         public ITool? GetTool(string name)

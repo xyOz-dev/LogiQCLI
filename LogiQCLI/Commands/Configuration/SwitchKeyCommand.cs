@@ -49,7 +49,7 @@ namespace LogiQCLI.Commands.Configuration
 
                 foreach (var key in availableKeys)
                 {
-                    var label = $"{key.Nickname} ({key.GetObfuscatedKey()})";
+                    var label = $"{key.Nickname} [{key.Provider}] ({key.GetObfuscatedKey()})";
                     if (key.Nickname == _settings.ActiveApiKeyNickname)
                     {
                         label += " [cyan](current)[/]";

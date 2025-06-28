@@ -59,14 +59,14 @@ namespace LogiQCLI.Core.Services
                 {
                     var registeredInfo = toolInstance.GetToolInfo();
                     toolName = registeredInfo.Name;
-                    category = metadataAttribute?.Category ?? toolInstance.Category;
+                    category = metadataAttribute?.Category ?? toolInstance.Category ?? "General";
                     
                     tags = (metadataAttribute?.Tags?.Length > 0) 
-                        ? metadataAttribute.Tags.ToList()
+                        ? metadataAttribute.Tags!.ToList()
                         : new List<string>();
                     
                     requiredServices = (metadataAttribute?.RequiredServices?.Length > 0)
-                        ? metadataAttribute.RequiredServices.ToList()
+                        ? metadataAttribute.RequiredServices!.ToList()
                         : (toolInstance.RequiredServices ?? new List<string>());
                     priority = metadataAttribute?.Priority ?? toolInstance.Priority;
                     requiresWorkspace = metadataAttribute?.RequiresWorkspace ?? toolInstance.RequiresWorkspace;
@@ -74,14 +74,14 @@ namespace LogiQCLI.Core.Services
                 else if (metadataAttribute != null)
                 {
                     toolName = ExtractToolNameFromType(toolType);
-                    category = metadataAttribute.Category ?? ExtractCategoryFromNamespace(toolType);
+                    category = metadataAttribute.Category ?? ExtractCategoryFromNamespace(toolType) ?? "General";
                     
                     tags = (metadataAttribute.Tags?.Length > 0)
-                        ? metadataAttribute.Tags.ToList()
+                        ? metadataAttribute.Tags!.ToList()
                         : new List<string>();
                     
                     requiredServices = (metadataAttribute.RequiredServices?.Length > 0)
-                        ? metadataAttribute.RequiredServices.ToList()
+                        ? metadataAttribute.RequiredServices!.ToList()
                         : new List<string>();
                     priority = metadataAttribute.Priority;
                     requiresWorkspace = metadataAttribute.RequiresWorkspace;
@@ -89,6 +89,11 @@ namespace LogiQCLI.Core.Services
                 else
                 {
                     return null;
+                }
+
+                if (string.IsNullOrEmpty(category))
+                {
+                    category = "General";
                 }
 
                 var toolInfo = new ToolTypeInfo

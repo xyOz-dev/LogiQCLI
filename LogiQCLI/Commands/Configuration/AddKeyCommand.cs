@@ -39,6 +39,12 @@ namespace LogiQCLI.Commands.Configuration
                 AnsiConsole.MarkupLine("[cyan]Add New API Key[/]");
                 var nickname = AnsiConsole.Ask<string>("[green]Enter a nickname for the new API key:[/] ");
 
+                var provider = "openrouter";
+                if (AnsiConsole.Confirm("[green]Is this key for Requesty router?[/]", false))
+                {
+                    provider = "requesty";
+                }
+
                 if (_settings.ApiKeys.Any(k => k.Nickname.Equals(nickname, StringComparison.OrdinalIgnoreCase)))
                 {
                     return Task.FromResult($"[red]An API key with the nickname '{nickname}' already exists.[/]");
@@ -49,7 +55,7 @@ namespace LogiQCLI.Commands.Configuration
                         .PromptStyle("green")
                         .Secret());
 
-                var newKey = new ApiKeySettings { Nickname = nickname, ApiKey = apiKey };
+                var newKey = new ApiKeySettings { Nickname = nickname, ApiKey = apiKey, Provider = provider };
                 _settings.ApiKeys.Add(newKey);
                 _configService.SaveSettings(_settings);
 
