@@ -223,20 +223,20 @@ public class ExecuteCommandTool : ITool, IDisposable
         return $"Session ID: {session.Id}\n{output}";
     }
 
-    private async Task<string> KillSession(string sessionId)
+    private Task<string> KillSession(string sessionId)
     {
         if (string.IsNullOrWhiteSpace(sessionId))
         {
-            return "Error: session_id is required to kill a session.";
+            return Task.FromResult("Error: session_id is required to kill a session.");
         }
 
         if (ActiveSessions.TryRemove(sessionId, out var session))
         {
             session.Dispose();
-            return $"Session {sessionId} terminated successfully.";
+            return Task.FromResult($"Session {sessionId} terminated successfully.");
         }
 
-        return $"Error: Session {sessionId} not found.";
+        return Task.FromResult($"Error: Session {sessionId} not found.");
     }
 
     private async Task<string> ExecuteInBackgroundProcess(ExecuteCommandArguments arguments)
@@ -313,7 +313,7 @@ public class ExecuteCommandTool : ITool, IDisposable
     }
 
 
-    private static void CleanupAllSessions(object sender, EventArgs e)
+    private static void CleanupAllSessions(object? sender, EventArgs? e)
     {
         foreach (var session in ActiveSessions.Values)
         {

@@ -106,10 +106,11 @@ namespace LogiQCLI.Presentation.Console
             return await _inputHandler.GetInputAsync();
         }
 
-        private async Task ProcessUserMessageAsync(string message)
+        private Task ProcessUserMessageAsync(string message)
         {
             var userMessage = new Message { Role = "user", Content = message };
             _chatSession.AddMessage(userMessage);
+            return Task.CompletedTask;
         }
 
         private async Task GenerateAssistantResponseAsync()

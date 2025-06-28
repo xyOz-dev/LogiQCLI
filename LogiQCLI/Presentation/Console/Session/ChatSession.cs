@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Text;
 using System.Runtime.InteropServices;
+using System.Runtime.Versioning;
 using LogiQCLI.Infrastructure.ApiClients.OpenRouter.Models;
 using LogiQCLI.Infrastructure.ApiClients.OpenRouter.Objects;
 using LogiQCLI.Core.Models.Modes.Interfaces;
@@ -350,6 +351,7 @@ namespace LogiQCLI.Presentation.Console.Session
             }
         }
 
+        [SupportedOSPlatform("windows")]
         private string GetWindowsBuildNumber()
         {
             try
