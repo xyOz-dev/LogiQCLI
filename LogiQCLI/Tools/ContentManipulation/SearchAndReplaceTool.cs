@@ -58,7 +58,7 @@ namespace LogiQCLI.Tools.ContentManipulation
                         backup = new
                         {
                             type = "boolean",
-                            description = "Create .bak backup before modifying. Default: true."
+                            description = "Create a backup entry in the .logiq-backups folder before modifying. Default: true."
                         }
                     },
                     Required = new[] { "path", "search", "replace" }
@@ -116,13 +116,10 @@ namespace LogiQCLI.Tools.ContentManipulation
 
                 if (backup && originalContent != newContent)
                 {
-                    var backupPath = fullPath + ".bak";
-                    await File.WriteAllTextAsync(backupPath, originalContent);
-                    
                     try
                     {
                         var backupManager = new LogiqBackupManager();
-                        await backupManager.CreateBackupAsync(fullPath, originalContent, "SearchAndReplaceTool", "pre-modification", 
+                        await backupManager.CreateBackupAsync(fullPath, originalContent, "SearchAndReplaceTool", "pre-modification",
                             "Backup before search and replace");
                     }
                     catch
