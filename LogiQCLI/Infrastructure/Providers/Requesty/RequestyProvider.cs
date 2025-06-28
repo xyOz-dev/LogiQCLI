@@ -11,9 +11,6 @@ using LogiQCLI.Infrastructure.Providers.Objects;
 
 namespace LogiQCLI.Infrastructure.Providers.Requesty
 {
-    /// <summary>
-    /// Simple HTTP-based implementation of ILlmProvider that calls the Requesty router.
-    /// </summary>
     public sealed class RequestyProvider : ILlmProvider, IDisposable
     {
         private readonly RequestyClient _client;
@@ -33,6 +30,6 @@ namespace LogiQCLI.Infrastructure.Providers.Requesty
             return await _client.ListModelsAsync(cancellationToken);
         }
 
-        public void Dispose() { /* Client disposed by DI container or caller */ }
+        public void Dispose() { }
     }
 } 

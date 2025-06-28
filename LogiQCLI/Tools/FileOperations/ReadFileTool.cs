@@ -61,7 +61,6 @@ namespace LogiQCLI.Tools.FileOperations
                 var fullPath = Path.GetFullPath(arguments.Path.Replace('/', Path.DirectorySeparatorChar)
                     .Replace('\\', Path.DirectorySeparatorChar));
 
-                // Early exit if deduplication enabled and file unchanged
                 if (_settings.Experimental?.DeduplicateFileReads == true &&
                     _registry.TryGet(fullPath, out var meta))
                 {

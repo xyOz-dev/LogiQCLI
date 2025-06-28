@@ -204,19 +204,14 @@ namespace LogiQCLI.Commands.Mode
 
                 var modeBuilder = new ModeBuilder();
 
-                // Configure basic properties
                 ConfigureModeBasics(modeBuilder);
                 
-                // Configure system prompt
                 ConfigureSystemPrompt(modeBuilder);
                 
-                // Configure preferred model
                 ConfigurePreferredModel(modeBuilder);
                 
-                // Configure tool permissions
                 ConfigureToolPermissions(modeBuilder);
 
-                // Review and confirm
                 var mode = modeBuilder.Build();
                 if (ReviewAndConfirmMode(mode))
                 {

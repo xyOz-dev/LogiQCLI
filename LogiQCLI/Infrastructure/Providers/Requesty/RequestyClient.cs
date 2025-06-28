@@ -11,9 +11,6 @@ using LogiQCLI.Infrastructure.Providers.Objects;
 
 namespace LogiQCLI.Infrastructure.Providers.Requesty
 {
-    /// <summary>
-    /// Low-level HTTP wrapper for the Requesty router. Mirrors OpenRouterClient surface we actually use.
-    /// </summary>
     public sealed class RequestyClient
     {
         private readonly HttpClient _http;

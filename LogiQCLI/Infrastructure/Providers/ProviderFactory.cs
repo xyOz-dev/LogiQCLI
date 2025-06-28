@@ -10,10 +10,6 @@ using LogiQCLI.Infrastructure.Providers.Requesty;
 
 namespace LogiQCLI.Infrastructure.Providers
 {
-    /// <summary>
-    /// Central place to create ILlmProvider instances based on environment variables.
-    /// For now we only support "openrouter" (default) and "requesty".
-    /// </summary>
     public static class ProviderFactory
     {
         public static ILlmProvider Create(IServiceContainer container)

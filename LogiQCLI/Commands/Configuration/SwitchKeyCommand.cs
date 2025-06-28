@@ -58,14 +58,12 @@ namespace LogiQCLI.Commands.Configuration
                 }
 
                 var selectedKeyLabel = AnsiConsole.Prompt(selection);
-                // Extract the nickname portion before the first " [" to preserve nicknames that contain spaces.
                 var bracketIndex = selectedKeyLabel.IndexOf(" [", StringComparison.Ordinal);
                 var selectedNickname = bracketIndex > 0 ? selectedKeyLabel.Substring(0, bracketIndex) : selectedKeyLabel;
 
                 if (selectedNickname != _settings.ActiveApiKeyNickname)
                 {
                     _settings.ActiveApiKeyNickname = selectedNickname;
-                    // Align default provider with the newly selected key
                     var keyEntry = _settings.ApiKeys.FirstOrDefault(k => k.Nickname == selectedNickname);
                     if (keyEntry != null)
                     {

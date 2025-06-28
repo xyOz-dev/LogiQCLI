@@ -320,14 +320,12 @@ namespace LogiQCLI.Commands.Configuration
 
         private void HandleAddApiKey()
         {
-            // 1. Choose provider
             var providerChoices = new[] { "openrouter", "requesty" };
             var provider = AnsiConsole.Prompt(
                 new SelectionPrompt<string>()
                     .Title("[green]Select the provider for this API key:[/]")
                     .AddChoices(providerChoices));
 
-            // 2. Enter nickname
             var nickname = AnsiConsole.Ask<string>("[green]Enter a nickname for the API key:[/]");
 
             if (_settings.ApiKeys.Any(k => k.Nickname.Equals(nickname, StringComparison.OrdinalIgnoreCase)))
@@ -336,7 +334,6 @@ namespace LogiQCLI.Commands.Configuration
                 return;
             }
 
-            // 3. Enter key value
             var apiKey = AnsiConsole.Prompt(
                 new TextPrompt<string>("[green]Enter the API key:[/]")
                     .PromptStyle("green")
@@ -366,7 +363,6 @@ namespace LogiQCLI.Commands.Configuration
                     .AddChoices(keyNicknames));
 
             _settings.ActiveApiKeyNickname = selectedKey;
-            // Ensure default provider matches the selected key's provider to avoid mismatches
             var keyEntry = _settings.ApiKeys.FirstOrDefault(k => k.Nickname == selectedKey);
             if (keyEntry != null)
             {
@@ -578,7 +574,6 @@ namespace LogiQCLI.Commands.Configuration
                     .Title("[green]Toggle features (space to select, enter to save)[/]")
                     .NotRequired();
 
-                // features
                 const string dedupLabel = "File-read deduplication";
                 prompt.AddChoice(dedupLabel);
 

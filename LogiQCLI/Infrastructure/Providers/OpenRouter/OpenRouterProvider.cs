@@ -7,9 +7,6 @@ using LogiQCLI.Infrastructure.Providers.Objects;
 
 namespace LogiQCLI.Infrastructure.Providers.OpenRouter
 {
-    /// <summary>
-    /// Adapter that exposes OpenRouterClient through the ILlmProvider contract.
-    /// </summary>
     public sealed class OpenRouterProvider : ILlmProvider
     {
         private readonly OpenRouterClient _client;

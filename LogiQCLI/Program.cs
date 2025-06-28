@@ -84,7 +84,6 @@ public class Program
 
             InitializeToolSystem();
             
-            // _toolRegistry is guaranteed non-null after InitializeServices, but add guard for static analysis.
             if (_toolRegistry == null)
             {
                 throw new InvalidOperationException("Tool registry not initialized.");
@@ -93,7 +92,6 @@ public class Program
             var toolHandler = CreateToolHandler(modeManager, settings);
             var commandHandler = CreateCommandHandler(settings, configService, modeManager);
 
-            // Provider will now be resolved on demand inside ChatInterface
             var metadataService = _serviceContainer.GetService<LogiQCLI.Infrastructure.ApiClients.OpenRouter.ModelMetadataService>()!;
             var chatUI = new ChatInterface(_serviceContainer!, toolHandler, settings, configService, modeManager, _toolRegistry!, commandHandler, chatSession, fileReadRegistry, metadataService);
             await chatUI.RunAsync();
