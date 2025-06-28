@@ -67,7 +67,19 @@ namespace LogiQCLI.Tools.FileOperations
                 var content = arguments.Content ?? string.Empty;
                 var addNewline = arguments.Newline ?? true;
                 
-                if (File.Exists(fullPath) && addNewline && new FileInfo(fullPath).Length > 0)
+                bool fileHasContent = false;
+
+                if (File.Exists(fullPath))
+                {
+                    if (addNewline)
+                    {
+                        // Check quickly if the file contains any visible characters (beyond an eventual BOM)
+                        using var reader = File.OpenText(fullPath);
+                        fileHasContent = reader.Peek() >= 0;
+                    }
+                }
+
+                if (addNewline && fileHasContent)
                 {
                     content = Environment.NewLine + content;
                 }
