@@ -224,7 +224,13 @@ namespace LogiQCLI.Presentation.Console
                 Messages = _chatSession.GetMessages(),
                 Tools = _toolHandler.GetToolDefinitions(),
                 ToolChoice = "auto",
-                Usage = new UsageRequest()
+                Usage = new UsageRequest(),
+                Requesty = _settings.DefaultProvider.Equals("requesty", StringComparison.OrdinalIgnoreCase)
+                    ? new RequestyOptions
+                    {
+                        AutoCache = _settings.CacheStrategy != CacheStrategy.None
+                    }
+                    : null
             };
         }
 

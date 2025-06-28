@@ -42,5 +42,9 @@ namespace LogiQCLI.Infrastructure.ApiClients.OpenRouter.Objects
         [JsonPropertyName("usage")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public UsageRequest? Usage { get; set; }
+
+        [JsonPropertyName("requesty")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public RequestyOptions? Requesty { get; set; }
     }
 }
