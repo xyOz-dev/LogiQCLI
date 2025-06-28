@@ -54,6 +54,7 @@ public class Program
             }
 
             var settings = configService.LoadSettings();
+            var isNewSettings = false;
 
             if (settings == null)
             {
@@ -62,6 +63,12 @@ public class Program
                 settings.UserDataPath = configService.GetDataDirectory();
                 configService.SaveSettings(settings);
                 File.WriteAllText(migratedFlagPath, "migrated");
+                isNewSettings = true;
+            }
+
+            if (!isNewSettings)
+            {
+                PromptForWorkspace(settings, configService);
             }
 
             ValidateEnvironment(settings);
@@ -378,5 +385,52 @@ public class Program
             }
         }
         return null;
+    }
+
+    private static void PromptForWorkspace(ApplicationSettings settings, ConfigurationService configService)
+    {
+        var executingDirectory = Directory.GetCurrentDirectory();
+        var lastWorkspace = settings.Workspace;
+
+        AnsiConsole.MarkupLine("[cyan]Workspace Directory Selection[/]");
+
+        if (!string.IsNullOrWhiteSpace(lastWorkspace))
+        {
+            AnsiConsole.MarkupLine($"[dim]Last workspace: {lastWorkspace}[/]");
+        }
+
+        var input = AnsiConsole.Ask<string>(
+            $"[green]Enter workspace path[/] [dim](press Enter for current directory: {executingDirectory})[/]:",
+            string.Empty);
+
+        if (string.IsNullOrWhiteSpace(input))
+        {
+            input = executingDirectory;
+        }
+
+        if (!Directory.Exists(input))
+        {
+            try
+            {
+                Directory.CreateDirectory(input);
+            }
+            catch (Exception ex)
+            {
+                AnsiConsole.MarkupLine($"[red]Failed to create directory '{input}': {ex.Message}. Using current directory instead.[/]");
+                input = executingDirectory;
+            }
+        }
+
+        settings.Workspace = input;
+        configService.SaveSettings(settings);
+
+        try
+        {
+            Directory.SetCurrentDirectory(input);
+        }
+        catch (Exception ex)
+        {
+            AnsiConsole.MarkupLine($"[red]Failed to change to workspace directory '{input}': {ex.Message}[/]");
+        }
     }
 }
