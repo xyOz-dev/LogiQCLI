@@ -64,7 +64,10 @@ public class Program
             }
 
             ValidateEnvironment(settings);
-            Directory.SetCurrentDirectory(settings.Workspace!);
+            if (settings.Workspace != null)
+            {
+                Directory.SetCurrentDirectory(settings.Workspace);
+            }
 
             InitializeServices(settings);
             
@@ -73,7 +76,7 @@ public class Program
             _serviceContainer.RegisterInstance<IModeManager>(modeManager);
             
             var fileReadRegistry = _serviceContainer.GetService<LogiQCLI.Presentation.Console.Session.FileReadRegistry>()!;
-            var chatSession = new ChatSession(settings.DefaultModel!, modeManager, fileReadRegistry);
+            var chatSession = new ChatSession(settings.DefaultModel ?? "default", modeManager, fileReadRegistry);
             _serviceContainer.RegisterInstance(chatSession);
 
             InitializeToolSystem();
@@ -83,7 +86,7 @@ public class Program
             var commandHandler = CreateCommandHandler(settings, configService, modeManager);
 
             var metadataService = _serviceContainer.GetService<LogiQCLI.Infrastructure.ApiClients.OpenRouter.ModelMetadataService>()!;
-            var chatUI = new ChatInterface(openRouter, toolHandler, settings, configService, modeManager, _toolRegistry, commandHandler, chatSession, fileReadRegistry, metadataService);
+            var chatUI = new ChatInterface(openRouter, toolHandler, settings, configService, modeManager, _toolRegistry!, commandHandler, chatSession, fileReadRegistry, metadataService);
             await chatUI.RunAsync();
         }
         catch (Exception ex)

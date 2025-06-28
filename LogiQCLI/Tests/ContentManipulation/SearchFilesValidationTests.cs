@@ -70,7 +70,7 @@ namespace LogiQCLI.Tests.ContentManipulation
         {
             var args = new SearchFilesArguments
             {
-                Pattern = null,
+                Pattern = null!,
                 Path = "."
             };
             

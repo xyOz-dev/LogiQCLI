@@ -73,7 +73,7 @@ namespace LogiQCLI.Tests.ContentManipulation
             var args = new ApplyDiffArguments
             {
                 Path = "test.txt",
-                Original = null,
+                Original = null!,
                 Replacement = "replace"
             };
             
@@ -92,7 +92,7 @@ namespace LogiQCLI.Tests.ContentManipulation
             {
                 Path = "test.txt",
                 Original = "test",
-                Replacement = null
+                Replacement = null!
             };
             
             var json = JsonSerializer.Serialize(args);

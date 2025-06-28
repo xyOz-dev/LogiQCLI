@@ -43,7 +43,7 @@ namespace LogiQCLI.Tests.Core.Objects
         public Dictionary<string, List<TestResult>> GetResultsByCategory()
         {
             return TestResults
-                .GroupBy(r => r.Metadata.GetValueOrDefault("Category", "General").ToString())
+                .GroupBy(r => r.Metadata.GetValueOrDefault("Category", "General")?.ToString() ?? "General")
                 .ToDictionary(g => g.Key, g => g.ToList());
         }
     }

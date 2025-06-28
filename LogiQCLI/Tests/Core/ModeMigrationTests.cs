@@ -17,6 +17,7 @@ namespace LogiQCLI.Tests.Core
 
         public override async Task<TestResult> ExecuteAsync()
         {
+            await Task.CompletedTask;
             var testFileSystem = new TestFileSystem();
             
             try

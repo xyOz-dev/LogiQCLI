@@ -32,7 +32,7 @@ namespace LogiQCLI.Tests.FileOperations
 
         private async Task TestNullArguments(CreateFileTool tool)
         {
-            var result = await tool.Execute(null);
+            var result = await tool.Execute(string.Empty);
             
             if (!result.Contains("Error"))
             {

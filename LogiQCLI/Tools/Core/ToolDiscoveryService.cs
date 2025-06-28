@@ -71,20 +71,24 @@ namespace LogiQCLI.Core.Services
                     priority = metadataAttribute?.Priority ?? toolInstance.Priority;
                     requiresWorkspace = metadataAttribute?.RequiresWorkspace ?? toolInstance.RequiresWorkspace;
                 }
-                else
+                else if (metadataAttribute != null)
                 {
                     toolName = ExtractToolNameFromType(toolType);
-                    category = metadataAttribute?.Category ?? ExtractCategoryFromNamespace(toolType);
+                    category = metadataAttribute.Category ?? ExtractCategoryFromNamespace(toolType);
                     
-                    tags = (metadataAttribute?.Tags?.Length > 0)
+                    tags = (metadataAttribute.Tags?.Length > 0)
                         ? metadataAttribute.Tags.ToList()
                         : new List<string>();
                     
-                    requiredServices = (metadataAttribute?.RequiredServices?.Length > 0)
+                    requiredServices = (metadataAttribute.RequiredServices?.Length > 0)
                         ? metadataAttribute.RequiredServices.ToList()
                         : new List<string>();
-                    priority = metadataAttribute?.Priority ?? 100;
-                    requiresWorkspace = metadataAttribute?.RequiresWorkspace ?? true;
+                    priority = metadataAttribute.Priority;
+                    requiresWorkspace = metadataAttribute.RequiresWorkspace;
+                }
+                else
+                {
+                    return null;
                 }
 
                 var toolInfo = new ToolTypeInfo
@@ -175,7 +179,8 @@ namespace LogiQCLI.Core.Services
                         }
                         else
                         {
-                            parameterValues[i] = null!;
+                            canCreate = false;
+                            break;
                         }
                     }
 
@@ -183,7 +188,8 @@ namespace LogiQCLI.Core.Services
                     {
                         try
                         {
-                            return (ITool)Activator.CreateInstance(toolType, parameterValues)!;
+                            var instance = Activator.CreateInstance(toolType, parameterValues);
+                            return instance as ITool;
                         }
                         catch
                         {

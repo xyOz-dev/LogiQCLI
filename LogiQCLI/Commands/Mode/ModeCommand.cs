@@ -308,7 +308,7 @@ namespace LogiQCLI.Commands.Mode
 
             AnsiConsole.MarkupLine("[green]Enter system prompt (end with an empty line):[/]");
             var promptLines = new List<string>();
-            string line;
+            string? line;
             while (!string.IsNullOrEmpty(line = Console.ReadLine()))
             {
                 promptLines.Add(line);

@@ -38,7 +38,7 @@ namespace LogiQCLI.Commands.Core
             
             CommandTypeInfo commandInfo;
             
-            if (_commands.TryGetValue(registeredInfo.Name, out var existingEntry) && existingEntry.CommandInfo != null)
+            if (_commands.TryGetValue(registeredInfo.Name!, out var existingEntry) && existingEntry.CommandInfo != null)
             {
                 commandInfo = existingEntry.CommandInfo;
             }
@@ -73,7 +73,10 @@ namespace LogiQCLI.Commands.Core
 
         public ICommand? GetCommand(string name)
         {
-            if (_commands.TryGetValue(name, out var entry))
+            if (string.IsNullOrEmpty(name))
+                return null;
+                
+            if (_commands.TryGetValue(name!, out var entry))
             {
                 return entry.Instance;
             }
@@ -82,7 +85,10 @@ namespace LogiQCLI.Commands.Core
 
         public CommandTypeInfo? GetCommandInfo(string name)
         {
-            if (_commands.TryGetValue(name, out var entry))
+            if (string.IsNullOrEmpty(name))
+                return null;
+                
+            if (_commands.TryGetValue(name!, out var entry))
             {
                 return entry.CommandInfo;
             }
@@ -130,7 +136,9 @@ namespace LogiQCLI.Commands.Core
 
         public bool IsCommandRegistered(string name)
         {
-            return _commands.ContainsKey(name);
+            if (string.IsNullOrEmpty(name))
+                return false;
+            return _commands.ContainsKey(name!);
         }
     }
 } 

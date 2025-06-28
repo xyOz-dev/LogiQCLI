@@ -251,14 +251,14 @@ namespace LogiQCLI.Tools.Core
 
         private void CleanupOldBackupsInternal(string? specificFilePath = null, int? retentionDays = null, int? maxBackupsPerFile = null)
         {
-            var retention = retentionDays ?? _manifest!.Settings.RetentionDays;
+            if (_manifest == null) return;
+            
+            var retention = retentionDays ?? _manifest.Settings.RetentionDays;
             var maxPerFile = maxBackupsPerFile ?? _manifest.Settings.MaxBackupsPerFile;
             var cutoffDate = DateTime.UtcNow.AddDays(-retention);
             
-
             var backupsByFile = _manifest.Backups.GroupBy(b => b.OriginalPath).ToList();
             
-
             if (!string.IsNullOrEmpty(specificFilePath))
             {
                 backupsByFile = backupsByFile.Where(g => g.Key.Equals(specificFilePath, StringComparison.OrdinalIgnoreCase)).ToList();
@@ -270,16 +270,13 @@ namespace LogiQCLI.Tools.Core
             {
                 var backups = fileGroup.OrderByDescending(b => b.Timestamp).ToList();
                 
-
                 var oldBackups = backups.Where(b => b.Timestamp < cutoffDate).ToList();
                 toRemove.AddRange(oldBackups);
                 
-
                 var excessBackups = backups.Skip(maxPerFile).ToList();
                 toRemove.AddRange(excessBackups);
             }
             
-
             foreach (var backup in toRemove.Distinct())
             {
                 var backupFullPath = Path.Combine(_backupDirectoryPath, backup.BackupPath);

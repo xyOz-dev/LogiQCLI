@@ -49,9 +49,9 @@ namespace LogiQCLI.Presentation.Console.Animation
                 });
         }
 
-        public async Task<T> ShowLiveUpdateAsync<T>(string initialContent, Func<LiveDisplayContext, Task<T>> action)
+        public async Task<T?> ShowLiveUpdateAsync<T>(string initialContent, Func<LiveDisplayContext, Task<T?>> action)
         {
-            T result = default(T);
+            T? result = default(T);
             
             await AnsiConsole.Live(new Text(initialContent))
                 .AutoClear(false)

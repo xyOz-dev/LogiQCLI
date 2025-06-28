@@ -104,7 +104,7 @@ namespace LogiQCLI.Tests.FileOperations
             var args = new WriteFileArguments
             {
                 Path = testPath,
-                Content = null
+                Content = null!
             };
             
             var json = JsonSerializer.Serialize(args);

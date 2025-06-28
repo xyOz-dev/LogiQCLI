@@ -70,6 +70,11 @@ namespace LogiQCLI.Tools.ContentManipulation
             try
             {
                 var arguments = JsonSerializer.Deserialize<ApplyDiffArguments>(args);
+                if (arguments == null)
+                {
+                    return "Error: Invalid arguments provided.";
+                }
+                
                 var validationError = ValidateArguments(arguments);
                 if (validationError != null)
                 {
@@ -97,8 +102,8 @@ namespace LogiQCLI.Tools.ContentManipulation
 
                 var lineEndingStyle = DetectLineEndingStyle(originalContent);
                 var normalizedContent = NormalizeLineEndings(originalContent);
-                var normalizedOriginal = NormalizeLineEndings(arguments.Original);
-                var normalizedReplacement = NormalizeLineEndings(arguments.Replacement);
+                var normalizedOriginal = NormalizeLineEndings(arguments.Original ?? string.Empty);
+                var normalizedReplacement = NormalizeLineEndings(arguments.Replacement ?? string.Empty);
 
                 var result = arguments.UseRegex
                     ? ApplyRegexReplacement(normalizedContent, normalizedOriginal, normalizedReplacement, arguments.MaxReplacements)
@@ -116,7 +121,7 @@ namespace LogiQCLI.Tools.ContentManipulation
 
                 var finalContent = RestoreLineEndings(result.ModifiedContent, lineEndingStyle);
 
-                string backupPath = null;
+                string? backupPath = null;
                 if (arguments.CreateBackup)
                 {
                     backupPath = CreateBackup(fullPath, originalContent);
@@ -160,7 +165,7 @@ namespace LogiQCLI.Tools.ContentManipulation
             }
         }
 
-        private string ValidateArguments(ApplyDiffArguments arguments)
+        private string? ValidateArguments(ApplyDiffArguments arguments)
         {
             if (arguments == null)
                 return "Error: Invalid arguments provided.";
@@ -195,7 +200,7 @@ namespace LogiQCLI.Tools.ContentManipulation
             return null;
         }
 
-        private string GetValidFilePath(string inputPath)
+        private string? GetValidFilePath(string inputPath)
         {
             if (string.IsNullOrWhiteSpace(inputPath))
                 return null;
@@ -303,11 +308,10 @@ namespace LogiQCLI.Tools.ContentManipulation
             return preview;
         }
 
-        private string CreateBackup(string filePath, string content)
+        private string? CreateBackup(string filePath, string content)
         {
             try
             {
-
                 var backupManager = new LogiqBackupManager();
                 var backupId = backupManager.CreateBackupAsync(filePath, content, "ApplyDiffTool", "pre-modification", 
                     "Backup before applying diff").GetAwaiter().GetResult();
@@ -315,7 +319,6 @@ namespace LogiQCLI.Tools.ContentManipulation
             }
             catch
             {
-
                 try
                 {
                     var backupPath = $"{filePath}.backup_{DateTime.Now:yyyyMMdd_HHmmss}";

@@ -45,14 +45,14 @@ namespace LogiQCLI.Tools.FileOperations
             };
         }
 
-        public override async Task<string> Execute(string args)
+        public override Task<string> Execute(string args)
         {
             try
             {
                 var arguments = JsonSerializer.Deserialize<DeleteFileArguments>(args);
                 if (arguments == null || string.IsNullOrEmpty(arguments.Path))
                 {
-                    return "Error: Invalid arguments. Path is required.";
+                    return Task.FromResult("Error: Invalid arguments. Path is required.");
                 }
 
                 var fullPath = Path.GetFullPath(arguments.Path.Replace('/', Path.DirectorySeparatorChar)
@@ -60,7 +60,7 @@ namespace LogiQCLI.Tools.FileOperations
 
                 if (!File.Exists(fullPath) && !Directory.Exists(fullPath))
                 {
-                    return $"Error: Path does not exist: {fullPath}";
+                    return Task.FromResult($"Error: Path does not exist: {fullPath}");
                 }
 
                 var isDirectory = Directory.Exists(fullPath);
@@ -69,7 +69,7 @@ namespace LogiQCLI.Tools.FileOperations
 
                 if (!force && IsCriticalPath(fullPath))
                 {
-                    return $"Error: Cannot delete critical path: {fullPath}. Set force to true to override.";
+                    return Task.FromResult($"Error: Cannot delete critical path: {fullPath}. Set force to true to override.");
                 }
 
                 if (isDirectory)
@@ -77,16 +77,16 @@ namespace LogiQCLI.Tools.FileOperations
                     if (recursive)
                     {
                         Directory.Delete(fullPath, true);
-                        return $"Successfully deleted directory and all contents: {fullPath}";
+                        return Task.FromResult($"Successfully deleted directory and all contents: {fullPath}");
                     }
                     else
                     {
                         if (Directory.GetFileSystemEntries(fullPath).Length > 0)
                         {
-                            return $"Error: Directory is not empty: {fullPath}. Set recursive to true to delete contents.";
+                            return Task.FromResult($"Error: Directory is not empty: {fullPath}. Set recursive to true to delete contents.");
                         }
                         Directory.Delete(fullPath);
-                        return $"Successfully deleted empty directory: {fullPath}";
+                        return Task.FromResult($"Successfully deleted empty directory: {fullPath}");
                     }
                 }
                 else
@@ -94,12 +94,12 @@ namespace LogiQCLI.Tools.FileOperations
                     var fileInfo = new FileInfo(fullPath);
                     var fileSize = fileInfo.Length;
                     File.Delete(fullPath);
-                    return $"Successfully deleted file: {fullPath} ({FormatFileSize(fileSize)})";
+                    return Task.FromResult($"Successfully deleted file: {fullPath} ({FormatFileSize(fileSize)})");
                 }
             }
             catch (Exception ex)
             {
-                return $"Error deleting path: {ex.Message}";
+                return Task.FromResult($"Error deleting path: {ex.Message}");
             }
         }
 

@@ -30,11 +30,15 @@ namespace LogiQCLI.Tools.Core
 
         public void RegisterTool(ITool tool)
         {
-            _tools[tool.GetToolInfo().Name] = tool;
-            
-            if (_toolRegistry != null)
+            var toolInfo = tool.GetToolInfo();
+            if (!string.IsNullOrEmpty(toolInfo.Name))
             {
-                _toolRegistry.RegisterTool(tool);
+                _tools[toolInfo.Name] = tool;
+            
+                if (_toolRegistry != null)
+                {
+                    _toolRegistry.RegisterTool(tool);
+                }
             }
         }
 
@@ -61,7 +65,7 @@ namespace LogiQCLI.Tools.Core
                 }
             }
             
-            if (tool == null && _tools.TryGetValue(name, out var legacyTool))
+            if (tool == null && !string.IsNullOrEmpty(name) && _tools.TryGetValue(name, out var legacyTool))
             {
                 tool = legacyTool;
             }

@@ -41,10 +41,21 @@ namespace LogiQCLI.Presentation.Console.Components
             string result = string.Empty;
             bool hasError = false;
             
+            if (toolCall.Function == null)
+            {
+                return new Message
+                {
+                    Role = "tool",
+                    ToolCallId = toolCall.Id,
+                    Name = "unknown",
+                    Content = "Error: Tool call function is null"
+                };
+            }
+            
             await AnsiConsole.Status()
                 .Spinner(Spinner.Known.Star)
                 .SpinnerStyle(Style.Parse("yellow"))
-                .StartAsync($"[yellow]Executing {toolCall.Function.Name}...[/]", async ctx =>
+                .StartAsync($"[yellow]Executing {toolCall.Function.Name ?? "unknown"}...[/]", async ctx =>
                 {
                     try
                     {
@@ -55,7 +66,7 @@ namespace LogiQCLI.Presentation.Console.Components
                             return;
                         }
                         
-                        result = await _toolHandler.ExecuteTool(toolCall.Function.Name, toolCall.Function.Arguments);
+                        result = await _toolHandler.ExecuteTool(toolCall.Function.Name ?? string.Empty, toolCall.Function.Arguments);
                         
                         if (string.IsNullOrEmpty(result))
                         {
@@ -63,31 +74,31 @@ namespace LogiQCLI.Presentation.Console.Components
                         }
                         
                         var duration = (DateTime.Now - startTime).TotalMilliseconds;
-                        ctx.Status($"[green]✓[/] {toolCall.Function.Name} completed in {duration:F0}ms");
+                        ctx.Status($"[green]✓[/] {toolCall.Function.Name ?? "unknown"} completed in {duration:F0}ms");
                     }
                     catch (System.Text.Json.JsonException jsonEx)
                     {
                         result = $"Error: Invalid JSON arguments - {jsonEx.Message}";
                         hasError = true;
-                        ctx.Status($"[red]✗[/] {toolCall.Function.Name} failed - Invalid JSON");
+                        ctx.Status($"[red]✗[/] {toolCall.Function.Name ?? "unknown"} failed - Invalid JSON");
                     }
                     catch (Exception ex)
                     {
                         result = $"Error executing tool: {ex.Message}";
                         hasError = true;
-                        ctx.Status($"[red]✗[/] {toolCall.Function.Name} failed");
+                        ctx.Status($"[red]✗[/] {toolCall.Function.Name ?? "unknown"} failed");
                     }
                     
                     await Task.Delay(500);
                 });
 
-            RenderEnhancedToolResult(toolCall.Function.Name, toolCall.Function.Arguments, result, hasError);
+            RenderEnhancedToolResult(toolCall.Function.Name ?? "unknown", toolCall.Function.Arguments ?? string.Empty, result, hasError);
             
             return new Message
             {
                 Role = "tool",
                 ToolCallId = toolCall.Id,
-                Name = toolCall.Function.Name,
+                Name = toolCall.Function.Name ?? "unknown",
                 Content = result
             };
         }

@@ -119,7 +119,7 @@ public class ExecuteCommandTool : ITool, IDisposable
             var sessionId = arguments.SessionId ?? Guid.NewGuid().ToString("N");
             var session = ActiveSessions.GetOrAdd(sessionId, id => CreateNewSession(id, arguments.WorkingDirectory));
 
-            if (!ProcessUtilities.IsProcessAlive(session.Process))
+            if (session.Process != null && !ProcessUtilities.IsProcessAlive(session.Process))
             {
                 ActiveSessions.TryRemove(sessionId, out _);
                 session.Dispose();
@@ -199,9 +199,12 @@ public class ExecuteCommandTool : ITool, IDisposable
             }
         });
 
-        await session.Input.WriteLineAsync(command);
-        await session.Input.WriteLineAsync($"echo {completionMarker}");
-        await session.Input.FlushAsync();
+        if (session.Input != null)
+        {
+            await session.Input.WriteLineAsync(command);
+            await session.Input.WriteLineAsync($"echo {completionMarker}");
+            await session.Input.FlushAsync();
+        }
 
         using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(timeout));
         try

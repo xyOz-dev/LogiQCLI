@@ -69,6 +69,11 @@ namespace LogiQCLI.Tests.Infrastructure
                     System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
                 method?.Invoke(client, new object[] { request });
                 
+                if (request.Messages == null || !request.Messages.Any())
+                {
+                    return TestResult.CreateFailure("TestCacheStrategyNone", "No messages found in request", TimeSpan.Zero);
+                }
+                
                 var message = request.Messages.First();
                 bool hasCaching = false;
                 
@@ -102,6 +107,11 @@ namespace LogiQCLI.Tests.Infrastructure
                     System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
                 method?.Invoke(client, new object[] { request });
                 
+                if (request.Messages == null || !request.Messages.Any())
+                {
+                    return TestResult.CreateFailure("TestCacheStrategyAuto", "No messages found in request", TimeSpan.Zero);
+                }
+                
                 var message = request.Messages.First();
                 bool hasCaching = false;
                 
@@ -134,6 +144,11 @@ namespace LogiQCLI.Tests.Infrastructure
                 var method = typeof(OpenRouterClient).GetMethod("ApplyCachingStrategy", 
                     System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
                 method?.Invoke(client, new object[] { request });
+                
+                if (request.Messages == null || !request.Messages.Any())
+                {
+                    return TestResult.CreateFailure("TestCacheStrategyAggressive", "No messages found in request", TimeSpan.Zero);
+                }
                 
                 var message = request.Messages.First();
                 bool hasCaching = false;
@@ -180,11 +195,14 @@ namespace LogiQCLI.Tests.Infrastructure
                 method?.Invoke(client, new object[] { request });
                 
                 var cachedCount = 0;
-                foreach (var message in request.Messages)
+                if (request.Messages != null)
                 {
-                    if (message.Content is List<TextContentPart> parts && parts.Any(p => p.CacheControl != null))
+                    foreach (var message in request.Messages)
                     {
-                        cachedCount++;
+                        if (message.Content is List<TextContentPart> parts && parts.Any(p => p.CacheControl != null))
+                        {
+                            cachedCount++;
+                        }
                     }
                 }
                 
@@ -229,15 +247,18 @@ namespace LogiQCLI.Tests.Infrastructure
                 var cachedCount = 0;
                 var largestMessageCached = false;
                 
-                foreach (var message in request.Messages)
+                if (request.Messages != null)
                 {
-                    if (message.Content is List<TextContentPart> parts && parts.Any(p => p.CacheControl != null))
+                    foreach (var message in request.Messages)
                     {
-                        cachedCount++;
-
-                        if (parts.Any(p => p.Text?.Contains(new string('b', 8000)) == true))
+                        if (message.Content is List<TextContentPart> parts && parts.Any(p => p.CacheControl != null))
                         {
-                            largestMessageCached = true;
+                            cachedCount++;
+
+                            if (parts.Any(p => p.Text?.Contains(new string('b', 8000)) == true))
+                            {
+                                largestMessageCached = true;
+                            }
                         }
                     }
                 }
@@ -268,6 +289,10 @@ namespace LogiQCLI.Tests.Infrastructure
                     System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
                 method?.Invoke(client, new object[] { request });
                 
+                if (request.Messages == null || !request.Messages.Any())
+                {
+                    return TestResult.CreateFailure("TestOpenAICaching", "No messages found in request", TimeSpan.Zero);
+                }
 
                 var message = request.Messages.First();
                 bool hasCaching = false;
@@ -308,6 +333,10 @@ namespace LogiQCLI.Tests.Infrastructure
                     System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
                 method?.Invoke(client, new object[] { request });
                 
+                if (request.Messages == null || !request.Messages.Any())
+                {
+                    return TestResult.CreateFailure("TestUnknownProviderCaching", "No messages found in request", TimeSpan.Zero);
+                }
 
                 var message = request.Messages.First();
                 bool hasCaching = false;
@@ -343,6 +372,10 @@ namespace LogiQCLI.Tests.Infrastructure
                     System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
                 method?.Invoke(client, new object[] { request });
                 
+                if (request.Messages == null || !request.Messages.Any())
+                {
+                    return TestResult.CreateFailure("TestSmallContentNoCaching", "No messages found in request", TimeSpan.Zero);
+                }
 
                 var message = request.Messages.First();
                 bool hasCaching = false;
@@ -378,6 +411,10 @@ namespace LogiQCLI.Tests.Infrastructure
                     System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
                 method?.Invoke(client, new object[] { request });
                 
+                if (request.Messages == null || !request.Messages.Any())
+                {
+                    return TestResult.CreateFailure("TestLargeContentCaching", "No messages found in request", TimeSpan.Zero);
+                }
 
                 var message = request.Messages.First();
                 bool hasCaching = false;
@@ -427,29 +464,28 @@ namespace LogiQCLI.Tests.Infrastructure
 
                 var cachedMessages = new List<(int index, int size, bool cached)>();
                 
-                for (int i = 0; i < request.Messages.Length; i++)
+                if (request.Messages != null)
                 {
-                    var message = request.Messages[i];
-                    bool isCached = false;
-                    int size = 0;
-                    
-                    if (message.Content is List<TextContentPart> parts)
+                    for (int i = 0; i < request.Messages.Length; i++)
                     {
-                        isCached = parts.Any(p => p.CacheControl != null);
-                        size = parts.Sum(p => p.Text?.Length ?? 0);
+                        var message = request.Messages[i];
+                        bool isCached = false;
+                        int size = 0;
+                        
+                        if (message.Content is List<TextContentPart> parts)
+                        {
+                            isCached = parts.Any(p => p.CacheControl != null);
+                            size = parts.Sum(p => p.Text?.Length ?? 0);
+                        }
+                        else if (message.Content is string stringContent)
+                        {
+                            size = stringContent.Length;
+                            isCached = false; 
+                        }
+                        
+                        cachedMessages.Add((i, size, isCached));
                     }
-                    else if (message.Content is string stringContent)
-                    {
-                        size = stringContent.Length;
-                        isCached = false; 
-                    }
-                    
-                    cachedMessages.Add((i, size, isCached));
                 }
-                
-
-
-
 
                 var cached = cachedMessages.Where(m => m.cached).ToList();
                 var notCached = cachedMessages.Where(m => !m.cached).ToList();
@@ -466,6 +502,11 @@ namespace LogiQCLI.Tests.Infrastructure
                         $"Expected small message (index 0) to not be cached", TimeSpan.Zero);
                 }
                 
+                if (!cached.Any())
+                {
+                    return TestResult.CreateFailure("TestMultipleMessagesOrdering", 
+                        "No cached messages found", TimeSpan.Zero);
+                }
 
                 var largestCached = cached.OrderByDescending(m => m.size).First();
                 if (largestCached.index != 2)

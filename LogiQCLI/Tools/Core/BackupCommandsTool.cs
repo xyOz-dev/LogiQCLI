@@ -91,6 +91,7 @@ namespace LogiQCLI.Tools.Core
 
         private async Task<string> HandleListAction(LogiqBackupManager backupManager, BackupCommandArguments arguments)
         {
+            await Task.CompletedTask;
             var backups = backupManager.ListBackups(arguments.FilePath, arguments.Limit ?? 20);
             
             if (!backups.Any())

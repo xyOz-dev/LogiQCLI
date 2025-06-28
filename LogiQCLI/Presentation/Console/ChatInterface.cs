@@ -192,7 +192,7 @@ namespace LogiQCLI.Presentation.Console
                 }
                 catch {  }
 
-                if (contextLeft.HasValue && best != null)
+                if (contextLeft.HasValue && best != null && response?.Usage != null)
                 {
                     var used = response.Usage.PromptTokens + response.Usage.CompletionTokens;
                     _messageRenderer.RenderUsagePanel(response.Usage, _totalCost, used, best.ContextLength);
@@ -204,7 +204,7 @@ namespace LogiQCLI.Presentation.Console
                     _messageRenderer.SetModelName(message.Name ?? _chatSession.Model);
                 }
 
-                await _messageRenderer.RenderMessageAsync(message, MessageStyle.Assistant, response.Usage, _totalCost);
+                await _messageRenderer.RenderMessageAsync(message, MessageStyle.Assistant, response?.Usage, _totalCost);
             }
             else
             {
@@ -239,7 +239,8 @@ namespace LogiQCLI.Presentation.Console
                 {
                     if (result.Content?.ToString() == "__UNCHANGED__")
                     {
-                        AnsiConsole.MarkupLine($"[grey]Skipped unchanged read of {Markup.Escape(ExtractPathFromArguments(call.Function.Arguments))} (kept prior content)[/]");
+                        var extractedPath = call.Function?.Arguments != null ? ExtractPathFromArguments(call.Function.Arguments) : "unknown";
+                        AnsiConsole.MarkupLine($"[grey]Skipped unchanged read of {Markup.Escape(extractedPath)} (kept prior content)[/]");
                         result.Content = "__UNCHANGED__";
                         _chatSession.AddMessage(result);
                         continue;
@@ -251,7 +252,7 @@ namespace LogiQCLI.Presentation.Console
                         continue;
                     }
 
-                    var path = ExtractPathFromArguments(call.Function.Arguments);
+                    var path = call.Function?.Arguments != null ? ExtractPathFromArguments(call.Function.Arguments) : string.Empty;
                     if (string.IsNullOrEmpty(path))
                     {
                         _chatSession.AddMessage(result);
@@ -304,7 +305,7 @@ namespace LogiQCLI.Presentation.Console
 
         private static bool IsFileReadCall(ToolCall call)
         {
-            var name = call.Function.Name?.ToLowerInvariant();
+            var name = call.Function?.Name?.ToLowerInvariant();
             return name == "read_file" || name == "read_file_by_line_count";
         }
 

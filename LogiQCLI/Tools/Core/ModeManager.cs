@@ -21,7 +21,7 @@ namespace LogiQCLI.Core.Services
             _toolRegistry = toolRegistry ?? throw new ArgumentNullException(nameof(toolRegistry));
             InitializeModeSettings();
             
-            var mode = GetMode(_modeSettings.ActiveModeId);
+            var mode = GetMode(_modeSettings?.ActiveModeId ?? "default");
             if (mode == null)
             {
                 mode = GetMode("default");

@@ -6,6 +6,6 @@ namespace LogiQCLI.Infrastructure.ApiClients.OpenRouter.Objects
     public class ModelListResponse
     {
         [JsonPropertyName("data")]
-        public List<Model> Data { get; set; }
+        public required List<Model> Data { get; set; }
     }
 }

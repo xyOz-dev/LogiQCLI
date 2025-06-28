@@ -96,6 +96,7 @@ namespace LogiQCLI.Tests.Core
 
         private async Task DiscoverAndRegisterTestsAsync()
         {
+            await Task.CompletedTask;
             try
             {
                 var currentAssembly = Assembly.GetExecutingAssembly();

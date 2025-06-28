@@ -72,7 +72,7 @@ namespace LogiQCLI.Tests.ContentManipulation
             var args = new SearchAndReplaceArguments
             {
                 Path = "test.txt",
-                Search = null,
+                Search = null!,
                 Replace = "replace"
             };
             
@@ -91,7 +91,7 @@ namespace LogiQCLI.Tests.ContentManipulation
             {
                 Path = "test.txt",
                 Search = "test",
-                Replace = null
+                Replace = null!
             };
             
             var json = JsonSerializer.Serialize(args);

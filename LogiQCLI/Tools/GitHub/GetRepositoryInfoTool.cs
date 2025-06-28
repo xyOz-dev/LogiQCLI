@@ -86,7 +86,7 @@ namespace LogiQCLI.Tools.GitHub
 
                 result += $"Statistics:\n";
                 result += $"  Stars: {repository.StargazersCount:N0}\n";
-                result += $"  Watchers: {repository.WatchersCount:N0}\n";
+                result += $"  Subscribers: {repository.SubscribersCount:N0}\n";
                 result += $"  Forks: {repository.ForksCount:N0}\n";
                 result += $"  Open Issues: {repository.OpenIssuesCount:N0}\n";
                 result += $"  Size: {repository.Size:N0} KB\n\n";

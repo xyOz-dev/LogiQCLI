@@ -50,14 +50,14 @@ namespace LogiQCLI.Tools.FileOperations
             };
         }
 
-        public override async Task<string> Execute(string args)
+        public override Task<string> Execute(string args)
         {
             try
             {
                 var arguments = JsonSerializer.Deserialize<MoveFileArguments>(args);
                 if (arguments == null || string.IsNullOrEmpty(arguments.Source) || string.IsNullOrEmpty(arguments.Destination))
                 {
-                    return "Error: Invalid arguments. Source and destination are required.";
+                    return Task.FromResult("Error: Invalid arguments. Source and destination are required.");
                 }
 
                 var sourcePath = Path.GetFullPath(arguments.Source.Replace('/', Path.DirectorySeparatorChar)
@@ -65,7 +65,7 @@ namespace LogiQCLI.Tools.FileOperations
                     
                 if (!File.Exists(sourcePath) && !Directory.Exists(sourcePath))
                 {
-                    return $"Error: Source does not exist: {sourcePath}";
+                    return Task.FromResult($"Error: Source does not exist: {sourcePath}");
                 }
                 
                 var destPath = Path.GetFullPath(arguments.Destination.Replace('/', Path.DirectorySeparatorChar)
@@ -77,16 +77,16 @@ namespace LogiQCLI.Tools.FileOperations
 
                 if (isDirectory)
                 {
-                    return MoveDirectory(sourcePath, destPath, overwrite, createDir);
+                    return Task.FromResult(MoveDirectory(sourcePath, destPath, overwrite, createDir));
                 }
                 else
                 {
-                    return MoveFile(sourcePath, destPath, overwrite, createDir);
+                    return Task.FromResult(MoveFile(sourcePath, destPath, overwrite, createDir));
                 }
             }
             catch (Exception ex)
             {
-                return $"Error moving file/directory: {ex.Message}";
+                return Task.FromResult($"Error moving file/directory: {ex.Message}");
             }
         }
 
