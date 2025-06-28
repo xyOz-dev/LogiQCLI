@@ -220,7 +220,7 @@ namespace LogiQCLI.Commands.Configuration
         {
             AnsiConsole.Clear();
             AnsiConsole.MarkupLine("[cyan]Change Default Provider[/]");
-            var providers = new[] { "openrouter", "requesty" };
+            var providers = new[] { "openrouter", "requesty", "lmstudio" };
             var providerChoice = AnsiConsole.Prompt(
                 new SelectionPrompt<string>()
                     .Title("[green]Select new default provider:[/]")
@@ -320,7 +320,7 @@ namespace LogiQCLI.Commands.Configuration
 
         private void HandleAddApiKey()
         {
-            var providerChoices = new[] { "openrouter", "requesty" };
+            var providerChoices = new[] { "openrouter", "requesty", "lmstudio" };
             var provider = AnsiConsole.Prompt(
                 new SelectionPrompt<string>()
                     .Title("[green]Select the provider for this API key:[/]")

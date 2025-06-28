@@ -19,6 +19,14 @@ namespace LogiQCLI.Infrastructure.Providers
 
             switch (providerName)
             {
+                case "lmstudio":
+                    {
+                        var http = container.GetService<HttpClient>() ?? new HttpClient();
+                        // Allow overriding the base URL via environment variable or settings.Experimental for flexibility.
+                        var baseUrl = Environment.GetEnvironmentVariable("LMSTUDIO_BASE_URL") ?? "http://localhost:1234";
+                        var lmClient = new LogiQCLI.Infrastructure.ApiClients.LMStudio.LMStudioClient(http, baseUrl);
+                        return new LogiQCLI.Infrastructure.Providers.LMStudio.LMStudioProvider(lmClient);
+                    }
                 case "requesty":
                     {
                         var http = container.GetService<HttpClient>() ?? new HttpClient();

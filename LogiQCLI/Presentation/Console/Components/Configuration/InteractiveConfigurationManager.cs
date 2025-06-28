@@ -77,7 +77,7 @@ namespace LogiQCLI.Presentation.Console.Components
         private void ConfigureProvider()
         {
             AnsiConsole.MarkupLine("[cyan]Provider Selection[/]");
-            var providers = new[] { "openrouter", "requesty" };
+            var providers = new[] { "openrouter", "requesty", "lmstudio" };
             var providerChoice = AnsiConsole.Prompt(
                 new SelectionPrompt<string>()
                     .Title("[green]Choose default provider:[/]")
