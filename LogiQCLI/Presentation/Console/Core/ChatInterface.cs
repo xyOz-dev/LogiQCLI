@@ -18,7 +18,7 @@ using LogiQCLI.Core.Models.Modes.Interfaces;
 using System.Security.Cryptography;
 using System.Text.Json;
 using LogiQCLI.Infrastructure.Providers;
-using LogiQCLI.Infrastructure.Providers.Objects;
+using LogiQCLI.Infrastructure.ApiClients.LMStudio.Objects;
 using LogiQCLI.Tools.Core.Interfaces;
 
 namespace LogiQCLI.Presentation.Console
@@ -125,7 +125,7 @@ namespace LogiQCLI.Presentation.Console
             }
 
             var request = CreateChatRequest();
-            ChatCompletionResponse? response = null;
+            object? responseObj = null;
             
             await AnsiConsole.Status()
                 .Spinner(Spinner.Known.Dots)
@@ -135,17 +135,19 @@ namespace LogiQCLI.Presentation.Console
                     try
                     {
                         var llmProvider = ProviderFactory.Create(_container);
-                        response = await llmProvider.CreateChatCompletionAsync(request);
-                        if (response?.Usage != null)
-                        {
-                            _totalCost += (decimal)response.Usage.Cost;
-                        }
+                        responseObj = await llmProvider.CreateChatCompletionAsync(request);
                     }
                     catch (Exception ex)
                     {
                         AnsiConsole.MarkupLine($"[red]Error calling API:[/] {Markup.Escape(ex.Message)}");
                     }
                 });
+
+            var response = ExtractCommonResponse(responseObj);
+            if (response?.Usage != null)
+            {
+                _totalCost += (decimal)response.Usage.Cost;
+            }
 
             if (response?.Choices == null || response.Choices.Length == 0)
             {
@@ -216,9 +218,9 @@ namespace LogiQCLI.Presentation.Console
         }
 
 
-        private ChatCompletionRequest CreateChatRequest()
+        private ChatRequest CreateChatRequest()
         {
-            return new ChatCompletionRequest
+            return new ChatRequest
             {
                 Model = _chatSession.Model,
                 Messages = _chatSession.GetMessages(),
@@ -231,6 +233,33 @@ namespace LogiQCLI.Presentation.Console
                         AutoCache = _settings.CacheStrategy != CacheStrategy.None
                     }
                     : null
+            };
+        }
+
+        private ChatResponse? ExtractCommonResponse(object? responseObj)
+        {
+            return responseObj switch
+            {
+                ChatResponse chatResponse => chatResponse,
+                LMStudioChatResponse lmStudioResponse => new ChatResponse
+                {
+                    Id = lmStudioResponse.Id,
+                    Choices = lmStudioResponse.Choices?.Select(c => new Choice
+                    {
+                        Message = new Message
+                        {
+                            Role = c.Message?.Role ?? string.Empty,
+                            Content = c.Message?.Content ?? string.Empty
+                        }
+                    }).ToArray() ?? Array.Empty<Choice>(),
+                    Usage = lmStudioResponse.Usage != null ? new Usage
+                    {
+                        PromptTokens = lmStudioResponse.Usage.PromptTokens,
+                        CompletionTokens = lmStudioResponse.Usage.CompletionTokens,
+                        TotalTokens = lmStudioResponse.Usage.TotalTokens
+                    } : null
+                },
+                _ => null
             };
         }
 

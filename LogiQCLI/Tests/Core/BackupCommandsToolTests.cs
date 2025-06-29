@@ -18,7 +18,6 @@ namespace LogiQCLI.Tests.Core
             var tool = new BackupCommandsTool();
             var testFileSystem = new TestFileSystem();
 
-            // Keep track of current directory so we can restore it
             var originalDirectory = Directory.GetCurrentDirectory();
             Directory.SetCurrentDirectory(testFileSystem.TempDirectory);
 
@@ -60,16 +59,13 @@ namespace LogiQCLI.Tests.Core
         {
             var manager = new LogiqBackupManager(fs.TempDirectory);
 
-            // Create a test file and an initial backup
             var originalContent = "Line 1\nLine 2\nLine 3";
             var testFilePath = fs.CreateTempFile(originalContent, "backup_test.txt");
 
             var backupId = await manager.CreateBackupAsync(testFilePath, originalContent, "UnitTest", "create", "Initial backup");
 
-            // Validate listing shows the backup
             await AssertListContainsBackup(tool, backupId, testFilePath);
 
-            // Modify file for diff / restore tests
             var modifiedContent = "Line 1 modified\nLine 2\nLine 3";
             File.WriteAllText(testFilePath, modifiedContent);
 
@@ -151,7 +147,7 @@ namespace LogiQCLI.Tests.Core
             var cleanupArgs = new BackupCommandArguments
             {
                 Action = "cleanup",
-                RetentionDays = 0 // remove everything older than now
+                RetentionDays = 0
             };
 
             var json = JsonSerializer.Serialize(cleanupArgs);

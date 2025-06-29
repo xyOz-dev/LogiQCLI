@@ -7,9 +7,9 @@ using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using LogiQCLI.Infrastructure.ApiClients.OpenRouter.Objects;
-using LogiQCLI.Infrastructure.Providers.Objects;
+using LogiQCLI.Infrastructure.Providers;
 
-namespace LogiQCLI.Infrastructure.Providers.Requesty
+namespace LogiQCLI.Infrastructure.ApiClients.Requesty
 {
     public sealed class RequestyClient
     {
@@ -26,7 +26,7 @@ namespace LogiQCLI.Infrastructure.Providers.Requesty
             _http.DefaultRequestHeaders.Add("X-Title", "LogiQCLI");
         }
 
-        public async Task<ChatCompletionResponse> ChatAsync(ChatCompletionRequest request, CancellationToken ct = default)
+        public async Task<ChatResponse> ChatAsync(ChatRequest request, CancellationToken ct = default)
         {
             var options = new JsonSerializerOptions { DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull };
             var payload = new StringContent(JsonSerializer.Serialize(request, options), Encoding.UTF8, "application/json");
@@ -37,7 +37,7 @@ namespace LogiQCLI.Infrastructure.Providers.Requesty
                 throw new HttpRequestException($"Requesty {(int)resp.StatusCode} {resp.ReasonPhrase}. Body: {body}");
             }
             var json = await resp.Content.ReadAsStringAsync(ct);
-            return JsonSerializer.Deserialize<ChatCompletionResponse>(json) ?? new ChatCompletionResponse();
+            return JsonSerializer.Deserialize<ChatResponse>(json) ?? new ChatResponse();
         }
 
         public async Task<IReadOnlyList<Model>> ListModelsAsync(CancellationToken ct = default)

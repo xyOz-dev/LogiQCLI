@@ -73,7 +73,6 @@ namespace LogiQCLI.Tools.FileOperations
                 {
                     if (addNewline)
                     {
-                        // Check quickly if the file contains any visible characters (beyond an eventual BOM)
                         using var reader = File.OpenText(fullPath);
                         fileHasContent = reader.Peek() >= 0;
                     }

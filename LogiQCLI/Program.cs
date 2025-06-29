@@ -150,6 +150,28 @@ public class Program
         var documentationApiClient = new LogiQCLI.Infrastructure.ApiClients.Documentation.DocumentationApiClient(httpClient);
         _serviceContainer.RegisterInstance(documentationApiClient);
         
+        _serviceContainer.RegisterFactory<LogiQCLI.Infrastructure.ApiClients.LMStudio.LMStudioClient>(container =>
+        {
+            var http = container.GetService<HttpClient>() ?? new HttpClient { Timeout = TimeSpan.FromSeconds(300) };
+            var baseUrl = Environment.GetEnvironmentVariable("LMSTUDIO_BASE_URL") ?? "http://localhost:1234";
+            return new LogiQCLI.Infrastructure.ApiClients.LMStudio.LMStudioClient(http, baseUrl);
+        });
+        
+        _serviceContainer.RegisterSingleton<LogiQCLI.Infrastructure.ApiClients.ModelMetadata.OpenRouterMetadataProvider, LogiQCLI.Infrastructure.ApiClients.ModelMetadata.OpenRouterMetadataProvider>();
+        _serviceContainer.RegisterSingleton<LogiQCLI.Infrastructure.ApiClients.ModelMetadata.LmStudioMetadataProvider, LogiQCLI.Infrastructure.ApiClients.ModelMetadata.LmStudioMetadataProvider>();
+
+        _serviceContainer.RegisterFactory<LogiQCLI.Infrastructure.ApiClients.OpenRouter.ModelMetadataService>(container =>
+        {
+            var providers = new System.Collections.Generic.List<LogiQCLI.Infrastructure.ApiClients.ModelMetadata.IModelMetadataProvider>
+            {
+                container.GetService<LogiQCLI.Infrastructure.ApiClients.ModelMetadata.OpenRouterMetadataProvider>()!,
+                container.GetService<LogiQCLI.Infrastructure.ApiClients.ModelMetadata.LmStudioMetadataProvider>()!
+            };
+            var cs = container.GetService<ConfigurationService>()!;
+            var app = container.GetService<ApplicationSettings>()!;
+            return new LogiQCLI.Infrastructure.ApiClients.OpenRouter.ModelMetadataService(providers, cs, app);
+        });
+        
         var tavilyApiKey = settings.Tavily?.ApiKey ?? "dummy-key-for-startup";
         var tavilyClient = new LogiQCLI.Infrastructure.ApiClients.Tavily.TavilyClient(httpClient, tavilyApiKey, settings.Tavily?.BaseUrl);
         _serviceContainer.RegisterInstance(tavilyClient);
@@ -193,7 +215,6 @@ public class Program
         var fileReadRegistry = new LogiQCLI.Presentation.Console.Session.FileReadRegistry();
         _serviceContainer.RegisterInstance(fileReadRegistry);
 
-        _serviceContainer.RegisterSingleton<LogiQCLI.Infrastructure.ApiClients.OpenRouter.ModelMetadataService, LogiQCLI.Infrastructure.ApiClients.OpenRouter.ModelMetadataService>();
         _serviceContainer.RegisterSingleton<IModelDiscoveryService, ModelDiscoveryService>();
     }
 

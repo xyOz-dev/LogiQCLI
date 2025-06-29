@@ -6,6 +6,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
+using LogiQCLI.Infrastructure.ApiClients.LMStudio.Objects;
 using LogiQCLI.Infrastructure.ApiClients.OpenRouter.Objects;
 
 namespace LogiQCLI.Infrastructure.ApiClients.LMStudio
@@ -25,13 +26,15 @@ namespace LogiQCLI.Infrastructure.ApiClients.LMStudio
             }
         }
 
-        public async Task<ChatResponse> Chat(ChatRequest request, CancellationToken cancellationToken = default)
+
+
+        public async Task<LMStudioChatResponse> Chat(ChatRequest request, CancellationToken cancellationToken = default)
         {
             var options = new JsonSerializerOptions { DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull };
             var jsonPayload = JsonSerializer.Serialize(request, options);
             using var content = new StringContent(jsonPayload, Encoding.UTF8, "application/json");
 
-            var response = await _httpClient.PostAsync("/v1/chat/completions", content, cancellationToken);
+            var response = await _httpClient.PostAsync("/api/v0/chat/completions", content, cancellationToken);
 
             if (!response.IsSuccessStatusCode)
             {
@@ -40,22 +43,22 @@ namespace LogiQCLI.Infrastructure.ApiClients.LMStudio
             }
 
             var responseBody = await response.Content.ReadAsStringAsync(cancellationToken);
-            var result = JsonSerializer.Deserialize<ChatResponse>(responseBody);
-            return result ?? new ChatResponse();
+            var result = JsonSerializer.Deserialize<LMStudioChatResponse>(responseBody);
+            return result ?? new LMStudioChatResponse();
         }
 
-        public async Task<List<Model>> GetModelsAsync(CancellationToken cancellationToken = default)
+        public async Task<List<LMStudioModel>> GetModelsAsync(CancellationToken cancellationToken = default)
         {
-            var response = await _httpClient.GetAsync("/v1/models", cancellationToken);
+            var response = await _httpClient.GetAsync("/api/v0/models", cancellationToken);
 
             if (!response.IsSuccessStatusCode)
             {
-                return new List<Model>();
+                return new List<LMStudioModel>();
             }
 
             var responseBody = await response.Content.ReadAsStringAsync(cancellationToken);
-            var result = JsonSerializer.Deserialize<ModelListResponse>(responseBody);
-            return result?.Data ?? new List<Model>();
+            var result = JsonSerializer.Deserialize<LMStudioModelListResponse>(responseBody);
+            return result?.Data ?? new List<LMStudioModel>();
         }
     }
 } 

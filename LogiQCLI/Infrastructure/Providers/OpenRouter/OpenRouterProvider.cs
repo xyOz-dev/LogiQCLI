@@ -3,7 +3,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using LogiQCLI.Infrastructure.ApiClients.OpenRouter;
 using LogiQCLI.Infrastructure.ApiClients.OpenRouter.Objects;
-using LogiQCLI.Infrastructure.Providers.Objects;
+
 
 namespace LogiQCLI.Infrastructure.Providers.OpenRouter
 {
@@ -11,20 +11,22 @@ namespace LogiQCLI.Infrastructure.Providers.OpenRouter
     {
         private readonly OpenRouterClient _client;
 
+        public string ProviderName => "openrouter";
+
         public OpenRouterProvider(OpenRouterClient client)
         {
             _client = client;
         }
 
-        public async Task<ChatCompletionResponse> CreateChatCompletionAsync(ChatCompletionRequest request, CancellationToken cancellationToken = default)
+        public async Task<object> CreateChatCompletionAsync(object request, CancellationToken cancellationToken = default)
         {
-            var baseResponse = await _client.Chat(request, cancellationToken);
-            return new ChatCompletionResponse
+            if (request is not ChatRequest chatRequest)
             {
-                Id = baseResponse.Id,
-                Choices = baseResponse.Choices,
-                Usage = baseResponse.Usage
-            };
+                throw new ArgumentException("OpenRouter provider expects ChatRequest", nameof(request));
+            }
+
+            var baseResponse = await _client.Chat(chatRequest, cancellationToken);
+            return baseResponse;
         }
 
         public async Task<IReadOnlyList<Model>> ListModelsAsync(CancellationToken cancellationToken = default)

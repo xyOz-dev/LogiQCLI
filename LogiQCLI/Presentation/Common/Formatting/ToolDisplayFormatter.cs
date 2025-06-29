@@ -346,7 +346,7 @@ namespace LogiQCLI.Presentation.Console.Components.Objects
 
             var sb = new System.Text.StringBuilder();
             var consoleWidth = System.Console.WindowWidth > 0 ? System.Console.WindowWidth : MaxLineLength;
-            var contentWidth = consoleWidth - 10; // leave room for borders & line numbers
+            var contentWidth = consoleWidth - 10;
             if (contentWidth < 20) contentWidth = 20;
 
             for (int i = 0; i < displayLines.Length; i++)

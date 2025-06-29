@@ -7,7 +7,7 @@ using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using LogiQCLI.Infrastructure.ApiClients.OpenRouter.Objects;
-using LogiQCLI.Infrastructure.Providers.Objects;
+using LogiQCLI.Infrastructure.ApiClients.Requesty;
 
 namespace LogiQCLI.Infrastructure.Providers.Requesty
 {
@@ -15,14 +15,21 @@ namespace LogiQCLI.Infrastructure.Providers.Requesty
     {
         private readonly RequestyClient _client;
 
+        public string ProviderName => "requesty";
+
         public RequestyProvider(RequestyClient client)
         {
             _client = client;
         }
 
-        public async Task<ChatCompletionResponse> CreateChatCompletionAsync(ChatCompletionRequest request, CancellationToken cancellationToken = default)
+        public async Task<object> CreateChatCompletionAsync(object request, CancellationToken cancellationToken = default)
         {
-            return await _client.ChatAsync(request, cancellationToken);
+            if (request is not ChatRequest chatRequest)
+            {
+                throw new ArgumentException("Requesty provider expects ChatRequest", nameof(request));
+            }
+
+            return await _client.ChatAsync(chatRequest, cancellationToken);
         }
 
         public async Task<IReadOnlyList<Model>> ListModelsAsync(CancellationToken cancellationToken = default)

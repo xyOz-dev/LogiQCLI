@@ -6,6 +6,7 @@ using LogiQCLI.Infrastructure.ApiClients.OpenRouter;
 using LogiQCLI.Tools.Core.Interfaces;
 using System.Linq;
 using LogiQCLI.Infrastructure.Providers.OpenRouter;
+using LogiQCLI.Infrastructure.ApiClients.Requesty;
 using LogiQCLI.Infrastructure.Providers.Requesty;
 
 namespace LogiQCLI.Infrastructure.Providers
@@ -36,8 +37,8 @@ namespace LogiQCLI.Infrastructure.Providers
                         {
                             throw new InvalidOperationException("No Requesty API key found. Use /settings or /addkey to add one for provider 'requesty'.");
                         }
-                        var reqClient = new Infrastructure.Providers.Requesty.RequestyClient(http, key);
-                        return new Infrastructure.Providers.Requesty.RequestyProvider(reqClient);
+                                    var reqClient = new RequestyClient(http, key);
+            return new RequestyProvider(reqClient);
                     }
                 case "openrouter":
                 default:
