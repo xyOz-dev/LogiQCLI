@@ -57,7 +57,13 @@ namespace LogiQCLI.Infrastructure.ApiClients.LMStudio.Objects
         public string Role { get; set; } = string.Empty;
 
         [JsonPropertyName("content")]
-        public string Content { get; set; } = string.Empty;
+        public string? Content { get; set; }
+
+        [JsonPropertyName("tool_calls")]
+        public LogiQCLI.Infrastructure.ApiClients.OpenRouter.Models.ToolCall[]? ToolCalls { get; set; }
+
+        [JsonPropertyName("tool_call_id")]
+        public string? ToolCallId { get; set; }
     }
 
     public class LMStudioUsage

@@ -249,7 +249,9 @@ namespace LogiQCLI.Presentation.Console
                         Message = new Message
                         {
                             Role = c.Message?.Role ?? string.Empty,
-                            Content = c.Message?.Content ?? string.Empty
+                            Content = c.Message?.Content,
+                            ToolCalls = c.Message?.ToolCalls,
+                            ToolCallId = c.Message?.ToolCallId
                         }
                     }).ToArray() ?? Array.Empty<Choice>(),
                     Usage = lmStudioResponse.Usage != null ? new Usage
