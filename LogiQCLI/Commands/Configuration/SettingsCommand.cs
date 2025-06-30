@@ -161,7 +161,8 @@ namespace LogiQCLI.Commands.Configuration
                         HandleExperimentalFeatures();
                         break;
                     case "Exit":
-                        return "[green]Settings configuration completed.[/]";
+                        _initializeDisplay();
+                        return "";
                 }
 
                 if (choice != "Exit")
