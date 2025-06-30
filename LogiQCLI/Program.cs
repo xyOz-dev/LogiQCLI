@@ -66,6 +66,14 @@ public class Program
                 File.WriteAllText(migratedFlagPath, "migrated");
                 isNewSettings = true;
             }
+            else
+            {
+                if (string.IsNullOrEmpty(settings.UserDataPath))
+                {
+                    settings.UserDataPath = configService.GetDataDirectory();
+                    configService.SaveSettings(settings);
+                }
+            }
 
             if (!isNewSettings)
             {
