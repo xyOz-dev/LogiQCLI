@@ -1,16 +1,19 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using LogiQCLI.Commands.Core.Interfaces;
 using LogiQCLI.Commands.Core.Objects;
 using LogiQCLI.Core.Models.Configuration;
+using LogiQCLI.Infrastructure.ApiClients.OpenRouter;
 using LogiQCLI.Infrastructure.ApiClients.OpenRouter.Objects;
 using LogiQCLI.Infrastructure.ApiClients.LMStudio.Objects;
 using LogiQCLI.Infrastructure.Providers;
 using LogiQCLI.Presentation.Console.Session;
 using LogiQCLI.Core.Services;
 using LogiQCLI.Tools.Core.Interfaces;
+using Spectre.Console;
 
 namespace LogiQCLI.Commands.Session
 {
@@ -72,6 +75,9 @@ namespace LogiQCLI.Commands.Session
             {
                 return "[yellow]Nothing to compress (history too short).[/]";
             }
+
+            var originalTokenCount = EstimateTokenCount(allMessages);
+            var compressedTokenCount = EstimateTokenCount(messagesToCompress);
 
             var sb = new StringBuilder();
             foreach (var msg in messagesToCompress)
@@ -183,9 +189,134 @@ namespace LogiQCLI.Commands.Session
                 }
             }
 
-            _initializeDisplay();
+            var newMessages = _chatSession.GetMessages();
+            var newTokenCount = EstimateTokenCount(newMessages);
+            var tokensSaved = originalTokenCount - newTokenCount;
+            var compressionRatio = originalTokenCount > 0 ? (double)tokensSaved / originalTokenCount : 0;
 
-            return "[bold green]Chat compressed successfully.[/] [dim]File read state preserved for maintained messages.[/]";
+            int contextLength = 0;
+            try
+            {
+                var metadataService = _container.GetService<ModelMetadataService>();
+                if (metadataService != null)
+                {
+                    var parts = _chatSession.Model.Split('/', 2);
+                    ModelEndpointsData? meta = null;
+                    if (parts.Length == 2)
+                    {
+                        meta = await metadataService.GetModelMetadataAsync(parts[0], parts[1]);
+                    }
+                    else if (parts.Length == 1)
+                    {
+                        meta = await metadataService.GetModelMetadataAsync(_settings.DefaultProvider ?? "", parts[0]);
+                    }
+
+                    var best = metadataService.GetBestEndpoint(meta);
+                    if (best != null)
+                    {
+                        contextLength = best.ContextLength;
+                    }
+                }
+            }
+            catch { /* ignore metadata errors */ }
+
+            DisplayCompressionStats(allMessages.Length, messagesToCompress.Length, newMessages.Length,
+                                  originalTokenCount, newTokenCount, tokensSaved, compressionRatio,
+                                  fileReadEntriesToPreserve.Count, response?.Usage,
+                                  newTokenCount, contextLength);
+
+            return string.Empty;
+        }
+
+        private void DisplayCompressionStats(int originalMessages, int compressedMessages, int finalMessages,
+                                           int originalTokens, int newTokens, int tokensSaved, double compressionRatio,
+                                           int preservedFileReads, Usage? compressionUsage,
+                                           int contextUsed = 0, int contextLength = 0)
+        {
+            var compressionPercent = (compressionRatio * 100).ToString("F1");
+            var compressionColor = compressionRatio > 0.5 ? "#00ff87" : compressionRatio > 0.3 ? "#ffaf00" : "#ff8700";
+
+            var pieces = new List<string>
+            {
+                $"Messages {originalMessages}->{finalMessages}",
+                $"Tokens {originalTokens}->{newTokens} (-{tokensSaved})",
+                $"Compression Rate {compressionPercent}%"
+            };
+
+            if (preservedFileReads > 0)
+            {
+                pieces.Add($"Reads {preservedFileReads}");
+            }
+
+            if (compressionUsage != null)
+            {
+                pieces.Add($"Cost {compressionUsage.Cost:C4}");
+            }
+
+            if (contextLength > 0)
+            {
+                pieces.Add($"Context {contextUsed}/{contextLength}");
+            }
+
+            var infoLine = string.Join(" | ", pieces);
+
+            var progressBar = CreateCompressionProgressBar(compressionRatio);
+            var content = $"{infoLine}\n{progressBar}";
+
+            var panel = new Panel(content)
+                .Header("[bold green]📦 Compression[/]")
+                .HeaderAlignment(Justify.Center)
+                .Border(BoxBorder.Rounded)
+                .BorderColor(Color.FromHex(compressionColor))
+                .Padding(1, 0, 1, 0)
+                .Expand();
+
+            AnsiConsole.Write(Align.Center(panel));
+            AnsiConsole.WriteLine();
+        }
+
+        private string CreateCompressionProgressBar(double compressionRatio)
+        {
+            var barWidth = Math.Min(Console.WindowWidth - 30, 50);
+            if (barWidth < 10) barWidth = 10;
+            
+            var filled = (int)Math.Round(compressionRatio * barWidth);
+            var compressionColor = compressionRatio > 0.5 ? "#00ff87" : compressionRatio > 0.3 ? "#ffaf00" : "#ff8700";
+            
+            var bar = $"[{compressionColor}]{new string('█', filled)}[/]{new string('░', barWidth - filled)}";
+            var percentage = (compressionRatio * 100).ToString("F1");
+            
+            return $"[dim]Compression Efficiency[/]\n{bar} [bold]{percentage}%[/]";
+        }
+
+        private int EstimateTokenCount(Message[] messages)
+        {
+            return messages.Sum(EstimateTokenCount);
+        }
+
+        private int EstimateTokenCount(Message message)
+        {
+            var content = message.Content?.ToString() ?? string.Empty;
+            var role = message.Role ?? string.Empty;
+            
+            var baseTokens = EstimateTokensFromText(content + role);
+            
+            if (message.ToolCalls?.Any() == true)
+            {
+                var toolCallContent = string.Join(" ", message.ToolCalls.Select(tc => 
+                    $"{tc.Function?.Name ?? ""} {tc.Function?.Arguments ?? ""}"));
+                baseTokens += EstimateTokensFromText(toolCallContent);
+            }
+            
+            return baseTokens;
+        }
+
+        private int EstimateTokensFromText(string text)
+        {
+            if (string.IsNullOrEmpty(text)) return 0;
+            
+            var words = text.Split(new[] { ' ', '\t', '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries);
+            return (int)Math.Ceiling(words.Length * 1.3);
         }
 
         private static bool IsFileReadResult(Message message)

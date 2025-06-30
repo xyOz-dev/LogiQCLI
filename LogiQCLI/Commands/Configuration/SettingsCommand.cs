@@ -10,6 +10,7 @@ using LogiQCLI.Core.Models.Configuration;
 using LogiQCLI.Core.Services;
 using LogiQCLI.Presentation.Console.Components.Objects;
 using Spectre.Console;
+using LogiQCLI.Presentation.Console.Session;
 
 namespace LogiQCLI.Commands.Configuration
 {
@@ -19,12 +20,14 @@ namespace LogiQCLI.Commands.Configuration
         private readonly ApplicationSettings _settings;
         private readonly ConfigurationService _configService;
         private readonly Action _initializeDisplay;
+        private readonly ChatSession _chatSession;
 
-        public SettingsCommand(ApplicationSettings settings, ConfigurationService configService, Action initializeDisplay)
+        public SettingsCommand(ApplicationSettings settings, ConfigurationService configService, Action initializeDisplay, ChatSession chatSession)
         {
             _settings = settings ?? throw new ArgumentNullException(nameof(settings));
             _configService = configService ?? throw new ArgumentNullException(nameof(configService));
             _initializeDisplay = initializeDisplay ?? throw new ArgumentNullException(nameof(initializeDisplay));
+            _chatSession = chatSession ?? throw new ArgumentNullException(nameof(chatSession));
         }
 
         public override RegisteredCommand GetCommandInfo()
@@ -254,15 +257,19 @@ namespace LogiQCLI.Commands.Configuration
                 if (!string.IsNullOrWhiteSpace(customModel))
                 {
                     _settings.DefaultModel = customModel;
+                    _chatSession.Model = customModel;
                     _configService.SaveSettings(_settings);
                     AnsiConsole.MarkupLine($"[green]✓ Default model updated to: {customModel}[/]");
+                    _initializeDisplay();
                 }
             }
             else
             {
                 _settings.DefaultModel = modelChoice;
+                _chatSession.Model = modelChoice;
                 _configService.SaveSettings(_settings);
                 AnsiConsole.MarkupLine($"[green]✓ Default model updated to: {modelChoice}[/]");
+                _initializeDisplay();
             }
         }
 
