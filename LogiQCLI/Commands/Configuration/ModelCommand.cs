@@ -120,10 +120,6 @@ namespace LogiQCLI.Commands.Configuration
                 if (arguments?.Model != null)
                 {
                     var candidate = arguments.Model.Trim();
-                    if (!candidate.Contains('/'))
-                    {
-                        return "[red]Model must be specified as 'provider/model' (e.g., 'openai/gpt-4o').[/]";
-                    }
 
                     _chatSession.Model = candidate;
                     _settings.DefaultModel = candidate;
