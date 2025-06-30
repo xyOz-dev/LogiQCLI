@@ -132,7 +132,7 @@ namespace LogiQCLI.Commands.Session
                 return "[red]Received an empty summary from the model.[/]";
             }
 
-            var summaryMessage = new Message { Role = "assistant", Content = summaryContent, Name = "compress" };
+            var summaryMessage = new Message { Role = "assistant", Content = summaryContent };
 
             
             _chatSession.ClearHistory();

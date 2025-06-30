@@ -166,7 +166,7 @@ namespace LogiQCLI.Presentation.Console
 
             if (string.Equals(message.Role, "assistant", StringComparison.OrdinalIgnoreCase))
             {
-                message.Name = _chatSession.Model;
+               // message.Name = _chatSession.Model;
             }
 
             if (message.ToolCalls != null && message.ToolCalls.Length > 0)
@@ -206,7 +206,7 @@ namespace LogiQCLI.Presentation.Console
 
                 if (string.Equals(message.Role, "assistant", StringComparison.OrdinalIgnoreCase))
                 {
-                    _messageRenderer.SetModelName(message.Name ?? _chatSession.Model);
+                    _messageRenderer.SetModelName(_chatSession.Model);
                 }
 
                 await _messageRenderer.RenderMessageAsync(message, MessageStyle.Assistant, response?.Usage, _totalCost);
