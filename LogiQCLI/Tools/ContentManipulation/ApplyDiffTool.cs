@@ -23,7 +23,7 @@ namespace LogiQCLI.Tools.ContentManipulation
             return new RegisteredTool
             {
                 Name = "apply_diff",
-                Description = "Apply precise content replacements by finding exact text matches. Use for surgical edits when you know the exact content to change. Max file size: 10MB.",
+                Description = "Apply direct content replacements. Use for edits when you know the exact content to change.",
                 Parameters = new Parameters
                 {
                     Type = "object",
