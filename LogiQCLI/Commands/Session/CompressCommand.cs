@@ -21,13 +21,15 @@ namespace LogiQCLI.Commands.Session
         private readonly IServiceContainer _container;
         private readonly ApplicationSettings _settings;
         private readonly Action _initializeDisplay;
+        private readonly FileReadRegistry _fileReadRegistry;
 
-        public CompressCommand(ChatSession chatSession, IServiceContainer container, ApplicationSettings settings, Action initializeDisplay)
+        public CompressCommand(ChatSession chatSession, IServiceContainer container, ApplicationSettings settings, Action initializeDisplay, FileReadRegistry fileReadRegistry)
         {
             _chatSession = chatSession ?? throw new ArgumentNullException(nameof(chatSession));
             _container = container ?? throw new ArgumentNullException(nameof(container));
             _settings = settings ?? throw new ArgumentNullException(nameof(settings));
             _initializeDisplay = initializeDisplay ?? throw new ArgumentNullException(nameof(initializeDisplay));
+            _fileReadRegistry = fileReadRegistry ?? throw new ArgumentNullException(nameof(fileReadRegistry));
         }
 
         public override RegisteredCommand GetCommandInfo()
@@ -35,7 +37,8 @@ namespace LogiQCLI.Commands.Session
             return new RegisteredCommand
             {
                 Name = "compress",
-                Description = "Compress the current chat history into a concise summary while preserving the first and last three messages."            };
+                Description = "Compress the current chat history into a concise summary while preserving the first and last three messages. Maintains file read state."
+            };
         }
 
         public override async Task<string> Execute(string args)
@@ -54,18 +57,16 @@ namespace LogiQCLI.Commands.Session
             }
 
             var systemMessage = allMessages.FirstOrDefault(m => string.Equals(m.Role, "system", StringComparison.OrdinalIgnoreCase));
-            var firstMessage = allMessages.FirstOrDefault(m => !string.Equals(m.Role, "system", StringComparison.OrdinalIgnoreCase));
+            var nonSystemMessages = allMessages.Where(m => !string.Equals(m.Role, "system", StringComparison.OrdinalIgnoreCase)).ToArray();
+            
+            if (nonSystemMessages.Length <= 4)
+            {
+                return "[yellow]Nothing to compress (history too short - need more than 4 non-system messages).[/]";
+            }
 
-            var lastThree = allMessages
-                .Reverse()
-                .Take(3)
-                .Reverse()
-                .ToArray();
-
-            var messagesToCompress = allMessages
-                .Except(new[] { systemMessage, firstMessage }.Where(m => m != null)!)
-                .Except(lastThree)
-                .ToArray();
+            var firstMessage = nonSystemMessages.First();
+            var lastThree = nonSystemMessages.TakeLast(3).ToArray();
+            var messagesToCompress = nonSystemMessages.Skip(1).SkipLast(3).ToArray();
 
             if (messagesToCompress.Length == 0)
             {
@@ -77,10 +78,19 @@ namespace LogiQCLI.Commands.Session
             {
                 var role = msg.Role ?? "unknown";
                 var content = msg.Content?.ToString() ?? string.Empty;
-                sb.AppendLine($"{role.ToUpper()}: {content}");
+                
+                if (msg.ToolCalls?.Any() == true)
+                {
+                    sb.AppendLine($"{role.ToUpper()}: {content}");
+                    sb.AppendLine($"[Tool calls made: {string.Join(", ", msg.ToolCalls.Select(tc => tc.Function?.Name ?? "unknown"))}]");
+                }
+                else
+                {
+                    sb.AppendLine($"{role.ToUpper()}: {content}");
+                }
             }
 
-            var compressionPrompt = "You are a summarization assistant. Given the following chat transcript, generate a concise summary that preserves all essential facts, decisions, code references, and instructions. The summary should be short but complete enough that no important context is lost.";
+            var compressionPrompt = "You are a summarization assistant. Given the following chat transcript, generate a concise summary that preserves all essential facts, decisions, code references, file operations, tool usage, and instructions. Pay special attention to any file reads, code changes, or tool operations. The summary should be short but complete enough that no important context is lost for continued development work.";
 
             var request = new ChatRequest
             {
@@ -132,29 +142,80 @@ namespace LogiQCLI.Commands.Session
                 return "[red]Received an empty summary from the model.[/]";
             }
 
-            var summaryMessage = new Message { Role = "assistant", Content = summaryContent };
+            var preservedMessages = new[] { firstMessage }.Concat(lastThree).ToArray();
+            var fileReadEntriesToPreserve = new Dictionary<string, (string Hash, DateTime LastWriteUtc, long Length, Message MessageRef)>();
 
-            
-            _chatSession.ClearHistory();
-
-            if (firstMessage != null)
+            foreach (var message in preservedMessages)
             {
-                _chatSession.AddMessage(firstMessage);
+                if (IsFileReadResult(message))
+                {
+                    var path = ExtractFilePathFromMessage(message);
+                    if (!string.IsNullOrEmpty(path) && _fileReadRegistry.TryGet(path, out var entry))
+                    {
+                        fileReadEntriesToPreserve[path] = entry;
+                    }
+                }
             }
 
+            var summaryMessage = new Message { Role = "assistant", Content = $"[COMPRESSED SUMMARY]\n{summaryContent}" };
+
+            _chatSession.ClearHistory();
+
+            if (systemMessage != null)
+            {
+                _chatSession.AddMessage(systemMessage);
+            }
+
+            _chatSession.AddMessage(firstMessage);
             _chatSession.AddMessage(summaryMessage);
 
             foreach (var msg in lastThree)
             {
-                if (msg != firstMessage)
+                _chatSession.AddMessage(msg);
+            }
+
+            foreach (var (path, entry) in fileReadEntriesToPreserve)
+            {
+                var preservedMessage = preservedMessages.FirstOrDefault(m => m == entry.MessageRef);
+                if (preservedMessage != null)
                 {
-                    _chatSession.AddMessage(msg);
+                    _fileReadRegistry.Register(path, entry.Hash, entry.LastWriteUtc, entry.Length, preservedMessage);
                 }
             }
 
             _initializeDisplay();
 
-            return "[bold green]Chat compressed successfully.[/]";
+            return "[bold green]Chat compressed successfully.[/] [dim]File read state preserved for maintained messages.[/]";
+        }
+
+        private static bool IsFileReadResult(Message message)
+        {
+            return message.Role?.Equals("tool", StringComparison.OrdinalIgnoreCase) == true &&
+                   message.ToolCallId != null;
+        }
+
+        private static string ExtractFilePathFromMessage(Message message)
+        {
+            var content = message.Content?.ToString() ?? string.Empty;
+            
+            if (content.StartsWith("File content", StringComparison.OrdinalIgnoreCase) ||
+                content.StartsWith("```") && content.Contains("File:"))
+            {
+                var lines = content.Split('\n', StringSplitOptions.RemoveEmptyEntries);
+                foreach (var line in lines)
+                {
+                    if (line.Contains("File:") || line.Contains("Path:"))
+                    {
+                        var parts = line.Split(':', 2);
+                        if (parts.Length == 2)
+                        {
+                            return parts[1].Trim();
+                        }
+                    }
+                }
+            }
+            
+            return string.Empty;
         }
     }
 } 
