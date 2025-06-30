@@ -194,14 +194,32 @@ namespace LogiQCLI.Presentation.Console
                             contextLeft = best.ContextLength - used;
                         }
                     }
+                    else if (parts.Length == 1 && response?.Usage != null)
+                    {
+                        var meta = await _metadataService.GetModelMetadataAsync(_settings.DefaultProvider, parts[0]);
+                        best = _metadataService.GetBestEndpoint(meta);
+                        if (best != null && best.ContextLength > 0)
+                        {
+                            var used = response.Usage.PromptTokens + response.Usage.CompletionTokens;
+                            contextLeft = best.ContextLength - used;
+                        }
+                    }
                 }
                 catch {  }
 
-                if (contextLeft.HasValue && best != null && response?.Usage != null)
+                if (response?.Usage != null)
                 {
                     var used = response.Usage.PromptTokens + response.Usage.CompletionTokens;
-                    _messageRenderer.RenderUsagePanel(response.Usage, _totalCost, used, best.ContextLength);
-                    _usageHistory.Enqueue((response.Usage, _totalCost, used, best.ContextLength));
+                    if (contextLeft.HasValue && best != null)
+                    {
+                        _messageRenderer.RenderUsagePanel(response.Usage, _totalCost, used, best.ContextLength);
+                        _usageHistory.Enqueue((response.Usage, _totalCost, used, best.ContextLength));
+                    }
+                    else
+                    {
+                        _messageRenderer.RenderUsagePanel(response.Usage, _totalCost, used, 0);
+                        _usageHistory.Enqueue((response.Usage, _totalCost, used, 0));
+                    }
                 }
 
                 if (string.Equals(message.Role, "assistant", StringComparison.OrdinalIgnoreCase))
