@@ -26,6 +26,10 @@ namespace LogiQCLI.Infrastructure.ApiClients.ModelMetadata
             var combined = $"{author}/{slug}";
             var models = await _client.GetModelsAsync(cancellationToken);
             var model = models.FirstOrDefault(m => string.Equals(m.Id, combined, StringComparison.OrdinalIgnoreCase));
+
+            var model = models.FirstOrDefault(m =>
+                string.Equals(m.Id, combined, StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(m.Id, slug, StringComparison.OrdinalIgnoreCase));
             if (model == null)
             {
                 return new ModelEndpointsData();
