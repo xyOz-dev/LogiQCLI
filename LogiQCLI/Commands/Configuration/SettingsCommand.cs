@@ -66,7 +66,8 @@ namespace LogiQCLI.Commands.Configuration
                 { "Default Model", _settings.DefaultModel ?? "[dim]Not set[/]" },
                 { "Default Provider", _settings.DefaultProvider },
                 { "GitHub Token", !string.IsNullOrEmpty(_settings.GitHub?.Token) ? "Configured" : "[dim]Not set[/]" },
-                { "Tavily API Key", !string.IsNullOrEmpty(_settings.Tavily?.ApiKey) ? "Configured" : "[dim]Not set[/]" }
+                { "Tavily API Key", !string.IsNullOrEmpty(_settings.Tavily?.ApiKey) ? "Configured" : "[dim]Not set[/]" },
+                { "OpenAI Base URL", _settings.OpenAI?.BaseUrl ?? "https://api.openai.com/v1" },
             };
 
             TableFormatter.RenderKeyValueTable("Current Settings", settingsData, Color.Blue);
@@ -106,6 +107,7 @@ namespace LogiQCLI.Commands.Configuration
                 "Manage API Keys",
                 "Configure GitHub",
                 "Configure Tavily",
+                "Configure OpenAI",
                 "Experimental Features",
                 "Exit"
             };
@@ -156,6 +158,9 @@ namespace LogiQCLI.Commands.Configuration
                         break;
                     case "Configure Tavily":
                         HandleTavilyConfiguration();
+                        break;
+                    case "Configure OpenAI":
+                        HandleOpenAIConfiguration();
                         break;
                     case "Experimental Features":
                         HandleExperimentalFeatures();
@@ -558,6 +563,52 @@ namespace LogiQCLI.Commands.Configuration
                         _settings.Tavily = new TavilySettings();
                         _configService.SaveSettings(_settings);
                         AnsiConsole.MarkupLine("[green]✓ Tavily settings reset to defaults.[/]");
+                    }
+                    break;
+            }
+        }
+
+        private void HandleOpenAIConfiguration()
+        {
+            AnsiConsole.Clear();
+            AnsiConsole.MarkupLine("[cyan]OpenAI Configuration[/]");
+            AnsiConsole.WriteLine();
+
+            var currentBaseUrl = _settings.OpenAI?.BaseUrl ?? "https://api.openai.com/v1";
+
+            AnsiConsole.MarkupLine($"[dim]Current Base URL: {currentBaseUrl}[/]");
+            AnsiConsole.WriteLine();
+
+            var options = new List<string>
+            {
+                "Configure Base URL",
+                "Reset to Defaults",
+                "Back to Main Menu"
+            };
+
+            var choice = AnsiConsole.Prompt(
+                new SelectionPrompt<string>()
+                    .Title("[green]What would you like to configure?[/]")
+                    .AddChoices(options));
+
+            switch (choice)
+            {
+                case "Configure Base URL":
+                    var baseUrl = AnsiConsole.Ask<string>("[green]Enter OpenAI base URL:[/]", _settings.OpenAI?.BaseUrl ?? "https://api.openai.com/v1");
+                    if (_settings.OpenAI == null) _settings.OpenAI = new OpenAISettings();
+                    _settings.OpenAI.BaseUrl = baseUrl;
+                    _configService.SaveSettings(_settings);
+                    AnsiConsole.MarkupLine($"[green]✓ OpenAI base URL updated to: {baseUrl}[/]");
+                    break;
+
+                case "Reset to Defaults":
+                    var confirm = AnsiConsole.Confirm("[red]Reset OpenAI base URL to default?[/]");
+                    if (confirm)
+                    {
+                        if (_settings.OpenAI == null) _settings.OpenAI = new OpenAISettings();
+                        _settings.OpenAI.BaseUrl = "https://api.openai.com/v1";
+                        _configService.SaveSettings(_settings);
+                        AnsiConsole.MarkupLine("[green]✓ OpenAI base URL reset to default.[/]");
                     }
                     break;
             }

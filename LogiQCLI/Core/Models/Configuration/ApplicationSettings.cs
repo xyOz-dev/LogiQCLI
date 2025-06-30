@@ -33,6 +33,8 @@ namespace LogiQCLI.Core.Models.Configuration
 
         public string DefaultProvider { get; set; } = "openrouter";
 
+        public OpenAISettings OpenAI { get; set; } = new OpenAISettings();
+
         public ApiKeySettings? GetActiveApiKey() => ApiKeys.FirstOrDefault(k => k.Nickname == ActiveApiKeyNickname);
     }
 }

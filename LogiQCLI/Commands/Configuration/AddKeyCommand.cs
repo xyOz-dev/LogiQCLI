@@ -38,7 +38,7 @@ namespace LogiQCLI.Commands.Configuration
             {
                 AnsiConsole.MarkupLine("[cyan]Add New API Key[/]");
 
-                var providerChoices = new[] { "openrouter", "requesty", "lmstudio" };
+                var providerChoices = new[] { "openrouter", "requesty", "lmstudio", "openai" };
                 var provider = AnsiConsole.Prompt(
                     new SelectionPrompt<string>()
                         .Title("[green]Select the provider for this API key:[/]")

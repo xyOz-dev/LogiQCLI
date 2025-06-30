@@ -40,6 +40,20 @@ namespace LogiQCLI.Infrastructure.Providers
                                     var reqClient = new RequestyClient(http, key);
             return new RequestyProvider(reqClient);
                     }
+                case "openai":
+                    {
+                        var http = container.GetService<System.Net.Http.HttpClient>() ?? new System.Net.Http.HttpClient();
+                        var keyEntry = settings?.ApiKeys.FirstOrDefault(k => k.Provider == "openai" && k.Nickname == settings.ActiveApiKeyNickname)
+                                     ?? settings?.ApiKeys.FirstOrDefault(k => k.Provider == "openai");
+                        var key = keyEntry?.ApiKey;
+                        if (string.IsNullOrWhiteSpace(key))
+                        {
+                            throw new InvalidOperationException("No OpenAI API key found. Use /settings or /addkey to add one for provider 'openai'.");
+                        }
+                        var baseUrl = settings?.OpenAI?.BaseUrl ?? Environment.GetEnvironmentVariable("OPENAI_BASE_URL") ?? "https://api.openai.com/v1";
+                        var oaClient = new LogiQCLI.Infrastructure.ApiClients.OpenAI.OpenAiClient(http, key, baseUrl);
+                        return new LogiQCLI.Infrastructure.Providers.OpenAI.OpenAIProvider(oaClient);
+                    }
                 case "openrouter":
                 default:
                     {
