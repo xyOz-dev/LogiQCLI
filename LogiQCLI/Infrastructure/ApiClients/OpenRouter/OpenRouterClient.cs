@@ -29,6 +29,7 @@ namespace LogiQCLI.Infrastructure.ApiClients.OpenRouter
         {
             var modelProvider = GetModelProvider(request.Model ?? string.Empty);
 
+            if (request.Provider == null)
             {
                 request.Provider = BuildProviderPreferences(modelProvider);
             }
