@@ -20,7 +20,7 @@ namespace LogiQCLI.Infrastructure.ApiClients.OpenRouter
 
             _httpClient = httpClient;
             _httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", apiKey);
-            _httpClient.DefaultRequestHeaders.Add("HTTP-Referer", "https://github.com/xyOz-dev/LogiQCLI");
+            _httpClient.DefaultRequestHeaders.Add("HTTP-Referer", "https://github.com/xyOz-dev");
             _httpClient.DefaultRequestHeaders.Add("X-Title", "LogiQ");
             _cacheStrategy = cacheStrategy;
         }
