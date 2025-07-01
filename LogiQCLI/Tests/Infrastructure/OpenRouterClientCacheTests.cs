@@ -65,9 +65,7 @@ namespace LogiQCLI.Tests.Infrastructure
                 
                 var request = CreateTestRequest("anthropic/claude-3.5-sonnet", "This is a very long message that would normally be cached but should not be cached when strategy is None. " + new string('x', 5000));
                 
-                var method = typeof(OpenRouterClient).GetMethod("ApplyCachingStrategy", 
-                    System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-                method?.Invoke(client, new object[] { request });
+                ApplyCachingStrategyToRequest(client, request);
                 
                 if (request.Messages == null || !request.Messages.Any())
                 {
@@ -103,9 +101,7 @@ namespace LogiQCLI.Tests.Infrastructure
                 
                 var request = CreateTestRequest("anthropic/claude-3.5-sonnet", "This is a very long message that should be cached with auto strategy. " + new string('x', 5000));
                 
-                var method = typeof(OpenRouterClient).GetMethod("ApplyCachingStrategy", 
-                    System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-                method?.Invoke(client, new object[] { request });
+                ApplyCachingStrategyToRequest(client, request);
                 
                 if (request.Messages == null || !request.Messages.Any())
                 {
@@ -141,9 +137,7 @@ namespace LogiQCLI.Tests.Infrastructure
                 
                 var request = CreateTestRequest("unknown/model", "This is a very long message that should be cached with aggressive strategy. " + new string('x', 5000));
                 
-                var method = typeof(OpenRouterClient).GetMethod("ApplyCachingStrategy", 
-                    System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-                method?.Invoke(client, new object[] { request });
+                ApplyCachingStrategyToRequest(client, request);
                 
                 if (request.Messages == null || !request.Messages.Any())
                 {
@@ -190,9 +184,7 @@ namespace LogiQCLI.Tests.Infrastructure
                     }
                 };
                 
-                var method = typeof(OpenRouterClient).GetMethod("ApplyCachingStrategy", 
-                    System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-                method?.Invoke(client, new object[] { request });
+                ApplyCachingStrategyToRequest(client, request);
                 
                 var cachedCount = 0;
                 if (request.Messages != null)
@@ -239,13 +231,10 @@ namespace LogiQCLI.Tests.Infrastructure
                 };
                 
 
-                var method = typeof(OpenRouterClient).GetMethod("ApplyCachingStrategy", 
-                    System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-                method?.Invoke(client, new object[] { request });
+                ApplyCachingStrategyToRequest(client, request);
                 
 
                 var cachedCount = 0;
-                var largestMessageCached = false;
                 
                 if (request.Messages != null)
                 {
@@ -254,18 +243,13 @@ namespace LogiQCLI.Tests.Infrastructure
                         if (message.Content is List<TextContentPart> parts && parts.Any(p => p.CacheControl != null))
                         {
                             cachedCount++;
-
-                            if (parts.Any(p => p.Text?.Contains(new string('b', 8000)) == true))
-                            {
-                                largestMessageCached = true;
-                            }
                         }
                     }
                 }
                 
-                return cachedCount == 1 && largestMessageCached
+                return cachedCount == 0
                     ? TestResult.CreateSuccess("TestGeminiCaching", TimeSpan.Zero)
-                    : TestResult.CreateFailure("TestGeminiCaching", $"Gemini caching should apply to exactly 1 message (the largest), but applied to {cachedCount}", TimeSpan.Zero);
+                    : TestResult.CreateFailure("TestGeminiCaching", $"Google/Gemini models should not have caching applied due to API incompatibility, but applied to {cachedCount} messages", TimeSpan.Zero);
             }
             catch (Exception ex)
             {
@@ -285,9 +269,7 @@ namespace LogiQCLI.Tests.Infrastructure
                 var request = CreateTestRequest("openai/gpt-4", "This is a very long message for OpenAI model. " + new string('x', 5000));
                 
 
-                var method = typeof(OpenRouterClient).GetMethod("ApplyCachingStrategy", 
-                    System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-                method?.Invoke(client, new object[] { request });
+                ApplyCachingStrategyToRequest(client, request);
                 
                 if (request.Messages == null || !request.Messages.Any())
                 {
@@ -329,9 +311,7 @@ namespace LogiQCLI.Tests.Infrastructure
                 var request = CreateTestRequest("unknown/model", "This is a very long message for unknown model. " + new string('x', 5000));
                 
 
-                var method = typeof(OpenRouterClient).GetMethod("ApplyCachingStrategy", 
-                    System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-                method?.Invoke(client, new object[] { request });
+                ApplyCachingStrategyToRequest(client, request);
                 
                 if (request.Messages == null || !request.Messages.Any())
                 {
@@ -368,9 +348,7 @@ namespace LogiQCLI.Tests.Infrastructure
                 var request = CreateTestRequest("anthropic/claude-3.5-sonnet", "This is a small message that should not be cached.");
                 
 
-                var method = typeof(OpenRouterClient).GetMethod("ApplyCachingStrategy", 
-                    System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-                method?.Invoke(client, new object[] { request });
+                ApplyCachingStrategyToRequest(client, request);
                 
                 if (request.Messages == null || !request.Messages.Any())
                 {
@@ -407,9 +385,7 @@ namespace LogiQCLI.Tests.Infrastructure
                 var request = CreateTestRequest("anthropic/claude-3.5-sonnet", "This is a large message that should be cached. " + new string('x', 5000));
                 
 
-                var method = typeof(OpenRouterClient).GetMethod("ApplyCachingStrategy", 
-                    System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-                method?.Invoke(client, new object[] { request });
+                ApplyCachingStrategyToRequest(client, request);
                 
                 if (request.Messages == null || !request.Messages.Any())
                 {
@@ -457,9 +433,7 @@ namespace LogiQCLI.Tests.Infrastructure
                 };
                 
 
-                var method = typeof(OpenRouterClient).GetMethod("ApplyCachingStrategy", 
-                    System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-                method?.Invoke(client, new object[] { request });
+                ApplyCachingStrategyToRequest(client, request);
                 
 
                 var cachedMessages = new List<(int index, int size, bool cached)>();
@@ -533,6 +507,17 @@ namespace LogiQCLI.Tests.Infrastructure
                     new Message { Role = "user", Content = content }
                 }
             };
+        }
+
+        private void ApplyCachingStrategyToRequest(OpenRouterClient client, ChatRequest request)
+        {
+            var getModelProviderMethod = typeof(OpenRouterClient).GetMethod("GetModelProvider", 
+                System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+            var modelProvider = getModelProviderMethod?.Invoke(client, new object[] { request.Model ?? string.Empty });
+            
+            var applyCachingMethod = typeof(OpenRouterClient).GetMethod("ApplyCachingStrategy", 
+                System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+            applyCachingMethod?.Invoke(client, new object[] { request, modelProvider });
         }
     }
 } 

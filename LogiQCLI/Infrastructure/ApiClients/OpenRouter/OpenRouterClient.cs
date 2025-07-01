@@ -20,14 +20,20 @@ namespace LogiQCLI.Infrastructure.ApiClients.OpenRouter
 
             _httpClient = httpClient;
             _httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", apiKey);
-            _httpClient.DefaultRequestHeaders.Add("HTTP-Referer", "https://github.com/xyOz-dev");
-            _httpClient.DefaultRequestHeaders.Add("X-Title", "LogiQ");
+            _httpClient.DefaultRequestHeaders.Add("HTTP-Referer", "https://discord.gg/fA4upHvMsK");
+            _httpClient.DefaultRequestHeaders.Add("X-Title", "DevQ");
             _cacheStrategy = cacheStrategy;
         }
 
         public async Task<ChatResponse> Chat(ChatRequest request, CancellationToken cancellationToken = default)
         {
-            ApplyCachingStrategy(request);
+            var modelProvider = GetModelProvider(request.Model ?? string.Empty);
+
+            {
+                request.Provider = BuildProviderPreferences(modelProvider);
+            }
+
+            ApplyCachingStrategy(request, modelProvider);
             
             var options = new JsonSerializerOptions { DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull };
             var content = new StringContent(JsonSerializer.Serialize(request, options), Encoding.UTF8, "application/json");
@@ -75,12 +81,11 @@ namespace LogiQCLI.Infrastructure.ApiClients.OpenRouter
             return data?.Data ?? new Objects.ModelEndpointsData();
         }
 
-        private void ApplyCachingStrategy(ChatRequest request)
+        private void ApplyCachingStrategy(ChatRequest request, ModelProvider modelProvider)
         {
-            if (request.Model == null || request.Messages == null || _cacheStrategy == CacheStrategy.None)
+            if (request.Messages == null || _cacheStrategy == CacheStrategy.None)
                 return;
 
-            var modelProvider = GetModelProvider(request.Model);
             var shouldApplyCache = ShouldApplyCache(modelProvider, request.Messages);
 
             if (!shouldApplyCache)
@@ -125,12 +130,33 @@ namespace LogiQCLI.Infrastructure.ApiClients.OpenRouter
             return ModelProvider.Unknown;
         }
 
+        private record ProviderCapability(bool SupportsCacheControl);
+
+        private static readonly Dictionary<ModelProvider, ProviderCapability> _providerCapabilities = new()
+        {
+            { ModelProvider.Anthropic, new ProviderCapability(true) },
+            { ModelProvider.Google,    new ProviderCapability(false) },
+            { ModelProvider.OpenAI,    new ProviderCapability(false) },
+            { ModelProvider.Grok,      new ProviderCapability(false) },
+            { ModelProvider.DeepSeek,  new ProviderCapability(true)  },
+            { ModelProvider.Unknown,   new ProviderCapability(true) }
+        };
+
+        private Provider BuildProviderPreferences(ModelProvider provider)
+        {
+            return new Provider
+            {
+                Order = new[] { provider.ToString().ToLowerInvariant() },
+                AllowFallbacks = !_providerCapabilities.TryGetValue(provider, out var cap) || !cap.SupportsCacheControl
+            };
+        }
+
         private bool ShouldApplyCache(ModelProvider provider, Message[] messages)
         {
             if (_cacheStrategy == CacheStrategy.None)
                 return false;
 
-            if (provider == ModelProvider.OpenAI || provider == ModelProvider.Grok || provider == ModelProvider.DeepSeek)
+            if (!_providerCapabilities.TryGetValue(provider, out var cap) || !cap.SupportsCacheControl)
                 return false;
 
             return messages.Any(msg => HasCacheableContent(msg));
@@ -157,6 +183,7 @@ namespace LogiQCLI.Infrastructure.ApiClients.OpenRouter
         private void ApplyAnthropicCaching(Message[] messages)
         {
             var cacheableMessages = messages
+                .Where(m => !string.Equals(m.Role, "system", StringComparison.OrdinalIgnoreCase))
                 .Where(HasCacheableContent)
                 .OrderByDescending(msg => GetContentLength(msg))
                 .Take(4)
@@ -171,6 +198,7 @@ namespace LogiQCLI.Infrastructure.ApiClients.OpenRouter
         private void ApplyGeminiCaching(Message[] messages)
         {
             var largestMessage = messages
+                .Where(m => !string.Equals(m.Role, "system", StringComparison.OrdinalIgnoreCase))
                 .Where(HasCacheableContent)
                 .OrderByDescending(GetContentLength)
                 .FirstOrDefault();
@@ -184,6 +212,7 @@ namespace LogiQCLI.Infrastructure.ApiClients.OpenRouter
         private void ApplyGenericCaching(Message[] messages)
         {
             var largestMessage = messages
+                .Where(m => !string.Equals(m.Role, "system", StringComparison.OrdinalIgnoreCase))
                 .Where(HasCacheableContent)
                 .OrderByDescending(GetContentLength)
                 .FirstOrDefault();
