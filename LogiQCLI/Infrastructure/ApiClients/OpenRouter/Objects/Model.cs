@@ -28,12 +28,21 @@ namespace LogiQCLI.Infrastructure.ApiClients.OpenRouter.Objects
 
         [JsonPropertyName("per_request_limits")]
         public PerRequestLimits? PerRequestLimits { get; set; }
+
+        [JsonPropertyName("canonical_slug")]
+        public string CanonicalSlug { get; set; } = string.Empty;
+
+        [JsonPropertyName("supported_parameters")]
+        public List<string>? SupportedParameters { get; set; }
     }
 
     public class Architecture
     {
-        [JsonPropertyName("modality")]
-        public string Modality { get; set; } = string.Empty;
+        [JsonPropertyName("input_modalities")]
+        public List<string> InputModalities { get; set; } = new();
+
+        [JsonPropertyName("output_modalities")]
+        public List<string> OutputModalities { get; set; } = new();
 
         [JsonPropertyName("tokenizer")]
         public string Tokenizer { get; set; } = string.Empty;
@@ -44,8 +53,14 @@ namespace LogiQCLI.Infrastructure.ApiClients.OpenRouter.Objects
 
     public class TopProvider
     {
+        [JsonPropertyName("context_length")]
+        public int? ContextLength { get; set; }
+
         [JsonPropertyName("max_completion_tokens")]
         public int? MaxCompletionTokens { get; set; }
+
+        [JsonPropertyName("is_moderated")]
+        public bool? IsModerated { get; set; }
 
         [JsonPropertyName("is_fallback")]
         public bool IsFallback { get; set; }

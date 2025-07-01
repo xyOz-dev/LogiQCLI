@@ -49,7 +49,8 @@ namespace LogiQCLI.Infrastructure.Providers.LMStudio
                 Pricing = null,
                 Architecture = new Architecture
                 {
-                    Modality = lmStudioModel.Type == "vlm" ? "multimodal" : "text",
+                    InputModalities = lmStudioModel.Type == "vlm" ? new List<string> { "text", "image" } : new List<string> { "text" },
+                    OutputModalities = new List<string> { "text" },
                     Tokenizer = lmStudioModel.Arch,
                     InstructType = null
                 }
