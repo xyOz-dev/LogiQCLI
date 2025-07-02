@@ -675,7 +675,7 @@ namespace LogiQCLI.Presentation.Console.Session
             sb.AppendLine("• **Design Decisions**: Think through choices systematically; explain your reasoning clearly");
             sb.AppendLine("• **Error Handling**: Implement comprehensive error handling and validation");
             sb.AppendLine("• **Documentation**: Include clear comments and documentation for complex logic");
-            sb.AppendLine("• **Testing**: Consider testability and suggest test cases where appropriate");
+            sb.AppendLine("• **Testing**: Consider testability, generate comprehensive unit tests, and always run the tests you create using the correctly chained commands to ensure the tests always pass");
             sb.AppendLine("• **Performance**: Be mindful of performance implications and resource usage");
             sb.AppendLine();
             
@@ -688,8 +688,8 @@ namespace LogiQCLI.Presentation.Console.Session
             
             sb.AppendLine("== Tool Usage Best Practices ==");
             sb.AppendLine("• **Command Chaining**: Use platform-appropriate command chaining for efficiency");
-            sb.AppendLine("  - Windows: `dotnet build ; dotnet test ; echo \"Complete\"`");
-            sb.AppendLine("  - Unix: `dotnet build && dotnet test && echo \"Complete\"`");
+            sb.AppendLine("  - Windows Example: `dotnet build ; dotnet run -test ; echo \"Complete\"`");
+            sb.AppendLine("  - Unix Example: `dotnet build && dotnet run -test && echo \"Complete\"`");
             sb.AppendLine("• **File Operations**: Use relative paths when possible; respect project structure");
             sb.AppendLine("• **Parallel Execution**: Execute multiple read-only operations simultaneously when beneficial");
             sb.AppendLine();
