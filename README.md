@@ -1,5 +1,9 @@
 # LogiQ CLI
 
+## Warning: This project is being entirely *refactored* currently.
+## It can still be used, this version is working completely.
+## v2 will be MUCH stronger.
+
 ![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)
 ![.NET](https://img.shields.io/badge/.NET-9.0-purple.svg)
 
