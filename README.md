@@ -1,6 +1,6 @@
 # LogiQ CLI
 
-## Warning: This project is being entirely *refactored* currently.
+## Warning: This project is being entirely *rewritten* currently.
 ## It can still be used, this version is working completely.
 ## v2 will be MUCH stronger.
 
