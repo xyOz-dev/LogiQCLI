@@ -22,6 +22,10 @@ namespace LogiQCLI.Infrastructure.ApiClients.Requesty
             _http = http;
             _http.BaseAddress = new Uri("https://router.requesty.ai/v1/");
             _http.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", apiKey);
+            
+            _http.DefaultRequestHeaders.Remove("HTTP-Referer");
+            _http.DefaultRequestHeaders.Remove("X-Title");
+            
             _http.DefaultRequestHeaders.Add("HTTP-Referer", "https://github.com/xyOz-dev/LogiQCLI");
             _http.DefaultRequestHeaders.Add("X-Title", "LogiQCLI");
         }

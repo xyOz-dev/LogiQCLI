@@ -22,8 +22,10 @@ namespace LogiQCLI.Infrastructure.ApiClients.OpenRouter
 
             _httpClient = httpClient;
             _httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", apiKey);
-            _httpClient.DefaultRequestHeaders.Add("HTTP-Referer", "https://discord.gg/fA4upHvMsK");
-            _httpClient.DefaultRequestHeaders.Add("X-Title", "DevQ");
+            _httpClient.DefaultRequestHeaders.Remove("HTTP-Referer");
+            _httpClient.DefaultRequestHeaders.Remove("X-Title");
+            _httpClient.DefaultRequestHeaders.Add("HTTP-Referer", "https://github.com/xyOz-dev/LogiQCLI");
+            _httpClient.DefaultRequestHeaders.Add("X-Title", "LogiQCLI");
             
             _providerPreferencesManager = new ProviderPreferencesManager(httpClient);
             _cacheManager = new CacheManager(cacheStrategy);
