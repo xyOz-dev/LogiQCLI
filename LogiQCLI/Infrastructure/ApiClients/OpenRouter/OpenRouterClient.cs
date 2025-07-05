@@ -123,6 +123,7 @@ namespace LogiQCLI.Infrastructure.ApiClients.OpenRouter
             };
 
             if (!string.IsNullOrWhiteSpace(request.Model) && request.Model!.Contains('/'))
+            {
                 var parts = request.Model.Split('/', 2, StringSplitOptions.RemoveEmptyEntries);
                 if (parts.Length == 2)
                 {
@@ -139,6 +140,7 @@ namespace LogiQCLI.Infrastructure.ApiClients.OpenRouter
                         if (request.Tools?.Any() == true)
                         {
                             endpoints = endpoints.Where(e => e.SupportedParameters.Any(p => string.Equals(p, "tools", StringComparison.OrdinalIgnoreCase))).ToList();
+                        }
 
                         if (endpoints.Count > 0)
                         {
@@ -233,6 +235,7 @@ namespace LogiQCLI.Infrastructure.ApiClients.OpenRouter
                 ["groq"] = new ProviderCapabilities(true, false, false),
                 ["deepinfra"] = new ProviderCapabilities(true, false, false),
                 ["openrouter"] = new ProviderCapabilities(false, false, false),
+                ["stealth"] = new ProviderCapabilities(false, false, false)
             };
         }
 
