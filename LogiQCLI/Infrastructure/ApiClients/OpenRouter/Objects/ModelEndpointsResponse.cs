@@ -61,5 +61,11 @@ namespace LogiQCLI.Infrastructure.ApiClients.OpenRouter.Objects
 
         [JsonPropertyName("supported_parameters")]
         public List<string> SupportedParameters { get; set; } = new List<string>();
+
+        [JsonPropertyName("tag")]
+        public string? Tag { get; set; }
+
+        [JsonPropertyName("uptime_last_30m")]
+        public double? UptimeLast30m { get; set; }
     }
 } 

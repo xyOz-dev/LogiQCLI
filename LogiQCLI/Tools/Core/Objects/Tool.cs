@@ -9,5 +9,9 @@ namespace LogiQCLI.Tools.Core.Objects
 
         [JsonPropertyName("function")]
         public Function? Function { get; set; }
+
+        [JsonPropertyName("cache_control")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public LogiQCLI.Infrastructure.ApiClients.OpenRouter.Objects.CacheControl? CacheControl { get; set; }
     }
 }

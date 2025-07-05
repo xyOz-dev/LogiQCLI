@@ -511,13 +511,7 @@ namespace LogiQCLI.Tests.Infrastructure
 
         private void ApplyCachingStrategyToRequest(OpenRouterClient client, ChatRequest request)
         {
-            var getModelProviderMethod = typeof(OpenRouterClient).GetMethod("GetModelProvider", 
-                System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-            var modelProvider = getModelProviderMethod?.Invoke(client, new object[] { request.Model ?? string.Empty });
-            
-            var applyCachingMethod = typeof(OpenRouterClient).GetMethod("ApplyCachingStrategy", 
-                System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-            applyCachingMethod?.Invoke(client, new object[] { request, modelProvider });
+            client.ApplyCachingStrategyToRequest(request);
         }
     }
 } 
