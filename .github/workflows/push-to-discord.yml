@@ -10,7 +10,7 @@ jobs:
     name: discord commits
     steps:
       - name: Discommit
-        uses: https://github.com/matt1432/discommit@v0.0.2
+        uses: matt1432/discommit@v0.0.2
         with:
           discord_webhook: ${{ secrets.DISCORD_WEBHOOK }}
           api_url: 'https://git.nelim.org/api/v1/repos/$OWNER/$REPO/git/commits/$REF'
