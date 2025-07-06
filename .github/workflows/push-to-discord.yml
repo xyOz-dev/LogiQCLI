@@ -1,17 +1,17 @@
-name: Notify Discord on Push
+name: Discord
+
 on:
-  push:
-    paths-ignore:
-      - 'README.md'
+  - workflow_dispatch
+  - push
+
 jobs:
-  discord:
+  discord_commits:
     runs-on: ubuntu-latest
+    name: discord commits
     steps:
-      - name: Send Discord Webhook
-        uses: dawidd6/action-discord@v2
+      - name: Discommit
+        uses: https://github.com/matt1432/discommit@v0.0.2
         with:
-          webhook_id: ${{ secrets.DISCORD_WEBHOOK_ID }}
-          webhook_token: ${{ secrets.DISCORD_WEBHOOK_TOKEN }}
-          content: |
-            📢 **${{ github.actor }}** pushed to `${{ github.ref }}`
-            Commit: ${{ github.event.head_commit.message }}
+          discord_webhook: ${{ secrets.DISCORD_WEBHOOK }}
+          api_url: 'https://git.nelim.org/api/v1/repos/$OWNER/$REPO/git/commits/$REF'
+          title: 'New commit '
