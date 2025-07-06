@@ -29,7 +29,7 @@ namespace LogiQCLI.Tools.GitHub
             return new RegisteredTool
             {
                 Name = "get_github_repository_info",
-                Description = "Get detailed repository information including metadata, statistics, configuration, and permissions. Requires GitHub authentication token.",
+                Description = "Get detailed repository information including metadata, statistics, configuration, and permissions.",
                 Parameters = new Parameters
                 {
                     Type = "object",

@@ -29,7 +29,7 @@ namespace LogiQCLI.Tools.GitHub
             return new RegisteredTool
             {
                 Name = "comment_on_github_issue",
-                Description = "Add comments to existing GitHub issues. Supports markdown formatting. Requires GitHub authentication token.",
+                Description = "Add comments to existing GitHub issues. Supports markdown formatting.",
                 Parameters = new Parameters
                 {
                     Type = "object",

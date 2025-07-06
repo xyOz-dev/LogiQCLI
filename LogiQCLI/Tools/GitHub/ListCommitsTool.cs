@@ -31,7 +31,7 @@ namespace LogiQCLI.Tools.GitHub
             return new RegisteredTool
             {
                 Name = "list_github_commits",
-                Description = "List repository commits with filtering by branch, author, file path, or date range. Requires GitHub authentication token.",
+                Description = "List repository commits with filtering by branch, author, file path, or date range.",
                 Parameters = new Parameters
                 {
                     Type = "object",

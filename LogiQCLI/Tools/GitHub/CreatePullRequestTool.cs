@@ -29,7 +29,7 @@ namespace LogiQCLI.Tools.GitHub
             return new RegisteredTool
             {
                 Name = "create_github_pull_request",
-                Description = "Create GitHub pull requests with title, body, source and target branches. Supports draft mode. Requires GitHub authentication token.",
+                Description = "Create GitHub pull requests with title, body, source and target branches. Supports draft mode.",
                 Parameters = new Parameters
                 {
                     Type = "object",

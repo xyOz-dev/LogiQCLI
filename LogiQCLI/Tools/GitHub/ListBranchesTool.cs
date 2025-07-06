@@ -30,7 +30,7 @@ namespace LogiQCLI.Tools.GitHub
             return new RegisteredTool
             {
                 Name = "list_github_branches",
-                Description = "List all branches from GitHub repository. Shows branch protection status. Requires GitHub authentication token.",
+                Description = "List all branches from GitHub repository. Shows branch protection status.",
                 Parameters = new Parameters
                 {
                     Type = "object",

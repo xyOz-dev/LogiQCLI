@@ -30,7 +30,7 @@ namespace LogiQCLI.Tools.GitHub
             return new RegisteredTool
             {
                 Name = "get_github_file_content",
-                Description = "Get file content from GitHub repositories. Supports any branch/tag/commit reference. Displays files up to 1MB. Requires GitHub authentication token.",
+                Description = "Get file content from GitHub repositories. Supports any branch/tag/commit reference. Displays files up to 1MB.",
                 Parameters = new Parameters
                 {
                     Type = "object",

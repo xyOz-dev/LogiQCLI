@@ -30,7 +30,7 @@ namespace LogiQCLI.Tools.GitHub
             return new RegisteredTool
             {
                 Name = "list_github_issue_comments",
-                Description = "List all comments from specific GitHub issues. Shows discussion threads and comment history. Requires GitHub authentication token.",
+                Description = "List all comments from specific GitHub issues. Shows discussion threads and comment history.",
                 Parameters = new Parameters
                 {
                     Type = "object",

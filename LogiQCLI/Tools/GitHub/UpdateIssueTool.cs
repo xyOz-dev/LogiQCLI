@@ -31,7 +31,7 @@ namespace LogiQCLI.Tools.GitHub
             return new RegisteredTool
             {
                 Name = "update_github_issue",
-                Description = "Update GitHub issue title, body, labels, assignees, or state. Labels and assignees are replaced entirely. Requires GitHub authentication token.",
+                Description = "Update GitHub issue title, body, labels, assignees, or state. Labels and assignees are replaced entirely.",
                 Parameters = new Parameters
                 {
                     Type = "object",

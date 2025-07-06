@@ -31,7 +31,7 @@ namespace LogiQCLI.Tools.GitHub
             return new RegisteredTool
             {
                 Name = "list_github_pull_requests",
-                Description = "List repository pull requests with filtering by state, branches, and sorting options. Requires GitHub authentication token.",
+                Description = "List repository pull requests with filtering by state, branches, and sorting options.",
                 Parameters = new Parameters
                 {
                     Type = "object",

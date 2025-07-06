@@ -30,7 +30,7 @@ namespace LogiQCLI.Tools.GitHub
             return new RegisteredTool
             {
                 Name = "get_github_pull_request_reviews",
-                Description = "Get all reviews for GitHub pull requests including reviewer comments, approval status, and change requests. Requires GitHub authentication token.",
+                Description = "Get all reviews for GitHub pull requests including reviewer comments, approval status, and change requests.",
                 Parameters = new Parameters
                 {
                     Type = "object",

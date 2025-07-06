@@ -30,7 +30,7 @@ namespace LogiQCLI.Tools.GitHub
             return new RegisteredTool
             {
                 Name = "compare_github_branches",
-                Description = "Compare two branches or commits to see differences, file changes, and commit history. Shows additions, deletions, and changed files. Requires GitHub authentication token.",
+                Description = "Compare two branches or commits to see differences, file changes, and commit history. Shows additions, deletions, and changed files.",
                 Parameters = new Parameters
                 {
                     Type = "object",

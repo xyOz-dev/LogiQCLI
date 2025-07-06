@@ -29,7 +29,7 @@ namespace LogiQCLI.Tools.GitHub
             return new RegisteredTool
             {
                 Name = "get_github_commit_diff",
-                Description = "Get complete diff content of specific GitHub commits showing all code changes. Large diffs are truncated based on maxLines parameter. Requires GitHub authentication token.",
+                Description = "Get complete diff content of specific GitHub commits showing all code changes. Large diffs are truncated based on maxLines parameter.",
                 Parameters = new Parameters
                 {
                     Type = "object",

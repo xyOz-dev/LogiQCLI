@@ -30,7 +30,7 @@ namespace LogiQCLI.Tools.GitHub
             return new RegisteredTool
             {
                 Name = "get_github_issue",
-                Description = "Get detailed information about specific GitHub issues including title, body, labels, assignees, and metadata. Requires GitHub authentication token.",
+                Description = "Get detailed information about specific GitHub issues including title, body, labels, assignees, and metadata.",
                 Parameters = new Parameters
                 {
                     Type = "object",

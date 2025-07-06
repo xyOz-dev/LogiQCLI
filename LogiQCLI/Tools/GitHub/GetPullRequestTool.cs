@@ -28,7 +28,7 @@ namespace LogiQCLI.Tools.GitHub
             return new RegisteredTool
             {
                 Name = "get_github_pull_request",
-                Description = "Get detailed information about specific GitHub pull requests including title, body, branches, reviewers, merge status, and statistics. Requires GitHub authentication token.",
+                Description = "Get detailed information about specific GitHub pull requests including title, body, branches, reviewers, merge status, and statistics.",
                 Parameters = new Parameters
                 {
                     Type = "object",

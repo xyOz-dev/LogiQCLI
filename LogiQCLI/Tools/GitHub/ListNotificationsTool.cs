@@ -31,7 +31,7 @@ namespace LogiQCLI.Tools.GitHub
             return new RegisteredTool
             {
                 Name = "list_github_notifications",
-                Description = "List GitHub notifications with filtering by repository, participation, and read status. Requires GitHub authentication token.",
+                Description = "List GitHub notifications with filtering by repository, participation, and read status.",
                 Parameters = new Parameters
                 {
                     Type = "object",

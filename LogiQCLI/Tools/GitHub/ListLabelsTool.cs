@@ -30,7 +30,7 @@ namespace LogiQCLI.Tools.GitHub
             return new RegisteredTool
             {
                 Name = "list_github_labels",
-                Description = "List all available labels from GitHub repository. Shows label names, colors, and descriptions for use with issues and pull requests. Requires GitHub authentication token.",
+                Description = "List all available labels from GitHub repository. Shows label names, colors, and descriptions for use with issues and pull requests.",
                 Parameters = new Parameters
                 {
                     Type = "object",

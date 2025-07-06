@@ -121,7 +121,7 @@ namespace LogiQCLI.Infrastructure.ApiClients.OpenRouter
                 RequireParameters = request.Tools?.Any() == true,
                 DataCollection = "allow",
                 AllowFallbacks = true,
-                Sort = "price" // default cheapest
+                Sort = "price"
             };
 
             if (!string.IsNullOrWhiteSpace(request.Model) && request.Model!.Contains('/'))

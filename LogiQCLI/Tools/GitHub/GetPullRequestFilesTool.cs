@@ -30,7 +30,7 @@ namespace LogiQCLI.Tools.GitHub
             return new RegisteredTool
             {
                 Name = "get_github_pull_request_files",
-                Description = "Get list of all files changed in GitHub pull requests with change statistics. Shows modified, added, or deleted files without full diff content. Requires GitHub authentication token.",
+                Description = "Get list of all files changed in GitHub pull requests with change statistics. Shows modified, added, or deleted files without full diff content.",
                 Parameters = new Parameters
                 {
                     Type = "object",

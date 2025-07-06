@@ -30,7 +30,7 @@ namespace LogiQCLI.Tools.GitHub
             return new RegisteredTool
             {
                 Name = "search_github_code",
-                Description = "Search for code patterns across GitHub repositories using GitHub's code search API. Supports language filters and complex patterns. Requires GitHub authentication token.",
+                Description = "Search for code patterns across GitHub repositories using GitHub's code search API. Supports language filters and complex patterns.",
                 Parameters = new Parameters
                 {
                     Type = "object",

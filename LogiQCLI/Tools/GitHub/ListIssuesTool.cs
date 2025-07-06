@@ -30,7 +30,7 @@ namespace LogiQCLI.Tools.GitHub
             return new RegisteredTool
             {
                 Name = "list_github_issues",
-                Description = "List repository issues with filtering by state, labels, assignee, and dates. Requires GitHub authentication token.",
+                Description = "List repository issues with filtering by state, labels, assignee, and dates.",
                 Parameters = new Parameters
                 {
                     Type = "object",

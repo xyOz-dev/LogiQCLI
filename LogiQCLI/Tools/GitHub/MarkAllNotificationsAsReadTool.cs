@@ -29,7 +29,7 @@ namespace LogiQCLI.Tools.GitHub
             return new RegisteredTool
             {
                 Name = "mark_all_github_notifications_as_read",
-                Description = "Mark ALL GitHub notifications as read for authenticated user. Bulk operation requires confirmation. Requires GitHub authentication token.",
+                Description = "Mark ALL GitHub notifications as read for authenticated user. Bulk operation requires confirmation.",
                 Parameters = new Parameters
                 {
                     Type = "object",

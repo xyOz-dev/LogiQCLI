@@ -29,7 +29,7 @@ namespace LogiQCLI.Tools.GitHub
             return new RegisteredTool
             {
                 Name = "create_github_issue",
-                Description = "Create GitHub issues with title, body, labels, and assignees. Requires GitHub authentication token.",
+                Description = "Create GitHub issues with title, body, labels, and assignees.",
                 Parameters = new Parameters
                 {
                     Type = "object",
