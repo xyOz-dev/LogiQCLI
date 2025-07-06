@@ -2,6 +2,7 @@
 
 ![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)
 ![.NET](https://img.shields.io/badge/.NET-9.0-purple.svg)
+[![Discord](https://img.shields.io/badge/Discord-Join%20Chat-5865F2?logo=discord&logoColor=white)](https://discord.gg/d8tNc9Kf8v)
 
 **LogiQ CLI** is an intelligent, AI-powered command-line interface that transforms how you interact with code, files, and GitHub repositories. Built with .NET 9.0, it provides an extensive toolkit for developers to perform complex operations through natural language interactions.
 

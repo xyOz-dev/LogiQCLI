@@ -47,10 +47,7 @@ namespace LogiQCLI.Presentation.Console.Components
         {
             var welcomeMessages = new[]
             {
-                "Ready to assist with your coding needs.",
-                "Let's build something amazing together.",
-                "Your code, enhanced by AI.",
-                "Intelligent coding assistance at your service."
+                "[link=https://discord.gg/d8tNc9Kf8v]Join our Discord![/link]",
             };
 
             var random = new Random();
