@@ -577,7 +577,7 @@ namespace LogiQCLI.Presentation.Console.Session
 
             return sb.ToString();
         }
-         
+
         public void RemoveMessage(Message message)
         {
             lock (_messageLock)
