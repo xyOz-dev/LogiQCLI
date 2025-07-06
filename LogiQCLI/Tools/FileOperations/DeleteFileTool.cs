@@ -18,7 +18,7 @@ namespace LogiQCLI.Tools.FileOperations
             return new RegisteredTool
             {
                 Name = "delete_file",
-                Description = "Permanently delete files or directories. IRREVERSIBLE operation. Has built-in protection for critical files (.git, package.json, etc).",
+                Description = "Permanently delete files or directories. IRREVERSIBLE operation. Has protection for critical files (.git, package.json, etc).",
                 Parameters = new Parameters
                 {
                     Type = "object",

@@ -31,7 +31,7 @@ namespace LogiQCLI.Tools.FileOperations
             return new RegisteredTool
             {
                 Name = "read_file",
-                Description = "Read complete contents of a text file. Use for examining code, config files, or any text content before modifications.",
+                Description = "Read contents of a file. Use for examining code, config files, or any text content before modifications.",
                 Parameters = new Parameters
                 {
                     Type = "object",
