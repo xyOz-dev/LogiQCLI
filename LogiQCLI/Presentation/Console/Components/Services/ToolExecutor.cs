@@ -1,6 +1,9 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using LogiQCLI.Infrastructure.ApiClients.OpenRouter.Models;
 using LogiQCLI.Infrastructure.ApiClients.OpenRouter.Objects;
@@ -138,7 +141,7 @@ namespace LogiQCLI.Presentation.Console.Components
             var headerText = "[yellow]⚡ Tool Execution[/]";
             if (usage != null)
             {
-                headerText += $" [grey](Cost: {usage.Cost:C3})[/]";
+                headerText += $" [grey](Cost: {usage.Cost.ToString("C3", CultureInfo.GetCultureInfo("en-US"))})[/]";
             }
             
             var panel = new Panel($"[yellow]Executing {toolCount} tool{(toolCount > 1 ? "s" : "")}[/]")

@@ -14,6 +14,7 @@ using LogiQCLI.Presentation.Console.Session;
 using LogiQCLI.Core.Services;
 using LogiQCLI.Tools.Core.Interfaces;
 using Spectre.Console;
+using System.Globalization;
 
 namespace LogiQCLI.Commands.Session
 {
@@ -250,7 +251,7 @@ namespace LogiQCLI.Commands.Session
 
             if (compressionUsage != null)
             {
-                pieces.Add($"Cost {compressionUsage.Cost:C4}");
+                pieces.Add($"Cost {compressionUsage.Cost.ToString("C4", CultureInfo.GetCultureInfo("en-US"))}");
             }
 
             if (contextLength > 0)

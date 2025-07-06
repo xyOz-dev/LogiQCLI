@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Text;
 using System.Threading.Tasks;
 using LogiQCLI.Infrastructure.ApiClients.OpenRouter.Models;
@@ -117,8 +118,8 @@ namespace LogiQCLI.Presentation.Console.Components
             }
 
             pieces.Add($"Total {usage.PromptTokens + usage.CompletionTokens}");
-            pieces.Add($"Cost {usage.Cost:C3}");
-            pieces.Add($"Session {totalCost:C3}");
+            pieces.Add($"Cost {usage.Cost.ToString("C3", CultureInfo.GetCultureInfo("en-US"))}");
+            pieces.Add($"Session {totalCost.ToString("C3", CultureInfo.GetCultureInfo("en-US"))}");
 
             var info = string.Join(" | ", pieces);
 
