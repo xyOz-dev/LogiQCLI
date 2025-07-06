@@ -1,0 +1,17 @@
+name: Notify Discord on Push
+on:
+  push:
+    paths-ignore:
+      - 'README.md'
+jobs:
+  discord:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send Discord Webhook
+        uses: dawidd6/action-discord@v2
+        with:
+          webhook_id: ${{ secrets.DISCORD_WEBHOOK_ID }}
+          webhook_token: ${{ secrets.DISCORD_WEBHOOK_TOKEN }}
+          content: |
+            📢 **${{ github.actor }}** pushed to `${{ github.ref }}`
+            Commit: ${{ github.event.head_commit.message }}
