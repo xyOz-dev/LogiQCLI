@@ -23,7 +23,7 @@ namespace LogiQCLI.Tools.ContentManipulation
             return new RegisteredTool
             {
                 Name = "apply_diff",
-                Description = "Apply direct content replacements. Use for edits when you know the exact content to change.",
+                Description = "Apply EXACT content replacements. Use for edits when you know the EXACT content to change.",
                 Parameters = new Parameters
                 {
                     Type = "object",

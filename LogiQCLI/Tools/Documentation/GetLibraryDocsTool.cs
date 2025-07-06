@@ -27,7 +27,7 @@ namespace LogiQCLI.Tools.Documentation
             return new RegisteredTool
             {
                 Name = "get_library_docs",
-                Description = "Fetches up-to-date documentation for a library. You must call 'resolve_library_id' first to obtain the exact library ID required to use this tool, UNLESS the user explicitly provides a library ID in the format '/org/project' or '/org/project/version' in their query.",
+                Description = "Fetches up-to-date documentation for a library. You MUST call 'resolve_library_id' first to get the exact library ID REQUIRED to use this tool, UNLESS the user explicitly provides a library ID in the format '/org/project' or '/org/project/version'.",
                 Parameters = new Parameters
                 {
                     Type = "object",

@@ -19,7 +19,7 @@ namespace LogiQCLI.Tools.ContentManipulation
             return new RegisteredTool
             {
                 Name = "search_and_replace",
-                Description = "Global find-replace operations across entire files. Replaces ALL occurrences. Supports regex patterns and creates automatic backups.",
+                Description = "Global search and replace operations across entire files. Replaces ALL occurrences. Supports regex patterns.",
                 Parameters = new Parameters
                 {
                     Type = "object",

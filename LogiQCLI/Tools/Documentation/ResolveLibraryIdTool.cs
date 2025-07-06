@@ -29,7 +29,7 @@ namespace LogiQCLI.Tools.Documentation
             return new RegisteredTool
             {
                 Name = "resolve_library_id",
-                Description = "Resolves a package/product name to a library ID and returns a list of matching libraries. You MUST call this function before 'get_library_docs' to obtain a valid library ID UNLESS the user explicitly provides a library ID in the format '/org/project' or '/org/project/version' in their query.",
+                Description = "Resolves a package/product name to a library ID and returns a list of matching libraries. You MUST call this function before 'get_library_docs' to get a valid library ID UNLESS the user explicitly provides a library ID in the format '/org/project' or '/org/project/version'.",
                 Parameters = new Parameters
                 {
                     Type = "object",
