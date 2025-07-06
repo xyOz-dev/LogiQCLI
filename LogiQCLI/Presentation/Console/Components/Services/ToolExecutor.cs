@@ -21,26 +21,41 @@ namespace LogiQCLI.Presentation.Console.Components
 
         public async Task<List<Message>> ExecuteToolsAsync(List<ToolCall> toolCalls, Usage? usage = null)
         {
-            var toolResults = new List<Message>();
-            
-            RenderToolExecutionHeader(toolCalls.Count, usage);
-            
-            foreach (var toolCall in toolCalls)
+            if (toolCalls == null) throw new ArgumentNullException(nameof(toolCalls));
+
+            var toolCount = toolCalls.Count;
+            RenderToolExecutionHeader(toolCount, usage);
+
+            if (toolCount == 1)
             {
-                var result = await ExecuteSingleToolAsync(toolCall);
-                toolResults.Add(result);
+                var singleResult = await ExecuteSingleToolAsync(toolCalls[0], true);
+                RenderToolExecutionComplete();
+                return new List<Message> { singleResult };
             }
 
+            var toolResults = new Message[toolCount];
+
+            var executionTasks = toolCalls.Select((toolCall, index) => Task.Run(async () =>
+            {
+                var result = await ExecuteSingleToolAsync(toolCall, false);
+                toolResults[index] = result;
+            })).ToList();
+
+            await Task.WhenAll(executionTasks);
+
             RenderToolExecutionComplete();
-            return toolResults;
+
+            return toolResults.ToList();
         }
 
-        private async Task<Message> ExecuteSingleToolAsync(ToolCall toolCall)
+        private static readonly object _consoleLock = new object();
+
+        private async Task<Message> ExecuteSingleToolAsync(ToolCall toolCall, bool interactive)
         {
             var startTime = DateTime.Now;
             string result = string.Empty;
             bool hasError = false;
-            
+
             if (toolCall.Function == null)
             {
                 return new Message
@@ -51,49 +66,29 @@ namespace LogiQCLI.Presentation.Console.Components
                     Content = "Error: Tool call function is null"
                 };
             }
-            
-            await AnsiConsole.Status()
-                .Spinner(Spinner.Known.Star)
-                .SpinnerStyle(Style.Parse("yellow"))
-                .StartAsync($"[yellow]Executing {toolCall.Function.Name ?? "unknown"}...[/]", async ctx =>
-                {
-                    try
+
+            if (interactive)
+            {
+                await AnsiConsole.Status()
+                    .Spinner(Spinner.Known.Star)
+                    .SpinnerStyle(Style.Parse("yellow"))
+                    .StartAsync($"[yellow]Executing {toolCall.Function.Name ?? "unknown"}...[/]", async ctx =>
                     {
-                        if (string.IsNullOrEmpty(toolCall.Function.Arguments))
-                        {
-                            result = "Error: No arguments provided for tool call";
-                            hasError = true;
-                            return;
-                        }
-                        
-                        result = await _toolHandler.ExecuteTool(toolCall.Function.Name ?? string.Empty, toolCall.Function.Arguments);
-                        
-                        if (string.IsNullOrEmpty(result))
-                        {
-                            result = "Tool executed successfully with no output";
-                        }
-                        
+                        await ExecuteToolLogic();
                         var duration = (DateTime.Now - startTime).TotalMilliseconds;
                         ctx.Status($"[green]✓[/] {toolCall.Function.Name ?? "unknown"} completed in {duration:F0}ms");
-                    }
-                    catch (System.Text.Json.JsonException jsonEx)
-                    {
-                        result = $"Error: Invalid JSON arguments - {jsonEx.Message}";
-                        hasError = true;
-                        ctx.Status($"[red]✗[/] {toolCall.Function.Name ?? "unknown"} failed - Invalid JSON");
-                    }
-                    catch (Exception ex)
-                    {
-                        result = $"Error executing tool: {ex.Message}";
-                        hasError = true;
-                        ctx.Status($"[red]✗[/] {toolCall.Function.Name ?? "unknown"} failed");
-                    }
-                    
-                    await Task.Delay(500);
-                });
+                    });
+            }
+            else
+            {
+                await ExecuteToolLogic();
+            }
 
-            RenderEnhancedToolResult(toolCall.Function.Name ?? "unknown", toolCall.Function.Arguments ?? string.Empty, result, hasError);
-            
+            lock (_consoleLock)
+            {
+                RenderEnhancedToolResult(toolCall.Function.Name ?? "unknown", toolCall.Function.Arguments ?? string.Empty, result, hasError);
+            }
+
             return new Message
             {
                 Role = "tool",
@@ -101,6 +96,40 @@ namespace LogiQCLI.Presentation.Console.Components
                 Name = toolCall.Function.Name ?? "unknown",
                 Content = result
             };
+
+            async Task ExecuteToolLogic()
+            {
+                try
+                {
+                    if (string.IsNullOrEmpty(toolCall.Function.Arguments))
+                    {
+                        result = "Error: No arguments provided for tool call";
+                        hasError = true;
+                        return;
+                    }
+
+                    result = await _toolHandler.ExecuteTool(toolCall.Function.Name ?? string.Empty, toolCall.Function.Arguments);
+
+                    if (string.IsNullOrEmpty(result))
+                    {
+                        result = "Tool executed successfully with no output";
+                    }
+                }
+                catch (System.Text.Json.JsonException jsonEx)
+                {
+                    result = $"Error: Invalid JSON arguments - {jsonEx.Message}";
+                    hasError = true;
+                }
+                catch (Exception ex)
+                {
+                    result = $"Error executing tool: {ex.Message}";
+                    hasError = true;
+                }
+                finally
+                {
+                    await Task.Delay(500);
+                }
+            }
         }
 
         private void RenderToolExecutionHeader(int toolCount, Usage? usage)
