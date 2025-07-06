@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using LogiQCLI.Infrastructure.ApiClients.OpenRouter;
 using LogiQCLI.Infrastructure.ApiClients.OpenRouter.Objects;
+using LogiQCLI.Infrastructure.ApiClients.OpenRouter.Services;
 using LogiQCLI.Tests.Core;
 using LogiQCLI.Tests.Core.Objects;
 
@@ -65,8 +66,7 @@ namespace LogiQCLI.Tests.Infrastructure
             {
                 var handler = new FakeHandler(SampleEndpointJson);
                 var httpClient = new HttpClient(handler);
-                var ppm = new OpenRouterClient(httpClient, "test-key").GetType(); // create for http header etc.
-                var manager = new ProviderPreferencesManager(httpClient);
+                var manager = new ProviderPreferencesService(httpClient);
 
                 var request = new ChatRequest
                 {

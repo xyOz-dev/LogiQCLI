@@ -1,503 +1,225 @@
+using System;
+using System.Collections.Generic;
+using System.Net.Http;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net.Http;
+using System.Threading;
+using System.Threading.Tasks;
 using LogiQCLI.Infrastructure.ApiClients.OpenRouter.Objects;
+using LogiQCLI.Infrastructure.ApiClients.OpenRouter.Services;
 
 namespace LogiQCLI.Infrastructure.ApiClients.OpenRouter
 {
-    public class OpenRouterClient
+    public class OpenRouterClient : IDisposable
     {
         private readonly HttpClient _httpClient;
-        private readonly ProviderPreferencesManager _providerPreferencesManager;
-        private readonly CacheManager _cacheManager;
+        private readonly IProviderPreferencesManager _providerPreferencesManager;
+        private readonly ICacheService _cacheService;
         private readonly JsonSerializerOptions _jsonOptions;
+        private readonly bool _disposeHttpClient;
 
         public OpenRouterClient(HttpClient httpClient, string? apiKey, CacheStrategy cacheStrategy = CacheStrategy.Auto)
         {
             if (string.IsNullOrWhiteSpace(apiKey))
-                throw new ArgumentNullException(nameof(apiKey));
+                throw new OpenRouterConfigurationException("API key cannot be null or empty");
 
-            _httpClient = httpClient;
-            _httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", apiKey);
-            _httpClient.DefaultRequestHeaders.Remove("HTTP-Referer");
-            _httpClient.DefaultRequestHeaders.Remove("X-Title");
-            _httpClient.DefaultRequestHeaders.Add("HTTP-Referer", "https://github.com/xyOz-dev/LogiQCLI");
-            _httpClient.DefaultRequestHeaders.Add("X-Title", "LogiQCLI");
+            _httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
+            _disposeHttpClient = false;
+
+            ConfigureHttpClient(apiKey);
             
-            _providerPreferencesManager = new ProviderPreferencesManager(httpClient);
-            _cacheManager = new CacheManager(cacheStrategy);
-            _jsonOptions = new JsonSerializerOptions { DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull };
+            _providerPreferencesManager = new ProviderPreferencesService(_httpClient);
+            _cacheService = new CacheService(cacheStrategy);
+            _jsonOptions = new JsonSerializerOptions 
+            { 
+                DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull 
+            };
+        }
+
+        public OpenRouterClient(string apiKey, CacheStrategy cacheStrategy = CacheStrategy.Auto)
+            : this(new HttpClient(), apiKey, cacheStrategy)
+        {
+            _disposeHttpClient = true;
         }
 
         public async Task<ChatResponse> Chat(ChatRequest request, CancellationToken cancellationToken = default)
         {
-            if (request.Provider == null)
+            if (request == null)
+                throw new ArgumentNullException(nameof(request));
+
+            try
             {
-                request.Provider = await _providerPreferencesManager.BuildProviderPreferencesAsync(request);
+                await PrepareRequestAsync(request).ConfigureAwait(false);
+
+                var content = SerializeRequest(request);
+                var response = await SendRequestAsync(content, cancellationToken).ConfigureAwait(false);
+                var result = await ProcessResponseAsync(response).ConfigureAwait(false);
+                
+                _cacheService.HandleCacheResponse(result, _providerPreferencesManager);
+                
+                return result;
             }
-
-            _cacheManager.ApplyCachingStrategy(request);
-            
-            var content = new StringContent(JsonSerializer.Serialize(request, _jsonOptions), Encoding.UTF8, "application/json");
-            var response = await _httpClient.PostAsync("https://openrouter.ai/api/v1/chat/completions", content, cancellationToken);
-
-            if (!response.IsSuccessStatusCode)
+            catch (HttpRequestException ex)
             {
-                var errorBody = await response.Content.ReadAsStringAsync();
-                throw new HttpRequestException($"Response status code does not indicate success: {(int)response.StatusCode} ({response.ReasonPhrase}). Body: {errorBody}");
+                throw new OpenRouterApiException(0, string.Empty, $"Network error: {ex.Message}");
             }
-
-            var responseBody = await response.Content.ReadAsStringAsync();
-            var result = JsonSerializer.Deserialize<ChatResponse>(responseBody);
-            
-            _cacheManager.HandleCacheResponse(result, _providerPreferencesManager);
-            
-            return result ?? new ChatResponse();
+            catch (TaskCanceledException ex) when (ex.InnerException is TimeoutException)
+            {
+                throw new OpenRouterException("TIMEOUT", "Request timed out");
+            }
+            catch (JsonException ex)
+            {
+                throw new OpenRouterException("SERIALIZATION_ERROR", $"Failed to process response: {ex.Message}");
+            }
         }
 
         public async Task<List<Model>> GetModelsAsync(CancellationToken cancellationToken = default)
         {
-            var response = await _httpClient.GetAsync("https://openrouter.ai/api/v1/models", cancellationToken);
-
-            response.EnsureSuccessStatusCode();
-
-            var responseBody = await response.Content.ReadAsStringAsync();
-            var result = JsonSerializer.Deserialize<ModelListResponse>(responseBody);
-            return result?.Data ?? new List<Model>();
-        }
-
-        public async Task<Objects.ModelEndpointsData> GetModelEndpointsAsync(string author, string slug, CancellationToken cancellationToken = default)
-        {
-            if (string.IsNullOrWhiteSpace(author)) throw new ArgumentNullException(nameof(author));
-            if (string.IsNullOrWhiteSpace(slug)) throw new ArgumentNullException(nameof(slug));
-
-            var url = $"https://openrouter.ai/api/v1/models/{author}/{slug}/endpoints";
-
-            var response = await _httpClient.GetAsync(url, cancellationToken);
-            if (!response.IsSuccessStatusCode)
+            try
             {
-                var body = await response.Content.ReadAsStringAsync();
-                throw new HttpRequestException($"Failed to get model endpoints: {(int)response.StatusCode} ({response.ReasonPhrase}). Body: {body}");
-            }
+                var response = await _httpClient.GetAsync("https://openrouter.ai/api/v1/models", cancellationToken)
+                    .ConfigureAwait(false);
 
-            var json = await response.Content.ReadAsStringAsync();
-
-            var data = JsonSerializer.Deserialize<Objects.ModelEndpointsResponse>(json);
-            return data?.Data ?? new Objects.ModelEndpointsData();
-        }
-
-        public void ApplyCachingStrategyToRequest(ChatRequest request)
-        {
-            _cacheManager.ApplyCachingStrategy(request);
-        }
-    }
-
-    public class ProviderPreferencesManager
-    {
-        private readonly Dictionary<string, ProviderCapabilities> _providerCapabilities;
-        private readonly HttpClient _httpClient;
-        private readonly Dictionary<string, (Objects.ModelEndpointsData Data, DateTime Expires)> _endpointCache = new(StringComparer.OrdinalIgnoreCase);
-        private readonly TimeSpan _endpointTtl = TimeSpan.FromMinutes(10);
-        private string? _currentCacheProvider;
-
-        public ProviderPreferencesManager(HttpClient httpClient)
-        {
-            _httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
-            _providerCapabilities = InitializeProviderCapabilities();
-        }
-
-        public async Task<Provider> BuildProviderPreferencesAsync(ChatRequest request)
-        {
-            if (request.Provider != null)
-            {
-                return request.Provider;
-            }
-
-            var preferences = new Provider
-            {
-                RequireParameters = request.Tools?.Any() == true,
-                DataCollection = "allow",
-                AllowFallbacks = true,
-                Sort = "price"
-            };
-
-            if (!string.IsNullOrWhiteSpace(request.Model) && request.Model!.Contains('/'))
-            {
-                var parts = request.Model.Split('/', 2, StringSplitOptions.RemoveEmptyEntries);
-                if (parts.Length == 2)
+                if (!response.IsSuccessStatusCode)
                 {
-                    var author = parts[0];
-                    var slugWithVariant = parts[1];
-
-                    var slug = slugWithVariant.Split(':')[0];
-
-                    var endpointsData = await GetEndpointsDataAsync(author, slug);
-                    if (endpointsData?.Endpoints?.Count > 0)
-                    {
-                        var endpoints = endpointsData.Endpoints;
-
-                        if (request.Tools?.Any() == true)
-                        {
-                            endpoints = endpoints.Where(e => e.SupportedParameters.Any(p => string.Equals(p, "tools", StringComparison.OrdinalIgnoreCase))).ToList();
-                        }
-
-                        if (endpoints.Count > 0)
-                        {
-                            var providerTags = endpoints.Select(e => e.Tag ?? e.ProviderName.ToLowerInvariant()).Distinct().ToArray();
-                            preferences.Only = providerTags;
-                        }
-                    }
+                    var errorBody = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+                    throw new OpenRouterApiException((int)response.StatusCode, errorBody, 
+                        $"Failed to get models: {response.StatusCode}");
                 }
-            }
 
-            if (preferences.Only == null || preferences.Only.Length == 0)
+                var responseBody = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+                var result = JsonSerializer.Deserialize<ModelListResponse>(responseBody);
+                return result?.Data ?? new List<Model>();
+            }
+            catch (HttpRequestException ex)
             {
-                if (request.Tools?.Any() == true)
-                {
-                    var toolSupportingProviders = GetToolSupportingProviders();
-                    preferences.Order = toolSupportingProviders.ToArray();
-
-                    if (_currentCacheProvider != null && toolSupportingProviders.Contains(_currentCacheProvider))
-                    {
-                        preferences.Only = new[] { _currentCacheProvider };
-                        preferences.AllowFallbacks = false;
-                    }
-                }
-                else if (_currentCacheProvider != null)
-                {
-                    preferences.Order = new[] { _currentCacheProvider };
-                    preferences.AllowFallbacks = false;
-                }
+                throw new OpenRouterApiException(0, string.Empty, $"Network error while fetching models: {ex.Message}");
             }
-
-            return preferences;
+            catch (JsonException ex)
+            {
+                throw new OpenRouterException("SERIALIZATION_ERROR", $"Failed to deserialize models response: {ex.Message}");
+            }
         }
 
-        private async Task<Objects.ModelEndpointsData?> GetEndpointsDataAsync(string author, string slug)
+        public async Task<ModelEndpointsData> GetModelEndpointsAsync(string author, string slug, 
+            CancellationToken cancellationToken = default)
         {
-            var key = $"{author}/{slug}".ToLowerInvariant();
-            if (_endpointCache.TryGetValue(key, out var cached) && cached.Expires > DateTime.UtcNow)
-            {
-                return cached.Data;
-            }
+            if (string.IsNullOrWhiteSpace(author)) 
+                throw new ArgumentException("Author cannot be null or empty", nameof(author));
+            if (string.IsNullOrWhiteSpace(slug)) 
+                throw new ArgumentException("Slug cannot be null or empty", nameof(slug));
 
             try
             {
                 var url = $"https://openrouter.ai/api/v1/models/{author}/{slug}/endpoints";
-                var response = await _httpClient.GetAsync(url);
+                var response = await _httpClient.GetAsync(url, cancellationToken).ConfigureAwait(false);
+                
                 if (!response.IsSuccessStatusCode)
-                    return null;
-
-                var json = await response.Content.ReadAsStringAsync();
-                var data = System.Text.Json.JsonSerializer.Deserialize<Objects.ModelEndpointsResponse>(json);
-                if (data?.Data != null)
                 {
-                    _endpointCache[key] = (data.Data, DateTime.UtcNow.Add(_endpointTtl));
+                    var body = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+                    throw new OpenRouterApiException((int)response.StatusCode, body,
+                        $"Failed to get model endpoints for {author}/{slug}: {response.StatusCode}");
                 }
-                return data?.Data;
+
+                var json = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+                var data = JsonSerializer.Deserialize<ModelEndpointsResponse>(json);
+                return data?.Data ?? new ModelEndpointsData();
             }
-            catch
+            catch (HttpRequestException ex)
             {
-                return null;
+                throw new OpenRouterApiException(0, string.Empty, 
+                    $"Network error while fetching endpoints for {author}/{slug}: {ex.Message}");
+            }
+            catch (JsonException ex)
+            {
+                throw new OpenRouterException("SERIALIZATION_ERROR", 
+                    $"Failed to deserialize endpoints response for {author}/{slug}: {ex.Message}");
             }
         }
 
-        private IEnumerable<string> GetToolSupportingProviders()
+        public void ApplyCachingStrategyToRequest(ChatRequest request)
         {
-            return _providerCapabilities
-                .Where(kvp => kvp.Value.SupportsTools)
-                .Select(kvp => kvp.Key);
+            if (request == null)
+                throw new ArgumentNullException(nameof(request));
+                
+            _cacheService.ApplyCachingStrategy(request);
         }
 
-        private Dictionary<string, ProviderCapabilities> InitializeProviderCapabilities()
+        private void ConfigureHttpClient(string apiKey)
         {
-            return new Dictionary<string, ProviderCapabilities>
-            {
-                ["anthropic"] = new ProviderCapabilities(true, true, true),
-                ["openai"] = new ProviderCapabilities(true, false, true),
-                ["google"] = new ProviderCapabilities(true, false, true),
-                ["meta"] = new ProviderCapabilities(true, false, false),
-                ["mistral"] = new ProviderCapabilities(true, false, false),
-                ["cohere"] = new ProviderCapabilities(true, false, false),
-                ["x-ai"] = new ProviderCapabilities(true, false, false),
-                ["deepseek"] = new ProviderCapabilities(true, true, false),
-                ["together"] = new ProviderCapabilities(true, false, false),
-                ["fireworks"] = new ProviderCapabilities(true, false, false),
-                ["huggingface"] = new ProviderCapabilities(false, false, false),
-                ["replicate"] = new ProviderCapabilities(false, false, false),
-                ["perplexity"] = new ProviderCapabilities(true, false, false),
-                ["nvidia"] = new ProviderCapabilities(true, false, false),
-                ["lepton"] = new ProviderCapabilities(true, false, false),
-                ["hyperbolic"] = new ProviderCapabilities(true, false, false),
-                ["cerebras"] = new ProviderCapabilities(false, false, false),
-                ["lambda"] = new ProviderCapabilities(false, false, false),
-                ["groq"] = new ProviderCapabilities(true, false, false),
-                ["deepinfra"] = new ProviderCapabilities(true, false, false),
-                ["openrouter"] = new ProviderCapabilities(false, false, false),
-                ["stealth"] = new ProviderCapabilities(false, false, false)
-            };
+            _httpClient.DefaultRequestHeaders.Authorization = 
+                new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", apiKey);
+            _httpClient.DefaultRequestHeaders.Remove("HTTP-Referer");
+            _httpClient.DefaultRequestHeaders.Remove("X-Title");
+            _httpClient.DefaultRequestHeaders.Add("HTTP-Referer", "https://github.com/xyOz-dev/LogiQCLI");
+            _httpClient.DefaultRequestHeaders.Add("X-Title", "LogiQCLI");
         }
 
-        public void SetCacheProvider(string provider)
+        private async Task PrepareRequestAsync(ChatRequest request)
         {
-            _currentCacheProvider = provider;
+            if (request.Provider == null)
+            {
+                request.Provider = await _providerPreferencesManager.BuildProviderPreferencesAsync(request)
+                    .ConfigureAwait(false);
+            }
+
+            _cacheService.ApplyCachingStrategy(request);
         }
-    }
 
-    public class CacheManager
-    {
-        private readonly CacheStrategy _cacheStrategy;
-        private readonly Dictionary<string, ProviderCacheInfo> _providerCacheSupport;
-
-        public CacheManager(CacheStrategy cacheStrategy)
+        private StringContent SerializeRequest(ChatRequest request)
         {
-            _cacheStrategy = cacheStrategy;
-            _providerCacheSupport = new Dictionary<string, ProviderCacheInfo>
-            {
-                ["anthropic"] = new ProviderCacheInfo(true, CacheType.Explicit, 1000, 4),
-                ["openai"] = new ProviderCacheInfo(true, CacheType.Automated, 1024, 0),
-                ["x-ai"] = new ProviderCacheInfo(true, CacheType.Automated, 1000, 0),
-                ["deepseek"] = new ProviderCacheInfo(true, CacheType.Automated, 1000, 0),
-                ["google"] = new ProviderCacheInfo(false, CacheType.None, 0, 0),
-                ["meta"] = new ProviderCacheInfo(false, CacheType.None, 0, 0),
-                ["mistral"] = new ProviderCacheInfo(false, CacheType.None, 0, 0),
-                ["cohere"] = new ProviderCacheInfo(false, CacheType.None, 0, 0),
-                ["together"] = new ProviderCacheInfo(false, CacheType.None, 0, 0),
-                ["fireworks"] = new ProviderCacheInfo(false, CacheType.None, 0, 0),
-                ["huggingface"] = new ProviderCacheInfo(false, CacheType.None, 0, 0),
-                ["replicate"] = new ProviderCacheInfo(false, CacheType.None, 0, 0),
-                ["perplexity"] = new ProviderCacheInfo(false, CacheType.None, 0, 0),
-                ["nvidia"] = new ProviderCacheInfo(false, CacheType.None, 0, 0),
-                ["lepton"] = new ProviderCacheInfo(false, CacheType.None, 0, 0),
-                ["hyperbolic"] = new ProviderCacheInfo(false, CacheType.None, 0, 0),
-                ["cerebras"] = new ProviderCacheInfo(false, CacheType.None, 0, 0),
-                ["lambda"] = new ProviderCacheInfo(false, CacheType.None, 0, 0),
-                ["groq"] = new ProviderCacheInfo(false, CacheType.None, 0, 0),
-                ["deepinfra"] = new ProviderCacheInfo(false, CacheType.None, 0, 0),
-                ["openrouter"] = new ProviderCacheInfo(false, CacheType.None, 0, 0),
-                ["stealth"] = new ProviderCacheInfo(false, CacheType.None, 0, 0)
-            };
+            var json = JsonSerializer.Serialize(request, _jsonOptions);
+            return new StringContent(json, Encoding.UTF8, "application/json");
         }
 
-        public void ApplyCachingStrategy(ChatRequest request)
+        private async Task<HttpResponseMessage> SendRequestAsync(StringContent content, CancellationToken cancellationToken)
         {
-            if (_cacheStrategy == CacheStrategy.None || (request.Messages == null && request.Tools == null))
-                return;
+            var response = await _httpClient.PostAsync("https://openrouter.ai/api/v1/chat/completions", 
+                content, cancellationToken).ConfigureAwait(false);
 
-            var targetProvider = GetTargetProvider(request);
-            if (targetProvider == null)
+            if (!response.IsSuccessStatusCode)
             {
-                targetProvider = InferProviderFromModel(request.Model);
+                await HandleErrorResponseAsync(response).ConfigureAwait(false);
             }
 
-            if (targetProvider == null)
-            {
-                if (_cacheStrategy == CacheStrategy.Aggressive)
-                {
-                    targetProvider = "unknown";
-                }
-                else
-                {
-                    return;
-                }
-            }
-
-            var cacheInfo = _providerCacheSupport.GetValueOrDefault(targetProvider, new ProviderCacheInfo(false, CacheType.None, 0, 0));
-            
-            if (!cacheInfo.SupportsCache && _cacheStrategy != CacheStrategy.Aggressive)
-                return;
-
-            if (targetProvider == "unknown" && _cacheStrategy == CacheStrategy.Aggressive)
-            {
-                cacheInfo = new ProviderCacheInfo(true, CacheType.Explicit, 0, 4);
-            }
-
-            var breakpointsRemaining = cacheInfo.MaxBreakpoints > 0 ? cacheInfo.MaxBreakpoints : 4;
-            if (targetProvider == "anthropic" && request.Tools?.Any() == true)
-            {
-                var lastTool = request.Tools.Last();
-                if (lastTool.CacheControl == null)
-                {
-                    lastTool.CacheControl = LogiQCLI.Infrastructure.ApiClients.OpenRouter.Objects.CacheControl.Ephemeral();
-                    breakpointsRemaining -= 1;
-                }
-            }
-
-            if (breakpointsRemaining <= 0)
-                return;
-
-            var cacheableMessages = GetCacheableMessages(request.Messages ?? Array.Empty<Message>(), cacheInfo, breakpointsRemaining);
-            if (!cacheableMessages.Any())
-                return;
-
-            ApplyCacheToMessages(cacheableMessages, targetProvider, cacheInfo);
+            return response;
         }
 
-        public void HandleCacheResponse(ChatResponse? response, ProviderPreferencesManager providerManager)
+        private async Task HandleErrorResponseAsync(HttpResponseMessage response)
         {
-            if (response != null)
+            var errorBody = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+            var statusCode = (int)response.StatusCode;
+
+            switch (statusCode)
             {
+                case 429:
+                    var retryAfter = response.Headers.RetryAfter?.Delta;
+                    throw new OpenRouterRateLimitException(
+                        $"Rate limit exceeded. Response: {errorBody}", retryAfter);
+                case 401:
+                    throw new OpenRouterConfigurationException($"Authentication failed: {errorBody}");
+                case 403:
+                    throw new OpenRouterConfigurationException($"Access forbidden: {errorBody}");
+                default:
+                    throw new OpenRouterApiException(statusCode, errorBody,
+                        $"API request failed with status {statusCode}: {response.ReasonPhrase}");
             }
         }
 
-        private string? GetTargetProvider(ChatRequest request)
+        private async Task<ChatResponse> ProcessResponseAsync(HttpResponseMessage response)
         {
-            var inferred = InferProviderFromModel(request.Model);
-            if (!string.IsNullOrEmpty(inferred))
-            {
-                return inferred;
-            }
-
-            if (request.Provider?.Order?.Any() == true)
-                return request.Provider.Order.First();
-
-            return null;
+            var responseBody = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+            var result = JsonSerializer.Deserialize<ChatResponse>(responseBody);
+            return result ?? new ChatResponse();
         }
 
-        private string? InferProviderFromModel(string? model)
+        public void Dispose()
         {
-            if (string.IsNullOrEmpty(model))
-                return null;
-
-            var modelLower = model.ToLowerInvariant();
-            
-            if (modelLower.Contains("anthropic") || modelLower.Contains("claude"))
-                return "anthropic";
-            if (modelLower.Contains("google") || modelLower.Contains("gemini"))
-                return "google";
-            if (modelLower.Contains("openai") || modelLower.Contains("gpt"))
-                return "openai";
-            if (modelLower.Contains("grok"))
-                return "x-ai";
-            if (modelLower.Contains("deepseek"))
-                return "deepseek";
-            if (modelLower.Contains("meta") || modelLower.Contains("llama"))
-                return "meta";
-            if (modelLower.Contains("mistral"))
-                return "mistral";
-            if (modelLower.Contains("cohere"))
-                return "cohere";
-            if (modelLower.Contains("openrouter"))
-                return "openrouter";
-
-            if (modelLower.Contains("stealth"))
-                return "stealth";
-            
-            return null;
-        }
-
-        private IEnumerable<Message> GetCacheableMessages(Message[] messages, ProviderCacheInfo cacheInfo, int maxToTake)
-        {
-            const int estimatedCharsPerToken = 4;
-            int minCacheableLength;
-            
-            if (cacheInfo.MinTokens == 0)
+            if (_disposeHttpClient)
             {
-                minCacheableLength = 4000;
-            }
-            else
-            {
-                minCacheableLength = cacheInfo.MinTokens * estimatedCharsPerToken;
-            }
-
-            return messages
-                .Where(m => GetContentLength(m) >= minCacheableLength)
-                .OrderByDescending(GetContentLength)
-                .Take(maxToTake);
-        }
-
-        private int GetContentLength(Message message)
-        {
-            if (message.Content is string stringContent)
-                return stringContent.Length;
-
-            if (message.Content is List<TextContentPart> contentParts)
-                return contentParts.Where(p => p.Text != null).Sum(p => p.Text.Length);
-
-            return 0;
-        }
-
-        private void ApplyCacheToMessages(IEnumerable<Message> messages, string provider, ProviderCacheInfo cacheInfo)
-        {
-            if (cacheInfo.CacheType == CacheType.Automated)
-            {
-                return;
-            }
-
-            var cacheType = GetCacheType(provider);
-            var messageList = messages.ToList();
-            
-            if (cacheInfo.CacheType == CacheType.Both && provider == "google")
-            {
-                var lastMessage = messageList.LastOrDefault();
-                if (lastMessage != null)
-                {
-                    ApplyCacheControlToMessage(lastMessage, cacheType);
-                }
-            }
-            else if (cacheInfo.CacheType == CacheType.Explicit)
-            {
-                foreach (var message in messageList)
-                {
-                    ApplyCacheControlToMessage(message, cacheType);
-                }
+                _httpClient?.Dispose();
             }
         }
-
-        private string GetCacheType(string provider)
-        {
-            return provider switch
-            {
-                "anthropic" => "ephemeral",
-                "google" => "ephemeral",
-                "deepseek" => "ephemeral",
-                _ => "ephemeral"
-            };
-        }
-
-        private void ApplyCacheControlToMessage(Message message, string cacheType)
-        {
-            if (message.Content is string stringContent && !string.IsNullOrEmpty(stringContent))
-            {
-                message.Content = new List<TextContentPart>
-                {
-                    new TextContentPart
-                    {
-                        Text = stringContent,
-                        CacheControl = new CacheControl { Type = cacheType }
-                    }
-                };
-            }
-            else if (message.Content is List<TextContentPart> contentParts)
-            {
-                var lastPart = contentParts.LastOrDefault();
-                if (lastPart?.Text != null)
-                {
-                    lastPart.CacheControl = new CacheControl { Type = cacheType };
-                }
-            }
-        }
-    }
-
-    public record ProviderCapabilities(bool SupportsTools, bool SupportsCache, bool SupportsStreaming);
-
-    public record ProviderCacheInfo(bool SupportsCache, CacheType CacheType, int MinTokens, int MaxBreakpoints);
-
-    public enum CacheType
-    {
-        None,
-        Automated,
-        Explicit,
-        Both
-    }
-
-    public enum CacheStrategy
-    {
-        None,
-        Auto,
-        Aggressive
     }
 }

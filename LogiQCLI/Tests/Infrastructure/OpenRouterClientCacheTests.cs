@@ -6,6 +6,7 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using LogiQCLI.Infrastructure.ApiClients.OpenRouter;
 using LogiQCLI.Infrastructure.ApiClients.OpenRouter.Objects;
+using LogiQCLI.Infrastructure.ApiClients.OpenRouter.Services;
 using LogiQCLI.Tests.Core;
 using LogiQCLI.Tests.Core.Objects;
 

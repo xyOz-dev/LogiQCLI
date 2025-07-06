@@ -3,6 +3,7 @@ using System.Net.Http;
 using LogiQCLI.Core.Models.Configuration;
 using LogiQCLI.Core.Services;
 using LogiQCLI.Infrastructure.ApiClients.OpenRouter;
+using LogiQCLI.Infrastructure.ApiClients.OpenRouter.Services;
 using LogiQCLI.Tools.Core.Interfaces;
 using System.Linq;
 using LogiQCLI.Infrastructure.Providers.OpenRouter;

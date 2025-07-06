@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using LogiQCLI.Core.Models.Modes;
 using LogiQCLI.Infrastructure.ApiClients.OpenRouter;
+using LogiQCLI.Infrastructure.ApiClients.OpenRouter.Services;
 
 namespace LogiQCLI.Core.Models.Configuration
 {

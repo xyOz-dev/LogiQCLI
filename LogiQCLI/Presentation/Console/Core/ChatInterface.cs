@@ -7,6 +7,7 @@ using LogiQCLI.Core.Models.Configuration;
 using LogiQCLI.Core.Services;
 using LogiQCLI.Infrastructure.ApiClients.OpenRouter;
 using LogiQCLI.Infrastructure.ApiClients.OpenRouter.Objects;
+using LogiQCLI.Infrastructure.ApiClients.OpenRouter.Services;
 using LogiQCLI.Tools.Core;
 using LogiQCLI.Presentation.Console.Components;
 using LogiQCLI.Presentation.Console.Animation;
