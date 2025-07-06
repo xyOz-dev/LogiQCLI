@@ -1,17 +1,6 @@
-name: Discord
-
-on:
-  - workflow_dispatch
-  - push
-
-jobs:
-  discord_commits:
-    runs-on: ubuntu-latest
-    name: discord commits
-    steps:
-      - name: Discommit
-        uses: matt1432/discommit@v0.0.2
-        with:
-          discord_webhook: ${{ secrets.DISCORD_WEBHOOK }}
-          api_url: 'https://git.nelim.org/api/v1/repos/$OWNER/$REPO/git/commits/$REF'
-          title: 'New commit '
+- name: Discord Commits
+  uses: Sniddl/discord-commits@v1.6
+  with:
+    webhook: ${{ secrets.DISCORD_WEBHOOK }}
+    template: "avatar-with-link"
+    include-extras: true
