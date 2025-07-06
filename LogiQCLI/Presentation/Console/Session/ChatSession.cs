@@ -90,7 +90,7 @@ namespace LogiQCLI.Presentation.Console.Session
             _messages.Add(new Message { Role = "system", Content = systemPrompt });
         }
 
-        private string CreateSystemPrompt()
+        public string CreateSystemPrompt()
         {
             if (_modeManager != null)
             {
@@ -113,9 +113,7 @@ namespace LogiQCLI.Presentation.Console.Session
             sb.AppendLine();
             
             AppendSystemInformation(sb);
-            AppendTerminalInformation(sb);
             AppendDevelopmentEnvironment(sb);
-            AppendWorkspaceInformation(sb, workspace);
             AppendProjectStructure(sb, workspace);
 
             return sb.ToString();
@@ -128,45 +126,16 @@ namespace LogiQCLI.Presentation.Console.Session
                 sb.AppendLine("== System Environment ==");
                 sb.AppendLine($"Operating System: {GetDetailedOSInfo()}");
                 sb.AppendLine($"Architecture: {RuntimeInformation.ProcessArchitecture}");
-                sb.AppendLine($"Runtime: {RuntimeInformation.FrameworkDescription}");
                 sb.AppendLine($"Machine Name: {System.Environment.MachineName}");
                 sb.AppendLine($"User: {System.Environment.UserName}");
                 sb.AppendLine($"Domain: {System.Environment.UserDomainName}");
-                sb.AppendLine($"Processor Count: {System.Environment.ProcessorCount}");
                 sb.AppendLine($"System Directory: {System.Environment.SystemDirectory}");
-                sb.AppendLine($"Working Set: {System.Environment.WorkingSet / 1024 / 1024} MB");
                 sb.AppendLine();
             }
             catch (System.Exception ex)
             {
                 sb.AppendLine("== System Environment ==");
                 sb.AppendLine($"  (Error reading system info: {ex.Message})");
-                sb.AppendLine();
-            }
-        }
-
-        private void AppendTerminalInformation(StringBuilder sb)
-        {
-            try
-            {
-                sb.AppendLine("== Terminal Environment ==");
-                
-                var shell = GetShellInformation();
-                sb.AppendLine($"Shell: {shell}");
-                
-                sb.AppendLine($"Terminal Size: {System.Console.WindowWidth}x{System.Console.WindowHeight}");
-                sb.AppendLine($"Buffer Size: {System.Console.BufferWidth}x{System.Console.BufferHeight}");
-                sb.AppendLine($"Cursor Position: {System.Console.CursorLeft},{System.Console.CursorTop}");
-                
-                AppendCommandChainingInfo(sb);
-                
-                AppendRelevantEnvironmentVariables(sb);
-                sb.AppendLine();
-            }
-            catch (System.Exception ex)
-            {
-                sb.AppendLine("== Terminal Environment ==");
-                sb.AppendLine($"  (Error reading terminal info: {ex.Message})");
                 sb.AppendLine();
             }
         }
@@ -218,35 +187,6 @@ namespace LogiQCLI.Presentation.Console.Session
             {
                 sb.AppendLine("== Development Environment ==");
                 sb.AppendLine($"  (Error reading dev environment: {ex.Message})");
-                sb.AppendLine();
-            }
-        }
-
-        private void AppendWorkspaceInformation(StringBuilder sb, string workspace)
-        {
-            try
-            {
-                sb.AppendLine("== Workspace Information ==");
-                sb.AppendLine($"Current Directory: {workspace}");
-                
-                var driveInfo = new System.IO.DriveInfo(System.IO.Path.GetPathRoot(workspace) ?? "C:");
-                sb.AppendLine($"Drive: {driveInfo.Name} ({driveInfo.DriveFormat})");
-                sb.AppendLine($"Available Space: {driveInfo.AvailableFreeSpace / 1024 / 1024 / 1024} GB");
-                sb.AppendLine($"Total Space: {driveInfo.TotalSize / 1024 / 1024 / 1024} GB");
-                
-    
-                var projectType = DetectProjectType(workspace);
-                if (!string.IsNullOrEmpty(projectType))
-                {
-                    sb.AppendLine($"Project Type: {projectType}");
-                }
-                
-                sb.AppendLine();
-            }
-            catch (System.Exception ex)
-            {
-                sb.AppendLine("== Workspace Information ==");
-                sb.AppendLine($"  (Error reading workspace info: {ex.Message})");
                 sb.AppendLine();
             }
         }
@@ -383,82 +323,6 @@ namespace LogiQCLI.Presentation.Console.Session
             }
             catch { }
             return "";
-        }
-
-        private string GetShellInformation()
-        {
-            var shell = System.Environment.GetEnvironmentVariable("SHELL") ?? 
-                       System.Environment.GetEnvironmentVariable("ComSpec") ?? 
-                       "Unknown";
-            
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-            {
-                var psVersion = System.Environment.GetEnvironmentVariable("PSVersionTable");
-                if (!string.IsNullOrEmpty(psVersion))
-                {
-                    shell += " (PowerShell)";
-                }
-            }
-            
-            return shell;
-        }
-
-        private void AppendCommandChainingInfo(StringBuilder sb)
-        {
-            sb.AppendLine("Command Chaining Support:");
-            
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-            {
-                sb.AppendLine("  Sequential Commands: command1 ; command2 ; command3");
-                sb.AppendLine("  Conditional Success: command1 && command2 && command3");
-                sb.AppendLine("  Conditional Failure: command1 || command2 || command3");
-                sb.AppendLine("  Background Process: command1 & command2");
-                sb.AppendLine("  Examples:");
-                sb.AppendLine("    dotnet build ; dotnet test ; echo Build and test complete");
-                sb.AppendLine("    cd src && dotnet run && echo App started successfully");
-                sb.AppendLine("    git add . && git commit -m \"Update\" && git push");
-            }
-            else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux) || RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-            {
-                sb.AppendLine("  Sequential Commands: command1 ; command2 ; command3");
-                sb.AppendLine("  Conditional Success: command1 && command2 && command3");
-                sb.AppendLine("  Conditional Failure: command1 || command2 || command3");
-                sb.AppendLine("  Background Process: command1 & command2");
-                sb.AppendLine("  Pipe Output: command1 | command2 | command3");
-                sb.AppendLine("  Examples:");
-                sb.AppendLine("    dotnet build ; dotnet test ; echo \"Build and test complete\"");
-                sb.AppendLine("    cd src && dotnet run && echo \"App started successfully\"");
-                sb.AppendLine("    git add . && git commit -m \"Update\" && git push");
-                sb.AppendLine("    ls -la | grep \".cs\" | wc -l");
-            }
-            else
-            {
-                sb.AppendLine("  Sequential Commands: command1 ; command2 ; command3");
-                sb.AppendLine("  Conditional Success: command1 && command2 && command3");
-            }
-            
-            sb.AppendLine("IMPORTANT: Use command chaining to run multiple operations efficiently in a single terminal call.");
-            sb.AppendLine("This reduces the number of separate tool calls and improves performance significantly.");
-        }
-
-        private void AppendRelevantEnvironmentVariables(StringBuilder sb)
-        {
-            var relevantVars = new[] { "PATH", "TERM", "TERM_PROGRAM", "COLORTERM", "LC_ALL", "LANG", "EDITOR", "PAGER" };
-            
-            sb.AppendLine("Environment Variables:");
-            foreach (var varName in relevantVars)
-            {
-                var value = System.Environment.GetEnvironmentVariable(varName);
-                if (!string.IsNullOrEmpty(value))
-                {
-    
-                    if (varName == "PATH" && value.Length > 200)
-                    {
-                        value = value.Substring(0, 200) + "...";
-                    }
-                    sb.AppendLine($"  {varName}: {value}");
-                }
-            }
         }
 
         private string GetDotNetVersion()
