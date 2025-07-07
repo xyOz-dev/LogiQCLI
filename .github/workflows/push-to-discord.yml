@@ -1,4 +1,4 @@
-- name: Discord Commits
+name: Discord Commits
   uses: Sniddl/discord-commits@v1.6
   with:
     webhook: ${{ secrets.DISCORD_WEBHOOK }}
