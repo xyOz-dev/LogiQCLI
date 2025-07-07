@@ -25,7 +25,6 @@ Before you can start using the AI features, you need to add an API key for your 
 LogiQ CLI supports a variety of AI providers, allowing you to choose the best models for your needs.
 
 *   LMStudio
-*   OpenAI
 *   OpenRouter
 *   Requesty
 
