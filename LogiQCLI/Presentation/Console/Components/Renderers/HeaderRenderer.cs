@@ -47,13 +47,13 @@ namespace LogiQCLI.Presentation.Console.Components
         {
             var welcomeMessages = new[]
             {
-                "[link=https://discord.gg/d8tNc9Kf8v]Join our Discord![/link]",
+                "💬 Join our Discord: https://discord.gg/d8tNc9Kf8v",
             };
 
             var random = new Random();
             var message = welcomeMessages[random.Next(welcomeMessages.Length)];
 
-            AnsiConsole.Write(Align.Center(new Markup($"[dim]{message}[/]")));
+            AnsiConsole.Write(Align.Center(new Markup($"[dim]{Markup.Escape(message)}[/]")));
             AnsiConsole.WriteLine();
             
 
