@@ -3,6 +3,8 @@
 ![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)
 ![.NET](https://img.shields.io/badge/.NET-9.0-purple.svg)
 [![Discord](https://img.shields.io/badge/Discord-Join%20Chat-5865F2?logo=discord&logoColor=white)](https://discord.gg/d8tNc9Kf8v)
+
+
 LogiQ CLI is a powerful, extensible, and intelligent command-line interface designed to streamline your development workflow. It integrates with various AI providers to bring intelligent code generation, conversation, and automation directly to your terminal.
 
 # Join our Discord to stay up to date.
