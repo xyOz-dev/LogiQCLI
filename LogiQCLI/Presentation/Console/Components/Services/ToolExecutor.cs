@@ -70,6 +70,11 @@ namespace LogiQCLI.Presentation.Console.Components
                 };
             }
 
+            if (toolCall.Function.Name?.ToLowerInvariant() == "execute_command" && !string.IsNullOrEmpty(toolCall.Function.Arguments))
+            {
+                RenderPreExecutionCommand(toolCall.Function.Arguments);
+            }
+
             if (interactive)
             {
                 await AnsiConsole.Status()
@@ -167,6 +172,47 @@ namespace LogiQCLI.Presentation.Console.Components
             
             AnsiConsole.Write(rule);
             AnsiConsole.WriteLine();
+        }
+
+        private void RenderPreExecutionCommand(string arguments)
+        {
+            try
+            {
+                var args = JsonSerializer.Deserialize<Dictionary<string, object>>(arguments);
+                var command = args?.GetValueOrDefault("command")?.ToString();
+                var workingDir = args?.GetValueOrDefault("cwd")?.ToString();
+                var sessionId = args?.GetValueOrDefault("session_id")?.ToString();
+
+                if (string.IsNullOrEmpty(command)) return;
+
+                AnsiConsole.WriteLine();
+                
+                var commandInfo = new List<string>();
+                commandInfo.Add($"[cyan]$ {Markup.Escape(command)}[/]");
+                
+                if (!string.IsNullOrEmpty(workingDir))
+                {
+                    commandInfo.Add($"[dim]Working Directory: {Markup.Escape(workingDir)}[/]");
+                }
+                
+                if (!string.IsNullOrEmpty(sessionId))
+                {
+                    commandInfo.Add($"[dim]Session: {Markup.Escape(sessionId)}[/]");
+                }
+
+                var panel = new Panel(string.Join("\n", commandInfo))
+                    .Header("[blue]💻 Executing Command[/]")
+                    .HeaderAlignment(Justify.Center)
+                    .Border(BoxBorder.Rounded)
+                    .BorderColor(Color.Blue)
+                    .Padding(1, 0)
+                    .Expand();
+
+                AnsiConsole.Write(panel);
+            }
+            catch
+            {
+            }
         }
 
 
