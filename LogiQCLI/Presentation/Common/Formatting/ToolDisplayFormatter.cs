@@ -47,6 +47,9 @@ namespace LogiQCLI.Presentation.Console.Components.Objects
                 case "move_file":
                     RenderMoveFileResult(arguments, result);
                     break;
+                case "execute_command":
+                    RenderExecuteCommandResult(arguments, result);
+                    break;
                 default:
                     RenderBasicToolResult(toolName, result, hasError);
                     break;
@@ -315,6 +318,71 @@ namespace LogiQCLI.Presentation.Console.Components.Objects
             catch
             {
                 RenderBasicToolResult("move_file", result, false);
+            }
+        }
+
+        private static void RenderExecuteCommandResult(string arguments, string result)
+        {
+            try
+            {
+                var args = JsonSerializer.Deserialize<Dictionary<string, object>>(arguments);
+                var command = args?.GetValueOrDefault("command")?.ToString() ?? "Unknown command";
+                var workingDir = args?.GetValueOrDefault("cwd")?.ToString();
+                var sessionId = args?.GetValueOrDefault("session_id")?.ToString();
+                var timeout = args?.GetValueOrDefault("timeout")?.ToString();
+                
+                if (result.StartsWith("Error:"))
+                {
+                    RenderBasicToolResult("execute_command", result, true);
+                    return;
+                }
+
+                // Extract session ID from result if present
+                var sessionIdFromResult = string.Empty;
+                if (!string.IsNullOrEmpty(sessionId) && result.StartsWith("Session ID: "))
+                {
+                    var lines = result.Split('\n');
+                    if (lines.Length > 0)
+                    {
+                        sessionIdFromResult = lines[0].Replace("Session ID: ", "").Trim();
+                        result = string.Join('\n', lines.Skip(1));
+                    }
+                }
+                var outputLines = result.Split('\n');
+                var truncated = outputLines.Length > MaxDisplayLines;
+                var displayLines = outputLines.Take(MaxDisplayLines).ToArray();
+                
+                var outputDisplay = string.Join("\n", displayLines.Select(line => 
+                {
+                    var trimmedLine = line.TrimEnd();
+                    return trimmedLine.Length > MaxLineLength 
+                        ? Markup.Escape(trimmedLine.Substring(0, MaxLineLength - 3)) + "..."
+                        : Markup.Escape(trimmedLine);
+                }));
+
+                if (truncated)
+                {
+                    outputDisplay += $"\n[dim]... and {outputLines.Length - MaxDisplayLines} more lines (output truncated)[/]";
+                }
+
+                var outputContent = string.IsNullOrWhiteSpace(result) 
+                    ? "[dim]<no output>[/]" 
+                    : outputDisplay;
+
+                var panel = new Panel(new Markup(outputContent))
+                    .Header("[green]📤 Command Output[/]")
+                    .HeaderAlignment(Justify.Center)
+                    .Border(BoxBorder.Rounded)
+                    .BorderColor(Color.Green)
+                    .Padding(1, 0)
+                    .Expand();
+
+                AnsiConsole.Write(panel);
+                AnsiConsole.WriteLine();
+            }
+            catch
+            {
+                RenderBasicToolResult("execute_command", result, false);
             }
         }
 
