@@ -27,6 +27,7 @@ namespace LogiQCLI.Core.Models.Configuration
         public GitHubSettings GitHub { get; set; } = new GitHubSettings();
         public TavilySettings Tavily { get; set; } = new TavilySettings();
         public ExperimentalSettings Experimental { get; set; } = new ExperimentalSettings();
+        public InferenceSettings Inference { get; set; } = new InferenceSettings();
         
         public Dictionary<string, LogiQCLI.Infrastructure.ApiClients.OpenRouter.Objects.ModelEndpointsData> ModelMetadata { get; set; } = new();
 

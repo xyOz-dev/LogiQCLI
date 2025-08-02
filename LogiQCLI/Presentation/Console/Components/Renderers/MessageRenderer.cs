@@ -123,7 +123,20 @@ namespace LogiQCLI.Presentation.Console.Components
 
             var info = string.Join(" | ", pieces);
 
-            var body = $"{info}\n{bar} [grey]({contextUsed}/{contextLength})[/]";
+            // Build hint when context usage is high
+            string hint = string.Empty;
+            if (contextLength > 0 && percentUsed >= 0.8)
+            {
+                // Professional, concise guidance with validated commands
+                var pct = (int)Math.Round(percentUsed * 100);
+                var hintColor = percentUsed >= 0.9 ? "red" : "yellow3";
+                var action = percentUsed >= 0.9
+                    ? "Context window nearly full. Prune history, run `/session compress`, or switch to a larger-context model to avoid truncation."
+                    : "Context usage is high. Consider pruning older messages, running `/session compress`, or switching to a larger-context model.";
+                hint = $"\n[bold {hintColor}]Hint:[/] {action} ({pct}% used)";
+            }
+
+            var body = $"{info}\n{bar} [grey]({contextUsed}/{contextLength})[/]{hint}";
 
             var panel = new Panel(body)
                 .Border(BoxBorder.Rounded)

@@ -10,11 +10,102 @@ LogiQ CLI is a powerful, extensible, and intelligent command-line interface desi
 # Join our Discord to stay up to date.
 https://discord.gg/fA4upHvMsK
 
-## Getting Started
+## Installation & Usage
 
-1.  **Download:** Grab the latest version from the [GitHub Releases](https://github.com/your-repo/logiq-cli/releases) page.
-2.  **Extract:** Unzip the downloaded file to a location of your choice.
-3.  **Run:** Open your terminal, navigate to the extracted directory, and run the executable.
+### For Windows Users
+
+1. **Download:** Grab the latest `LogiQCLI-win-x64.zip` from the [GitHub Releases](https://github.com/xyOz-dev/LogiQCLI/releases) page.
+2. **Extract:** Unzip to your preferred location.
+3. **Run:** Double-click `LogiQCLI.exe` or run from Command Prompt/PowerShell.
+
+
+### For Mac Users
+
+#### Option 1: Build and Install Globally (Recommended)
+
+1. **Clone and build the project:**
+   ```bash
+   git clone https://github.com/xyOz-dev/LogiQCLI.git
+   cd LogiQCLI
+   ```
+
+2. **Build release versions:**
+   ```bash
+   # Use the automated build script (make it executable first)
+   chmod +x build-release.sh
+   ./build-release.sh
+
+   # Or build manually for your Mac architecture:
+   # For Apple Silicon (M1/M2/M3):
+   dotnet publish LogiQCLI/LogiQCLI.csproj --configuration Release --self-contained true --runtime osx-arm64 --output ./release/osx-arm64
+
+   # For Intel Macs:
+   dotnet publish LogiQCLI/LogiQCLI.csproj --configuration Release --self-contained true --runtime osx-x64 --output ./release/osx-x64
+   ```
+
+3. **Install globally:**
+   ```bash
+   # For Apple Silicon Macs:
+   sudo ln -sf "$(pwd)/release/osx-arm64/LogiQCLI" /usr/local/bin/logiq
+
+   # For Intel Macs:
+   sudo ln -sf "$(pwd)/release/osx-x64/LogiQCLI" /usr/local/bin/logiq
+   ```
+
+4. **Run from anywhere:**
+   ```bash
+   logiq
+   ```
+
+5. **Verify installation:**
+   ```bash
+   which logiq  # Should show: /usr/local/bin/logiq
+   logiq        # Should start the application
+   ```
+
+#### Option 2: Run Locally
+
+1. **Build the project:**
+   ```bash
+   dotnet build LogiQCLI.sln --configuration Release
+   ```
+
+2. **Run directly:**
+   ```bash
+   dotnet run --project LogiQCLI --configuration Release
+   ```
+
+#### Option 3: Use Pre-built Executable
+
+1. **Download from releases** or build as shown above
+2. **Run the executable directly:**
+   ```bash
+   # For Apple Silicon:
+   ./release/osx-arm64/LogiQCLI
+
+   # For Intel:
+   ./release/osx-x64/LogiQCLI
+   ```
+
+### Prerequisites
+
+- **.NET 9.0 SDK** (for building from source)
+- **No runtime required** for self-contained executables
+
+### Troubleshooting
+
+**"Permission denied" when running executable:**
+```bash
+chmod +x ./release/osx-arm64/LogiQCLI  # or osx-x64
+```
+
+**"Command not found" after global install:**
+- Ensure `/usr/local/bin` is in your PATH
+- Try running: `echo $PATH | grep /usr/local/bin`
+
+**Build errors:**
+- Ensure you have .NET 9.0 SDK installed: `dotnet --version`
+- Clean and rebuild: `dotnet clean && dotnet build`
 
 ## Initial Configuration
 

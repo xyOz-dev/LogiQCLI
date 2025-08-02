@@ -6,5 +6,9 @@ namespace LogiQCLI.Infrastructure.ApiClients.OpenRouter.Objects
     {
         [JsonPropertyName("include")]
         public bool Include { get; set; } = true;
+
+        // Optional hint for shaping (not necessarily sent to provider)
+        [JsonIgnore]
+        public int MaxCompletionTokens { get; set; } = 1024;
     }
 }
