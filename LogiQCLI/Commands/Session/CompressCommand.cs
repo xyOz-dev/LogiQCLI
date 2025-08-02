@@ -1,26 +1,28 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using LogiQCLI.Commands.Core.Interfaces;
 using LogiQCLI.Commands.Core.Objects;
 using LogiQCLI.Core.Models.Configuration;
+using LogiQCLI.Core.Services;
+using LogiQCLI.Infrastructure.ApiClients.LMStudio.Objects;
 using LogiQCLI.Infrastructure.ApiClients.OpenRouter;
 using LogiQCLI.Infrastructure.ApiClients.OpenRouter.Objects;
-using LogiQCLI.Infrastructure.ApiClients.LMStudio.Objects;
 using LogiQCLI.Infrastructure.Providers;
 using LogiQCLI.Presentation.Console.Session;
-using LogiQCLI.Core.Services;
 using LogiQCLI.Tools.Core.Interfaces;
 using Spectre.Console;
-using System.Globalization;
 
 namespace LogiQCLI.Commands.Session
 {
-    [CommandMetadata("Session", Tags = new[] { "experimental" })]
+    [CommandMetadata("Session", Tags = new[] { "experimental" }, Alias = "compact")]
     public class CompressCommand : ICommand
     {
+        private const int MaxTranscriptChars = 100_000; // guardrail to avoid context overflow
+
         private readonly ChatSession _chatSession;
         private readonly IServiceContainer _container;
         private readonly ApplicationSettings _settings;
@@ -41,6 +43,7 @@ namespace LogiQCLI.Commands.Session
             return new RegisteredCommand
             {
                 Name = "compress",
+                Alias = "compact",
                 Description = "Compress the current chat history into a concise summary while preserving the first and last three messages. Maintains file read state."
             };
         }
@@ -54,7 +57,6 @@ namespace LogiQCLI.Commands.Session
             }
 
             var allMessages = _chatSession.GetMessages();
-
             if (allMessages.Length == 0)
             {
                 return "[yellow]No messages to compress.[/]";
@@ -62,7 +64,7 @@ namespace LogiQCLI.Commands.Session
 
             var systemMessage = allMessages.FirstOrDefault(m => string.Equals(m.Role, "system", StringComparison.OrdinalIgnoreCase));
             var nonSystemMessages = allMessages.Where(m => !string.Equals(m.Role, "system", StringComparison.OrdinalIgnoreCase)).ToArray();
-            
+
             if (nonSystemMessages.Length <= 4)
             {
                 return "[yellow]Nothing to compress (history too short - need more than 4 non-system messages).[/]";
@@ -71,21 +73,19 @@ namespace LogiQCLI.Commands.Session
             var firstMessage = nonSystemMessages.First();
             var lastThree = nonSystemMessages.TakeLast(3).ToArray();
             var messagesToCompress = nonSystemMessages.Skip(1).SkipLast(3).ToArray();
-
             if (messagesToCompress.Length == 0)
             {
                 return "[yellow]Nothing to compress (history too short).[/]";
             }
 
             var originalTokenCount = EstimateTokenCount(allMessages);
-            var compressedTokenCount = EstimateTokenCount(messagesToCompress);
 
             var sb = new StringBuilder();
             foreach (var msg in messagesToCompress)
             {
                 var role = msg.Role ?? "unknown";
                 var content = msg.Content?.ToString() ?? string.Empty;
-                
+
                 if (msg.ToolCalls?.Any() == true)
                 {
                     sb.AppendLine($"{role.ToUpper()}: {content}");
@@ -95,9 +95,32 @@ namespace LogiQCLI.Commands.Session
                 {
                     sb.AppendLine($"{role.ToUpper()}: {content}");
                 }
+
+                if (sb.Length > MaxTranscriptChars)
+                {
+                    // Truncate with tail to preserve recent context for summarization
+                    var head = MaxTranscriptChars - 8000; // keep space for tail
+                    if (head < 0) head = MaxTranscriptChars;
+                    var tail = 8000;
+                    var prefix = sb.ToString(0, Math.Min(head, sb.Length));
+                    var suffixStart = Math.Max(0, sb.Length - tail);
+                    var suffix = sb.ToString(suffixStart, sb.Length - suffixStart);
+                    sb.Clear();
+                    sb.Append(prefix);
+                    sb.AppendLine();
+                    sb.AppendLine("[... truncated for compression ...]");
+                    sb.Append(suffix);
+                    break;
+                }
             }
 
             var compressionPrompt = "You are a summarization assistant. Given the following chat transcript, generate a concise summary that preserves all essential facts, decisions, code references, file operations, tool usage, and instructions. Pay special attention to any file reads, code changes, or tool operations. The summary should be short but complete enough that no important context is lost for continued development work.";
+
+            var usage = new UsageRequest();
+            if (_settings?.Inference != null)
+            {
+                usage.MaxCompletionTokens = _settings.Inference.MaxCompletionTokens;
+            }
 
             var request = new ChatRequest
             {
@@ -107,7 +130,7 @@ namespace LogiQCLI.Commands.Session
                     new Message { Role = "system", Content = compressionPrompt },
                     new Message { Role = "user", Content = sb.ToString() }
                 },
-                Usage = new UsageRequest()
+                Usage = usage
             };
 
             var provider = ProviderFactory.Create(_container);
@@ -164,7 +187,7 @@ namespace LogiQCLI.Commands.Session
                 }
             }
 
-            var summaryMessage = new Message { Role = "assistant", Content = $"[COMPRESSED SUMMARY]\n{summaryContent}" };
+            var summaryMessage = new Message { Role = "assistant", Content = "[COMPRESSED SUMMARY]\n" + summaryContent };
 
             _chatSession.ClearHistory();
 
@@ -251,7 +274,7 @@ namespace LogiQCLI.Commands.Session
 
             if (compressionUsage != null)
             {
-                pieces.Add($"Cost {compressionUsage.Cost.ToString("C4", CultureInfo.GetCultureInfo("en-US"))}");
+                pieces.Add($"Cost {compressionUsage.Cost.ToString("C4", System.Globalization.CultureInfo.GetCultureInfo("en-US"))}");
             }
 
             if (contextLength > 0)
@@ -280,13 +303,13 @@ namespace LogiQCLI.Commands.Session
         {
             var barWidth = Math.Min(Console.WindowWidth - 30, 50);
             if (barWidth < 10) barWidth = 10;
-            
+
             var filled = (int)Math.Round(compressionRatio * barWidth);
             var compressionColor = compressionRatio > 0.5 ? "#00ff87" : compressionRatio > 0.3 ? "#ffaf00" : "#ff8700";
-            
+
             var bar = $"[{compressionColor}]{new string('█', filled)}[/]{new string('░', barWidth - filled)}";
             var percentage = (compressionRatio * 100).ToString("F1");
-            
+
             return $"[dim]Compression Efficiency[/]\n{bar} [bold]{percentage}%[/]";
         }
 
@@ -299,23 +322,23 @@ namespace LogiQCLI.Commands.Session
         {
             var content = message.Content?.ToString() ?? string.Empty;
             var role = message.Role ?? string.Empty;
-            
+
             var baseTokens = EstimateTokensFromText(content + role);
-            
+
             if (message.ToolCalls?.Any() == true)
             {
-                var toolCallContent = string.Join(" ", message.ToolCalls.Select(tc => 
+                var toolCallContent = string.Join(" ", message.ToolCalls.Select(tc =>
                     $"{tc.Function?.Name ?? ""} {tc.Function?.Arguments ?? ""}"));
                 baseTokens += EstimateTokensFromText(toolCallContent);
             }
-            
+
             return baseTokens;
         }
 
         private int EstimateTokensFromText(string text)
         {
             if (string.IsNullOrEmpty(text)) return 0;
-            
+
             var words = text.Split(new[] { ' ', '\t', '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries);
             return (int)Math.Ceiling(words.Length * 1.3);
         }
@@ -329,7 +352,7 @@ namespace LogiQCLI.Commands.Session
         private static string ExtractFilePathFromMessage(Message message)
         {
             var content = message.Content?.ToString() ?? string.Empty;
-            
+
             if (content.StartsWith("File content", StringComparison.OrdinalIgnoreCase) ||
                 content.StartsWith("```") && content.Contains("File:"))
             {
@@ -346,8 +369,8 @@ namespace LogiQCLI.Commands.Session
                     }
                 }
             }
-            
+
             return string.Empty;
         }
     }
-} 
+}

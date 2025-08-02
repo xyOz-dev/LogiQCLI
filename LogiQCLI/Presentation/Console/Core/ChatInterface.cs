@@ -26,6 +26,49 @@ namespace LogiQCLI.Presentation.Console
 {
     public class ChatInterface
     {
+        private static bool IsContextOverflow(Exception ex, out int serverMax, out int serverRequested)
+        {
+            serverMax = 0; serverRequested = 0;
+            try
+            {
+                var body = ex.Message;
+                if (string.IsNullOrEmpty(body)) return false;
+                // Heuristic parse of OpenRouter-style error text
+                // "maximum context length is 256000 tokens. However, you requested about 874665 tokens"
+                var lower = body.ToLowerInvariant();
+                if (!lower.Contains("maximum context length") || !lower.Contains("requested"))
+                    return false;
+
+                int max = ExtractIntNear(body, "maximum context length is ");
+                int requested = ExtractIntNear(body, "requested about ");
+                if (max > 0 && requested > 0)
+                {
+                    serverMax = max; serverRequested = requested; return true;
+                }
+            }
+            catch { }
+            return false;
+        }
+
+        private static int ExtractIntNear(string text, string marker)
+        {
+            try
+            {
+                var i = text.IndexOf(marker, StringComparison.OrdinalIgnoreCase);
+                if (i < 0) return 0;
+                i += marker.Length;
+                var sb = new System.Text.StringBuilder();
+                for (; i < text.Length; i++)
+                {
+                    var ch = text[i];
+                    if (char.IsDigit(ch)) sb.Append(ch);
+                    else if (sb.Length > 0) break;
+                }
+                if (int.TryParse(sb.ToString(), out var val)) return val;
+            }
+            catch { }
+            return 0;
+        }
         private readonly IServiceContainer _container;
         private readonly ToolHandler _toolHandler;
         private readonly ApplicationSettings _settings;
@@ -126,6 +169,44 @@ namespace LogiQCLI.Presentation.Console
             }
 
             var request = CreateChatRequest();
+
+            // Preflight shaping to respect model context limits
+            var modelParts = _chatSession.Model.Split('/', 2);
+            EndpointInfo? endpoint = null;
+            int contextLen = 128000; // default safeguard
+            try
+            {
+                if (modelParts.Length == 2)
+                {
+                    var meta = await _metadataService.GetModelMetadataAsync(modelParts[0], modelParts[1]);
+                    endpoint = _metadataService.GetBestEndpoint(meta);
+                }
+                else if (modelParts.Length == 1)
+                {
+                    var meta = await _metadataService.GetModelMetadataAsync(_settings.DefaultProvider, modelParts[0]);
+                    endpoint = _metadataService.GetBestEndpoint(meta);
+                }
+                if (endpoint != null && endpoint.ContextLength > 0) contextLen = endpoint.ContextLength;
+            }
+            catch { }
+
+            var budgeter = new LogiQCLI.Core.Services.TokenBudgeter();
+            var s = _settings.Inference;
+            var targetCompletion = request.Usage?.MaxCompletionTokens > 0 ? request.Usage.MaxCompletionTokens : s.MaxCompletionTokens;
+            var shaped = budgeter.Shape(
+                request.Messages?.ToList() ?? new List<Message>(),
+                request.Tools,
+                request.ToolChoice,
+                contextLen,
+                targetCompletion,
+                s.ContextSafetyMarginPct,
+                s.MaxMessages,
+                s.MaxToolOutputChars,
+                s.EnableMiddleOut);
+            request.Messages = shaped.shaped.ToArray();
+            request.Tools = shaped.tools;
+            request.ToolChoice = shaped.toolChoice ?? request.ToolChoice;
+
             object? responseObj = null;
             
             await AnsiConsole.Status()
@@ -136,11 +217,52 @@ namespace LogiQCLI.Presentation.Console
                     try
                     {
                         var llmProvider = ProviderFactory.Create(_container);
-                        responseObj = await llmProvider.CreateChatCompletionAsync(request);
+                        try
+                        {
+                            responseObj = await llmProvider.CreateChatCompletionAsync(request);
+                        }
+                        catch (Exception ex1)
+                        {
+                            // Attempt smart retry if likely context overflow
+                            if (IsContextOverflow(ex1, out var serverMax, out var serverRequested))
+                            {
+                                var s = _settings.Inference;
+                                var budgeter = new LogiQCLI.Core.Services.TokenBudgeter();
+                                // more aggressive pass
+                                var shaped2 = budgeter.Shape(
+                                    request.Messages.ToList(),
+                                    request.Tools,
+                                    request.ToolChoice,
+                                    contextLen,
+                                    Math.Max(256, targetCompletion / 2),
+                                    Math.Min(0.2, s.ContextSafetyMarginPct + 0.05),
+                                    Math.Max(40, s.MaxMessages / 2),
+                                    Math.Max(20000, s.MaxToolOutputChars / 2),
+                                    true);
+                                request.Messages = shaped2.shaped.ToArray();
+                                request.Tools = shaped2.tools;
+                                request.ToolChoice = shaped2.toolChoice ?? request.ToolChoice;
+
+                                responseObj = await llmProvider.CreateChatCompletionAsync(request);
+                            }
+                            else
+                            {
+                                throw;
+                            }
+                        }
                     }
                     catch (Exception ex)
                     {
-                        AnsiConsole.MarkupLine($"[red]Error calling API:[/] {Markup.Escape(ex.Message)}");
+                        if (IsContextOverflow(ex, out var serverMax, out var serverRequested))
+                        {
+                            var diag = $"Context overflow. Model limit: {serverMax}, requested: {serverRequested}. " +
+                                       "Try /compact, switch to a larger-context model, or reduce tool output.";
+                            AnsiConsole.MarkupLine($"[red]{Markup.Escape(diag)}[/]");
+                        }
+                        else
+                        {
+                            AnsiConsole.MarkupLine($"[red]Error calling API:[/] {Markup.Escape(ex.Message)}");
+                        }
                     }
                 });
 
