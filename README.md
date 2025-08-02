@@ -8,7 +8,7 @@
 LogiQ CLI is a powerful, extensible, and intelligent command-line interface designed to streamline your development workflow. It integrates with various AI providers to bring intelligent code generation, conversation, and automation directly to your terminal.
 
 # Join our Discord to stay up to date.
-[https://discord.gg/fA4upHvMsK](https://discord.gg/NZ4j3EEmnR)
+https://discord.gg/NZ4j3EEmnR
 
 ## Installation & Usage
 
