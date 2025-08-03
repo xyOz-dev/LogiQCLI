@@ -59,6 +59,21 @@ namespace LogiQCLI.Tools.ContentManipulation
                         {
                             type = "boolean",
                             description = "Create a backup entry in the .logiq-backups folder before modifying. Default: true."
+                        },
+                        dryRun = new
+                        {
+                            type = "boolean",
+                            description = "Preview changes without modifying the file. Shows what would be replaced. Default: false."
+                        },
+                        dotAll = new
+                        {
+                            type = "boolean",
+                            description = "In regex mode: . matches any character including newlines. Useful for multi-line patterns. Default: false."
+                        },
+                        showProgress = new
+                        {
+                            type = "boolean",
+                            description = "Show progress information for large files. Default: false."
                         }
                     },
                     Required = new[] { "path", "search", "replace" }
@@ -79,6 +94,8 @@ namespace LogiQCLI.Tools.ContentManipulation
                 var fullPath = Path.GetFullPath(arguments.Path.Replace('/', Path.DirectorySeparatorChar)
                     .Replace('\\', Path.DirectorySeparatorChar));
 
+                var fileInfo = new FileInfo(fullPath);
+                
                 var content = await File.ReadAllTextAsync(fullPath);
                 var originalContent = content;
                 
@@ -86,6 +103,8 @@ namespace LogiQCLI.Tools.ContentManipulation
                 var caseSensitive = arguments.CaseSensitive ?? true;
                 var multiline = arguments.Multiline ?? true;
                 var backup = arguments.Backup ?? true;
+                var dryRun = arguments.DryRun ?? false;
+                var dotAll = arguments.DotAll ?? false;
                 var replaceText = arguments.Replace ?? string.Empty;
 
                 int replacementCount;
@@ -96,6 +115,7 @@ namespace LogiQCLI.Tools.ContentManipulation
                     var options = RegexOptions.None;
                     if (!caseSensitive) options |= RegexOptions.IgnoreCase;
                     if (multiline) options |= RegexOptions.Multiline;
+                    if (dotAll) options |= RegexOptions.Singleline;
 
                     var regex = new Regex(arguments.Search, options);
                     var matches = regex.Matches(content);
@@ -114,6 +134,13 @@ namespace LogiQCLI.Tools.ContentManipulation
                     return $"No matches found for '{arguments.Search}' in {fullPath}";
                 }
 
+                if (dryRun)
+                {
+                    var preview = GeneratePreview(originalContent, newContent, arguments.Search, replaceText, 
+                        useRegex, caseSensitive, multiline, dotAll);
+                    return $"Preview mode - would make {replacementCount} replacement(s):\n{preview}";
+                }
+
                 if (backup && originalContent != newContent)
                 {
                     try
@@ -129,7 +156,14 @@ namespace LogiQCLI.Tools.ContentManipulation
 
                 await File.WriteAllTextAsync(fullPath, newContent);
 
-                return $"Successfully replaced {replacementCount} occurrence(s) in {fullPath}";
+                var result = $"Successfully replaced {replacementCount} occurrence(s) in {fullPath}";
+                
+                if ((arguments.ShowProgress ?? false) || fileInfo.Length > 1024 * 1024)
+                {
+                    result += $"\nFile size: {FormatFileSize(fileInfo.Length)}";
+                }
+                
+                return result;
             }
             catch (Exception ex)
             {
@@ -164,6 +198,70 @@ namespace LogiQCLI.Tools.ContentManipulation
                 index += newValue.Length;
             }
             return result;
+        }
+
+
+        private string GeneratePreview(string original, string modified, string search, string replace, 
+            bool useRegex, bool caseSensitive, bool multiline, bool dotAll)
+        {
+            var originalLines = original.Split('\n');
+            var modifiedLines = modified.Split('\n');
+            var preview = new System.Text.StringBuilder();
+            preview.AppendLine("Changes preview:");
+            
+            int changesShown = 0;
+            const int maxChanges = 10;
+            
+            for (int i = 0; i < Math.Min(originalLines.Length, modifiedLines.Length); i++)
+            {
+                if (originalLines[i] != modifiedLines[i])
+                {
+                    preview.AppendLine($"Line {i + 1}:");
+                    preview.AppendLine($"- {originalLines[i].TrimEnd('\r')}");
+                    preview.AppendLine($"+ {modifiedLines[i].TrimEnd('\r')}");
+                    changesShown++;
+                    
+                    if (changesShown >= maxChanges)
+                    {
+                        var remainingChanges = CountRemainingChanges(originalLines, modifiedLines, i + 1);
+                        if (remainingChanges > 0)
+                        {
+                            preview.AppendLine($"... and {remainingChanges} more changes");
+                        }
+                        break;
+                    }
+                }
+            }
+            
+            return preview.ToString();
+        }
+        
+        private int CountRemainingChanges(string[] originalLines, string[] modifiedLines, int startIndex)
+        {
+            int count = 0;
+            for (int i = startIndex; i < Math.Min(originalLines.Length, modifiedLines.Length); i++)
+            {
+                if (originalLines[i] != modifiedLines[i])
+                {
+                    count++;
+                }
+            }
+            return count;
+        }
+
+        private string FormatFileSize(long bytes)
+        {
+            string[] sizes = { "B", "KB", "MB", "GB", "TB" };
+            double fileSize = bytes;
+            int index = 0;
+            
+            while (fileSize >= 1024 && index < sizes.Length - 1)
+            {
+                fileSize /= 1024;
+                index++;
+            }
+            
+            return $"{fileSize:0.##} {sizes[index]}";
         }
 
     }

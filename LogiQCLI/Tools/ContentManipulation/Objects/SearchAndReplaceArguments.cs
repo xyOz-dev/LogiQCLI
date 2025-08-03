@@ -24,5 +24,14 @@ namespace LogiQCLI.Tools.ContentManipulation.Objects
         
         [JsonPropertyName("backup")]
         public bool? Backup { get; set; }
+        
+        [JsonPropertyName("dryRun")]
+        public bool? DryRun { get; set; }
+        
+        [JsonPropertyName("dotAll")]
+        public bool? DotAll { get; set; }
+        
+        [JsonPropertyName("showProgress")]
+        public bool? ShowProgress { get; set; }
     }
 }

@@ -50,6 +50,9 @@ namespace LogiQCLI.Presentation.Console.Components.Objects
                 case "execute_command":
                     RenderExecuteCommandResult(arguments, result);
                     break;
+                case "search_and_replace":
+                    RenderSearchAndReplaceResult(arguments, result);
+                    break;
                 default:
                     RenderBasicToolResult(toolName, result, hasError);
                     break;
@@ -382,6 +385,104 @@ namespace LogiQCLI.Presentation.Console.Components.Objects
             catch
             {
                 RenderBasicToolResult("execute_command", result, false);
+            }
+        }
+
+        private static void RenderSearchAndReplaceResult(string arguments, string result)
+        {
+            try
+            {
+                var args = JsonSerializer.Deserialize<Dictionary<string, object>>(arguments);
+                var filePath = args?.GetValueOrDefault("path")?.ToString() ?? "Unknown";
+                var search = args?.GetValueOrDefault("search")?.ToString() ?? "";
+                var replace = args?.GetValueOrDefault("replace")?.ToString() ?? "";
+                var useRegex = args?.GetValueOrDefault("useRegex")?.ToString()?.ToLowerInvariant() == "true";
+                var dryRun = args?.GetValueOrDefault("dryRun")?.ToString()?.ToLowerInvariant() == "true";
+                
+                if (result.StartsWith("Error:"))
+                {
+                    RenderBasicToolResult("search_and_replace", result, true);
+                    return;
+                }
+
+                var isPreview = result.StartsWith("Preview mode");
+                var icon = isPreview ? "🔍" : "✏️";
+                var headerColor = isPreview ? "yellow" : "green";
+                var borderColor = isPreview ? Color.Yellow : Color.Green;
+                
+                if (isPreview && result.Contains("Changes preview:"))
+                {
+                    var parts = result.Split(new[] { '\n' }, 2);
+                    var statusLine = parts[0];
+                    var diffContent = parts.Length > 1 ? parts[1] : "";
+                    
+                    var diffLines = diffContent.Split('\n');
+                    var formattedDiff = new List<object>();
+                    
+                    foreach (var line in diffLines)
+                    {
+                        if (line.StartsWith("- "))
+                        {
+                            formattedDiff.Add(new Markup($"[red]{Markup.Escape(line)}[/]"));
+                        }
+                        else if (line.StartsWith("+ "))
+                        {
+                            formattedDiff.Add(new Markup($"[green]{Markup.Escape(line)}[/]"));
+                        }
+                        else if (line.StartsWith("Line "))
+                        {
+                            formattedDiff.Add(new Markup($"[dim]{Markup.Escape(line)}[/]"));
+                        }
+                        else if (line.StartsWith("..."))
+                        {
+                            formattedDiff.Add(new Markup($"[dim yellow]{Markup.Escape(line)}[/]"));
+                        }
+                        else
+                        {
+                            formattedDiff.Add(new Text(line));
+                        }
+                    }
+                    
+                    var diffPanel = new Panel(new Rows(formattedDiff.Cast<Spectre.Console.Rendering.IRenderable>().ToArray()))
+                        .Header($"[{headerColor}]{icon} Search and Replace Preview: {Markup.Escape(filePath)}[/]")
+                        .HeaderAlignment(Justify.Center)
+                        .Border(BoxBorder.Rounded)
+                        .BorderColor(borderColor)
+                        .Padding(1, 0)
+                        .Expand();
+                    
+                    AnsiConsole.Write(diffPanel);
+                    AnsiConsole.MarkupLine($"[{headerColor}]{Markup.Escape(statusLine)}[/]");
+                    AnsiConsole.WriteLine();
+                }
+                else
+                {
+                    var content = new System.Text.StringBuilder();
+                    content.AppendLine($"[{headerColor}]{result}[/]");
+                    content.AppendLine();
+                    content.AppendLine($"[dim]File: {Markup.Escape(filePath)}[/]");
+                    content.AppendLine($"[dim]Search: {Markup.Escape(search)}[/]");
+                    content.AppendLine($"[dim]Replace: {Markup.Escape(replace)}[/]");
+                    if (useRegex)
+                    {
+                        content.AppendLine($"[dim]Mode: Regular Expression[/]");
+                    }
+
+                    var panel = new Panel(content.ToString().TrimEnd())
+                        .Header($"[{headerColor}]{icon} Search and Replace[/]")
+                        .HeaderAlignment(Justify.Center)
+                        .Border(BoxBorder.Rounded)
+                        .BorderColor(borderColor)
+                        .Padding(1, 0)
+                        .Expand();
+
+                    AnsiConsole.Write(panel);
+                    AnsiConsole.WriteLine();
+                }
+            }
+            catch
+            {
+                RenderBasicToolResult("search_and_replace", result, false);
             }
         }
 
