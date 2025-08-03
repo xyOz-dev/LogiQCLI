@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Runtime.InteropServices;
@@ -221,6 +223,10 @@ namespace LogiQCLI.Presentation.Console.Session
                     .OrderBy(f => f)
                     .ToList();
 
+                sb.AppendLine("== Project Directory Structure ==");
+                sb.AppendLine(GenerateDirectoryTree(workspace, "", true, 0, 3));
+                sb.AppendLine();
+                
                 sb.AppendLine("== Project File Structure ==");
                 
                 if (filteredFiles.Count > 0)
@@ -263,9 +269,57 @@ namespace LogiQCLI.Presentation.Console.Session
             }
             catch (System.Exception ex)
             {
+                sb.AppendLine("== Project Directory Structure ==");
+                sb.AppendLine($"  (Error reading directory: {ex.Message})");
+                sb.AppendLine();
                 sb.AppendLine("== Project File Structure ==");
                 sb.AppendLine($"  (Error reading directory: {ex.Message})");
             }
+        }
+
+        private string GenerateDirectoryTree(string path, string prefix, bool isLast, int currentDepth, int maxDepth)
+        {
+            if (currentDepth > maxDepth) return "";
+            
+            var sb = new StringBuilder();
+            var dirName = currentDepth == 0 ? Path.GetFileName(path) ?? path : Path.GetFileName(path);
+            
+            if (currentDepth > 0)
+            {
+                sb.Append(prefix);
+                sb.Append(isLast ? "└── " : "├── ");
+                sb.AppendLine(dirName + "/");
+            }
+            else
+            {
+                sb.AppendLine(dirName + "/");
+            }
+
+            try
+            {
+                var excludedDirs = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+                {
+                    "bin", "obj", ".git", ".vs", "node_modules", 
+                    "__pycache__", ".pytest_cache", "target", "dist", "build"
+                };
+
+                var directories = Directory.GetDirectories(path)
+                    .Where(d => !excludedDirs.Contains(Path.GetFileName(d)))
+                    .OrderBy(d => Path.GetFileName(d))
+                    .ToArray();
+
+                for (int i = 0; i < directories.Length; i++)
+                {
+                    var isLastDir = i == directories.Length - 1;
+                    var newPrefix = currentDepth == 0 ? "" : prefix + (isLast ? "    " : "│   ");
+                    sb.Append(GenerateDirectoryTree(directories[i], newPrefix, isLastDir, currentDepth + 1, maxDepth));
+                }
+            }
+            catch
+            {
+            }
+
+            return sb.ToString();
         }
 
         private string GetDetailedOSInfo()
