@@ -170,10 +170,9 @@ namespace LogiQCLI.Presentation.Console
 
             var request = CreateChatRequest();
 
-            // Preflight shaping to respect model context limits
             var modelParts = _chatSession.Model.Split('/', 2);
             EndpointInfo? endpoint = null;
-            int contextLen = 128000; // default safeguard
+            int contextLen = 128000;
             try
             {
                 if (modelParts.Length == 2)
@@ -223,12 +222,10 @@ namespace LogiQCLI.Presentation.Console
                         }
                         catch (Exception ex1)
                         {
-                            // Attempt smart retry if likely context overflow
                             if (IsContextOverflow(ex1, out var serverMax, out var serverRequested))
                             {
                                 var s = _settings.Inference;
                                 var budgeter = new LogiQCLI.Core.Services.TokenBudgeter();
-                                // more aggressive pass
                                 var shaped2 = budgeter.Shape(
                                     request.Messages.ToList(),
                                     request.Tools,

@@ -12,7 +12,7 @@ namespace LogiQCLI.Core.Services
 
     public class TokenBudgeter
     {
-        private const int CharsPerToken = 4; // conservative
+        private const int CharsPerToken = 4;
 
         public int EstimateTokensFromText(string? text)
         {
@@ -43,7 +43,7 @@ namespace LogiQCLI.Core.Services
                     total += EstimateTokensFromText(tc.Function?.Arguments);
                 }
             }
-            return total + 4; // structural overhead
+            return total + 4;
         }
 
         public int EstimateTokensForTools(ToolDef[]? tools)
@@ -70,19 +70,15 @@ namespace LogiQCLI.Core.Services
             int maxToolOutputChars = 100_000,
             bool middleOut = true)
         {
-            // Handle empty input gracefully
             if (original == null || original.Count == 0)
                 return (new List<Message>(), toolChoice, tools, 0);
             
-            // Ensure last user message preserved
             var messages = original.ToList();
-            // Trim to max messages first (keep tail)
             if (messages.Count > maxMessages)
             {
                 messages = messages.Skip(messages.Count - maxMessages).ToList();
             }
 
-            // Truncate extremely large tool outputs to cap char length
             foreach (var m in messages)
             {
                 if (m.Role != null && m.Role.Equals("tool", StringComparison.OrdinalIgnoreCase))
@@ -95,14 +91,12 @@ namespace LogiQCLI.Core.Services
                 }
             }
 
-            // Calculate budget with safety checks for edge cases
-            var effectiveSafetyMargin = Math.Max(0, Math.Min(0.9, safetyMarginPct)); // Clamp between 0-90%
+            var effectiveSafetyMargin = Math.Max(0, Math.Min(0.9, safetyMarginPct));
             var budget = (int)Math.Floor(endpointContextLength * (1.0 - effectiveSafetyMargin)) - targetCompletionTokens;
-            // Ensure minimum viable budget even with extreme parameters
-            if (budget < 256) budget = Math.Max(128, endpointContextLength / 4); // fallback guard
-            
-            // Early exit if messages are empty
-            if (messages.Count == 0) return (messages, toolChoice, tools, 0);
+            if (budget < 256) budget = Math.Max(128, endpointContextLength / 4);
+
+            if (messages.Count == 0) 
+                return (messages, toolChoice, tools, 0);
 
             var estimator = new List<int>();
             var total = 0;
@@ -119,10 +113,8 @@ namespace LogiQCLI.Core.Services
                 return (messages, toolChoice, tools, total);
             }
             
-            // If we're way over budget, immediately take drastic action
             if (total > budget * 3)
             {
-                // Keep only the last user message, heavily compressed
                 var lastUser = messages.LastOrDefault(m => m.Role == "user");
                 if (lastUser != null)
                 {
@@ -138,18 +130,15 @@ namespace LogiQCLI.Core.Services
                     };
                     var compressedList = new List<Message> { compressedUser };
                     var compressedTotal = EstimateTokensForMessage(compressedUser) + EstimateTokensForTools(tools);
-                    // Always return the compressed version when we're way over budget
                     return (compressedList, toolChoice, tools, compressedTotal);
                 }
             }
 
-            // Reduce tool definitions first by switching toolChoice to auto or none if needed
             ToolDef[]? shapedTools = tools;
             string? shapedToolChoice = toolChoice;
 
             if (shapedTools != null && shapedTools.Length > 0)
             {
-                // Try dropping parameter schemas (heavy) by nulling Parameters when ToString is big
                 shapedTools = shapedTools.Select(t =>
                 {
                     try
@@ -177,13 +166,10 @@ namespace LogiQCLI.Core.Services
                 total = messages.Sum(EstimateTokensForMessage) + EstimateTokensForTools(shapedTools);
                 if (total > budget)
                 {
-                    shapedToolChoice = "auto"; // let model decide, may reduce bias
+                    shapedToolChoice = "auto";
                 }
             }
 
-            // If still too large, compact older messages using middle-out/summarization
-            // Strategy: always keep the last 1 user + last 1 assistant; then walk backwards summarizing older pairs
-            // Adjust keepTail based on budget pressure - fewer messages kept when budget is very tight
             var budgetPressure = (double)total / budget;
             int keepTail = budgetPressure > 10 ? 1 : (budgetPressure > 5 ? 2 : Math.Min(6, messages.Count));
             var head = messages.Take(Math.Max(0, messages.Count - keepTail)).ToList();
@@ -197,7 +183,6 @@ namespace LogiQCLI.Core.Services
                     var txt = ExtractText(m.Content);
                     if (string.IsNullOrEmpty(txt)) continue;
                     
-                    // Calculate compression ratio based on budget pressure
                     var budgetRatio = (double)budget / total;
                     var compressionFactor = budgetRatio < 0.5 ? 0.1 : (budgetRatio < 0.7 ? 0.25 : 0.5);
                     var maxChars = Math.Min(4000, Math.Max(100, (int)(txt.Length * compressionFactor)));
@@ -216,11 +201,9 @@ namespace LogiQCLI.Core.Services
             var shaped = head.Concat(tail).ToList();
             total = shaped.Sum(EstimateTokensForMessage) + EstimateTokensForTools(shapedTools);
 
-            // If still exceeding, drop oldest messages progressively until fit, preserving last user
             int idx = 0;
             while (total > budget && shaped.Count > 1 && idx < 10_000)
             {
-                // Never remove the last user message
                 if (shaped.Count <= 1 || (shaped.Count == 2 && shaped[^1].Role == "user"))
                     break;
                     
@@ -229,18 +212,15 @@ namespace LogiQCLI.Core.Services
                 idx++;
             }
             
-            // Final safety check: if still over budget, aggressively trim all but essential messages
             if (total > budget && shaped.Count > 1)
             {
-                // Keep only the last user message, but compress it if needed
                 var lastUser = shaped.LastOrDefault(m => m.Role == "user");
                 if (lastUser != null)
                 {
                     var content = ExtractText(lastUser.Content);
                     if (!string.IsNullOrEmpty(content))
                     {
-                        // Compress to fit within budget
-                        var maxTokensForMessage = budget - 10; // Leave some buffer
+                        var maxTokensForMessage = budget - 10;
                         var maxChars = maxTokensForMessage * 4;
                         if (content.Length > maxChars)
                         {
@@ -264,24 +244,21 @@ namespace LogiQCLI.Core.Services
 
         public string MiddleOut(string content, int maxChars)
         {
-            // Handle null/empty cases
             if (content == null) return null;
-            if (string.IsNullOrEmpty(content) || content.Length <= maxChars) return content;
+            if (string.IsNullOrEmpty(content) || content.Length <= maxChars) 
+                return content;
             
-            // For very small limits, just truncate from start
-            if (maxChars < 32) return content.Substring(0, Math.Min(maxChars, content.Length));
+            if (maxChars < 32)
+                return content.Substring(0, Math.Min(maxChars, content.Length));
 
-            // Reserve space for the omission marker
             const string marker = "\n…[middle omitted]…\n";
             var availableChars = maxChars - marker.Length;
             
-            // Ensure we have enough space for meaningful content
             if (availableChars < 20)
                 return content.Substring(0, Math.Min(maxChars, content.Length));
 
-            // Split available chars between head and tail, favoring recent content
-            int headChars = availableChars * 2 / 5; // 40% for head
-            int tailChars = availableChars - headChars; // 60% for tail
+            int headChars = availableChars * 2 / 5;
+            int tailChars = availableChars - headChars;
             
             var head = content.Substring(0, Math.Min(headChars, content.Length));
             var tailStart = Math.Max(headChars, content.Length - tailChars);

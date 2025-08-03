@@ -134,7 +134,6 @@ namespace LogiQCLI.Tests.Core
                     Name = "Jordan"
                 };
                 var namedTokens = budgeter.EstimateTokensForMessage(messageWithName);
-                // Content "I'm doing well!" = 15 chars = 3 tokens, Name "Jordan" = 6 chars = 1 token, overhead = 4
                 if (namedTokens != 8) return CreateFailureResult($"Message with name should have 8 tokens (3+1+4), got {namedTokens}", stopwatch.Elapsed);
                 
                 var toolCallMessage = new Message
@@ -154,7 +153,6 @@ namespace LogiQCLI.Tests.Core
                     }
                 };
                 var toolCallTokens = budgeter.EstimateTokensForMessage(toolCallMessage);
-                // Content: 21 chars = 5 tokens, Tool name: 11 chars = 2 tokens, Arguments: 29 chars = 7 tokens, overhead = 4
                 if (toolCallTokens != 18) return CreateFailureResult($"Tool call message should have 18 tokens (5+2+7+4), got {toolCallTokens}", stopwatch.Elapsed);
                 
                 var emptyMessage = new Message { Role = "user" };
@@ -333,12 +331,11 @@ namespace LogiQCLI.Tests.Core
                 if (tinyBudget.shaped.Count >= hugeMessages.Count) 
                     return CreateFailureResult("Should drop messages when budget is exceeded", stopwatch.Elapsed);
                 
-                // Debug info: check what message we kept and its size
                 if (tinyBudget.shaped.Count == 1)
                 {
                     var keptMessage = tinyBudget.shaped[0];
                     var contentLength = keptMessage.Content?.ToString()?.Length ?? 0;
-                    if (contentLength > 3200) // Should be compressed to fit budget
+                    if (contentLength > 3200)
                         return CreateFailureResult($"Message not compressed enough: {contentLength} chars", stopwatch.Elapsed);
                 }
                 

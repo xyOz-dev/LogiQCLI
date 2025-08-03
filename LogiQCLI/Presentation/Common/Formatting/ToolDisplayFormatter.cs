@@ -337,7 +337,6 @@ namespace LogiQCLI.Presentation.Console.Components.Objects
                     return;
                 }
 
-                // Extract session ID from result if present
                 var sessionIdFromResult = string.Empty;
                 if (!string.IsNullOrEmpty(sessionId) && result.StartsWith("Session ID: "))
                 {

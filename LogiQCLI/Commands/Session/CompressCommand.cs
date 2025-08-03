@@ -21,7 +21,7 @@ namespace LogiQCLI.Commands.Session
     [CommandMetadata("Session", Tags = new[] { "experimental" }, Alias = "compact")]
     public class CompressCommand : ICommand
     {
-        private const int MaxTranscriptChars = 100_000; // guardrail to avoid context overflow
+        private const int MaxTranscriptChars = 100_000;
 
         private readonly ChatSession _chatSession;
         private readonly IServiceContainer _container;
@@ -98,8 +98,7 @@ namespace LogiQCLI.Commands.Session
 
                 if (sb.Length > MaxTranscriptChars)
                 {
-                    // Truncate with tail to preserve recent context for summarization
-                    var head = MaxTranscriptChars - 8000; // keep space for tail
+                    var head = MaxTranscriptChars - 8000;
                     if (head < 0) head = MaxTranscriptChars;
                     var tail = 8000;
                     var prefix = sb.ToString(0, Math.Min(head, sb.Length));
@@ -242,7 +241,7 @@ namespace LogiQCLI.Commands.Session
                     }
                 }
             }
-            catch { /* ignore metadata errors */ }
+            catch {  }
 
             DisplayCompressionStats(allMessages.Length, messagesToCompress.Length, newMessages.Length,
                                   originalTokenCount, newTokenCount, tokensSaved, compressionRatio,

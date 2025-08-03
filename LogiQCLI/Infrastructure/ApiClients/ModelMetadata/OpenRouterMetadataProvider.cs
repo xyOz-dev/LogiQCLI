@@ -34,7 +34,6 @@ namespace LogiQCLI.Infrastructure.ApiClients.ModelMetadata
             {
             }
 
-            // Fallback: query the generic models list and construct minimal metadata
             var models = await _client.GetModelsAsync(cancellationToken);
             var id = $"{author}/{slug}";
             var model = models.FirstOrDefault(m => string.Equals(m.Id, id, StringComparison.OrdinalIgnoreCase) ||
