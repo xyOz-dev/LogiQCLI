@@ -1,4 +1,8 @@
-# LogiQ CLI
+# LogiQ CLI | DEAD
+Development is discontinued, New Project: https://github.com/xyOz-dev/Saturn
+
+
+
 
 ![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)
 ![.NET](https://img.shields.io/badge/.NET-9.0-purple.svg)
